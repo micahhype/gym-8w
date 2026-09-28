@@ -325,6 +325,7 @@ const ALTS = {
     alt("bench-dip", "Dip trên ghế", "10–15", "+kg", 0, 2.5, "Tay chống mép ghế, hạ tới khuỷu vuông góc.", "benchdip"),
   ],
   "Lateral Raise": [
+    alt("delt-machine", "Lateral Raise máy", "12–15", "kg", 10, 2.5, "Chỉnh ghế cho khớp vai thẳng trục quay của máy, đệm tỳ ở cánh tay trên. Nâng tới ngang vai, hạ chậm. Chưa có ảnh minh hoạ.", ""),
     alt("cable-lateral", "Nâng ngang cáp", "12–15/tay", "kg", 5, 2.5, "Ròng rọc thấp, dây vắt chéo trước người, nâng tới ngang vai.", "cablelateral"),
     alt("lateral-machine", "Nâng ngang ngồi ghế", "12–15", "kg/tay", 5, 1, "Ngồi ghế tựa thẳng lưng, không đu người lấy đà — vai ngang phải làm hết việc.", "seatedlateral"),
   ],
@@ -354,7 +355,7 @@ const WARM = ["Back Squat", "Bench Press", "Deadlift", "Overhead Press"];
 const OPTIONAL = ["Triceps Pushdown", "Face Pull", "Hammer Curl", "Hanging Leg Raise",
   "Leg Press", "Leg Curl", "Calf Raise"];
 
-const PROG_VERSION = 5;
+const PROG_VERSION = 6;
 function seed() {
   const ex = (name, sets, reps, start, step, rest, unit, note) =>
     ({ id: uid(), name, sets, reps, start, step, rest, unit: unit || "kg",
