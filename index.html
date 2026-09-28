@@ -621,7 +621,14 @@ function suggest(ex, i) {
   if (i > 0 && cur[i - 1]) return { kg: cur[i - 1].kg, reps: cur[i - 1].reps };
   const p = perf(ex), up = levelUp(ex, p);
   if (up != null) return { kg: up, reps: repLow(ex.reps) };
-  if (p) { const s = p.sets[Math.min(i, p.sets.length - 1)]; return { kg: s.kg, reps: s.reps }; }
+  if (p) {
+    // mức dùng nhiều set nhất: bỏ qua set dò tạ hay set lỡ tay quá nặng
+    const n = {};
+    p.sets.forEach(s => { const k = +s.kg || 0; n[k] = (n[k] || 0) + 1; });
+    const top = Object.keys(n).map(Number).sort((a, b) => n[b] - n[a] || b - a)[0];
+    const work = p.sets.filter(s => (+s.kg || 0) === top);
+    return { kg: work[0].kg, reps: work[Math.min(i, work.length - 1)].reps };
+  }
   return { kg: ex.start != null ? ex.start : 0, reps: repLow(ex.reps) };
 }
 function progress() {
