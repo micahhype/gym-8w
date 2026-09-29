@@ -1,6 +1,6 @@
 {
-  "name": "Sổ Sắt",
-  "short_name": "Sổ Sắt",
+  "name": "Gym Book",
+  "short_name": "Gym Book",
   "description": "Sổ tập tạ — ghi từng set, đếm giờ nghỉ, theo dõi cân nặng. Dữ liệu nằm trên máy bạn.",
   "lang": "vi",
   "start_url": "./",

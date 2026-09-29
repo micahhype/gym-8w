@@ -1,4 +1,4 @@
-# Sổ Sắt
+# Gym Book
 
 Sổ tập tạ chạy hoàn toàn trong trình duyệt. Một file `index.html`, không backend,
 không tài khoản. Mọi số liệu nằm trong `localStorage` của máy bạn.
