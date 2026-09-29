@@ -42,6 +42,9 @@ Vì không có PT đi kèm, app tự lo mấy việc PT hay nhắc:
   phụ* ở thanh trên chỉ giữ lại bài chính cho ngày mệt hay phòng đông; xong
   bài chính thì app báo để bạn chọn làm tiếp hay về. Đổi nhãn trong tab Tôi →
   Chương trình.
+- **Giữ màn hình sáng** — ở tab Tập màn hình không tự tắt (Screen Wake Lock),
+  để xem đồng hồ nghỉ khỏi mở khoá máy. Sang tab khác hoặc ẩn app thì thả ra.
+  Tắt được trong tab Tôi; mặc định bật.
 - **Nhịp tăng cân** — trong tab Tôi, so các lần cân cách nhau 1–3 tuần và báo
   nên ăn thêm, giữ nguyên hay bớt.
 

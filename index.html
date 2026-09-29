@@ -1141,6 +1141,41 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 let installPrompt = null;
 
+/* ---------------- giữ màn hình sáng ----------------
+   Screen Wake Lock: chỉ giữ khi đang ở tab Tập và trang đang hiện. Trình duyệt tự nhả
+   khoá khi ẩn trang, nên lúc hiện lại phải xin lại. Không hỗ trợ thì thôi, không báo lỗi. */
+let wakeLock = null, wakeBusy = false;
+const wakeOK = () => "wakeLock" in navigator;
+async function syncWake() {
+  if (!wakeOK() || wakeBusy) return;
+  const want = S.keepAwake !== false && tab === "train" && document.visibilityState === "visible";
+  wakeBusy = true;
+  try {
+    if (want && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } else if (!want && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) { /* pin yếu, trình duyệt từ chối — để màn hình tắt như thường */ }
+  wakeBusy = false;
+  // trạng thái có thể đã đổi trong lúc chờ
+  const now = S.keepAwake !== false && tab === "train" && document.visibilityState === "visible";
+  if (now !== !!wakeLock && (now || wakeLock)) syncWake();
+}
+document.addEventListener("visibilitychange", syncWake);
+// Safari có lúc đòi thao tác của người dùng mới cho giữ màn hình
+document.addEventListener("pointerdown", () => { if (!wakeLock) syncWake(); });
+function wakeCard() {
+  return `<div class="card">
+    <label class="spread" style="cursor:pointer">
+      <span><span class="num" style="font-size:18px">Giữ màn hình sáng</span>
+        <span class="small muted" style="display:block">${wakeOK()
+          ? "Chỉ khi đang ở tab Tập — khỏi mở khoá máy để xem đồng hồ nghỉ."
+          : "Trình duyệt này chưa hỗ trợ. Tăng thời gian tự khoá trong cài đặt điện thoại."}</span></span>
+      <input type="checkbox" id="keepAwake"${S.keepAwake !== false ? " checked" : ""}${wakeOK() ? "" : " disabled"}
+        style="width:24px;height:24px;min-height:24px;padding:0;flex:none;accent-color:var(--brass)">
+    </label></div>`;
+}
+
 function installCard() {
   if (isStandalone()) return "";
   const how = installPrompt
@@ -1276,7 +1311,8 @@ function viewMe() {
     <div class="card">${profileForm}</div>
     <p class="small dim" style="margin-top:18px;text-align:center">Giáo án ở tab Tập dùng được ngay, không cần điền gì.</p>
     <div style="margin-top:16px">${templatesSec()}</div>
-    <div style="margin-top:16px">${installCard()}</div>`;
+    <div style="margin-top:16px">${installCard()}</div>
+    <div style="margin-top:12px">${wakeCard()}</div>`;
 
   const bmi = latest / Math.pow(p.height / 100, 2);
   const goal = +p.goalWeight || 0;
@@ -1330,6 +1366,7 @@ function viewMe() {
   return `
   <div class="stack">
     ${installCard()}
+    ${wakeCard()}
     <details class="sec" open><summary>Cân nặng</summary><div class="body">
       <div class="g3" style="text-align:center;padding:16px 0">
         <div><div class="num" style="font-size:30px">${n1(latest)}</div><div class="small dim">kg</div></div>
@@ -1399,6 +1436,7 @@ function render() {
   $("#view").innerHTML = tab === "train" ? viewTrain() : tab === "history" ? viewHistory() : viewMe();
   if (wasOpen) document.querySelectorAll("#view details").forEach((x, i) => { if (i < wasOpen.length) x.open = wasOpen[i]; });
   lastTab = tab;
+  syncWake();
   document.querySelectorAll(".tab").forEach(b =>
     b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
 }
@@ -1609,6 +1647,10 @@ document.addEventListener("click", e => {
 const NUMFIELDS = ["age", "height", "weight", "goalWeight", "activity", "surplus", "proteinPerKg", "fatPerKg", "weeks"];
 document.addEventListener("input", e => {
   const el = e.target;
+  if (el.id === "keepAwake") {
+    S.keepAwake = el.checked; save(true); syncWake();
+    toast(el.checked ? "Màn hình sẽ sáng khi ở tab Tập" : "Màn hình tự tắt như bình thường"); return;
+  }
   if (el.id && el.id.startsWith("p-")) {
     const f = el.id.slice(2);
     S.profile[f] = NUMFIELDS.includes(f) ? (el.value === "" ? "" : +el.value) : el.value;
