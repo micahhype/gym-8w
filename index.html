@@ -249,7 +249,9 @@ const FIGLABEL = { squat: "Squat (đòn trên vai)", bench: "Đẩy ngực nằm
   cablelateral: "Nâng ngang cáp", seatedlateral: "Nâng ngang ngồi ghế", ropecurl: "Cuốn cáp dây thừng",
   ezcurl: "Cuốn tạ đòn EZ", inclinemachine: "Đẩy ngực dốc (máy)", pushupfeet: "Hít đất chân kê cao",
   cablecurl: "Cuốn cáp thanh thẳng", calfmachine: "Nhón bắp chân (máy đứng)",
-  seatedcalf: "Nhón bắp chân (ngồi)", seatedlegcurl: "Cuốn đùi sau (ngồi)", nordic: "Nordic curl" };
+  seatedcalf: "Nhón bắp chân (ngồi)", seatedlegcurl: "Cuốn đùi sau (ngồi)", nordic: "Nordic curl",
+  legext: "Đá đùi trước (máy)", pecdeck: "Ép ngực máy (pec deck)", cablefly: "Ép ngực cáp",
+  inclinecurl: "Cuốn tạ tay ghế dốc" };
 
 function figureHTML(key) {
   if (!key || !FIGLABEL[key]) return "";
@@ -272,6 +274,10 @@ const FIGKEY = {
   "Leg Press": "legpress", "Triceps Pushdown": "pushdown",
   "Incline Dumbbell Press": "incline", "Dumbbell Curl": "dbcurl", "Calf Raise": "calf",
   "Leg Curl": "legcurl",
+  "Lat Pulldown": "pulldown", "Kéo cáp ngồi": "cablerow", "Row tạ tay một tay": "dbrow",
+  "Leg Curl ngồi máy": "seatedlegcurl", "Duỗi tay sau qua đầu": "ohext", "Hack Squat máy": "hack",
+  "Incline Dumbbell Curl": "inclinecurl", "Leg Extension": "legext", "Pec Deck": "pecdeck",
+  "Gập bụng cáp": "cablecrunch",
 };
 /** Bài thay thế khi máy bận, theo tên bài chính. Khởi điểm chỉ là ước lượng từ mức bài chính. */
 const alt = (id, name, reps, unit, start, step, note, fig) =>
@@ -349,6 +355,46 @@ const ALTS = {
     alt("seated-leg-curl", "Leg Curl ngồi máy", "10–12", "kg", 25, 5, "Đệm chặn đặt trên đùi dưới, cuốn gót xuống hết cỡ.", "seatedlegcurl"),
     alt("nordic", "Nordic curl (quỳ ngả người)", "6–10", "+kg", 0, 2.5, "Quỳ, nhờ người giữ cổ chân hoặc kê dưới thanh tạ. Ngả người ra trước thật chậm.", "nordic"),
   ],
+  /* bài chính của các giáo án mẫu khác */
+  "Lat Pulldown": [
+    alt("db-row", "Row tạ tay một tay", "8–10/tay", "kg", 22, 2, "Một gối và một tay tì ghế, kéo tạ về phía hông.", "dbrow"),
+    alt("cable-row", "Kéo cáp ngồi", "10–12", "kg", 40, 5, "Ngồi thẳng lưng, kéo tay cầm về rốn, siết bả vai.", "cablerow"),
+  ],
+  "Kéo cáp ngồi": [
+    alt("db-row", "Row tạ tay một tay", "8–10/tay", "kg", 22, 2, "Một gối và một tay tì ghế, kéo tạ về phía hông.", "dbrow"),
+    alt("bb-row", "Barbell Row", "8–10", "kg", 35, 2.5, "Người gập khoảng 45°, kéo tạ về phía rốn.", "row"),
+  ],
+  "Row tạ tay một tay": [
+    alt("cable-row", "Kéo cáp ngồi", "10–12", "kg", 40, 5, "Ngồi thẳng lưng, kéo tay cầm về rốn, siết bả vai.", "cablerow"),
+    alt("bb-row", "Barbell Row", "8–10", "kg", 35, 2.5, "Người gập khoảng 45°, kéo tạ về phía rốn.", "row"),
+  ],
+  "Leg Curl ngồi máy": [
+    alt("lying-leg-curl", "Leg Curl nằm máy", "10–12", "kg", 25, 5, "Cuốn gót về phía mông, hạ chậm 2–3 giây.", "legcurl"),
+    alt("nordic", "Nordic curl (quỳ ngả người)", "6–10", "+kg", 0, 2.5, "Quỳ, nhờ người giữ cổ chân hoặc kê dưới thanh tạ. Ngả người ra trước thật chậm.", "nordic"),
+  ],
+  "Duỗi tay sau qua đầu": [
+    alt("pushdown", "Triceps Pushdown", "10–12", "kg", 15, 2.5, "Khuỷu giữ sát người, chỉ cẳng tay chuyển động.", "pushdown"),
+    alt("bench-dip", "Dip trên ghế", "10–15", "+kg", 0, 2.5, "Tay chống mép ghế, hạ tới khuỷu vuông góc.", "benchdip"),
+  ],
+  "Hack Squat máy": [
+    alt("leg-press", "Leg Press", "10–12", "kg", 60, 5, "Hạ sâu mà lưng dưới không rời ghế, đừng khoá gối ở đỉnh.", "legpress"),
+    alt("goblet", "Goblet Squat", "8–12", "kg", 16, 2, "Ôm một quả tạ tay dựng đứng trước ngực, khuỷu chỉ xuống giữa hai gối.", "goblet"),
+  ],
+  "Incline Dumbbell Curl": [
+    alt("db-curl", "Dumbbell Curl", "8–12", "kg/tay", 10, 1, "Đứng, lòng bàn tay ngửa, khuỷu đứng yên, hạ chậm.", "dbcurl"),
+    alt("cable-curl", "Cuốn cáp thanh thẳng", "10–12", "kg", 15, 2.5, "Ròng rọc thấp, khuỷu đứng yên, hạ chậm.", "cablecurl"),
+  ],
+  "Leg Extension": [
+    alt("goblet", "Goblet Squat", "10–15", "kg", 16, 2, "Gót kê lên đĩa tạ mỏng, xuống thật sâu, gối đưa ra trước mũi chân — dồn vào đùi trước.", "goblet"),
+  ],
+  "Pec Deck": [
+    alt("cable-fly", "Ép ngực cáp", "12–15", "kg/bên", 7.5, 2.5, "Ròng rọc ngang vai, bước lên một bước, khuỷu hơi cong, mở tay ra sau tới khi ngực căng rồi ép lại.", "cablefly"),
+    alt("db-bench", "Đẩy ngực tạ tay", "10–12", "kg/tay", 18, 2, "Hạ tạ sâu tới ngang ngực, khuỷu chếch khoảng 45°.", "dbbench"),
+  ],
+  "Gập bụng cáp": [
+    alt("hanging", "Hanging Leg Raise", "10–15", "+kg", 0, 1, "Treo người trên xà, nâng chân bằng cơ bụng, không đu người.", "legraise"),
+    alt("lying-raise", "Nằm nâng chân", "12–15", "+kg", 0, 1, "Nằm ngửa trên sàn, tay đặt dưới mông, lưng dưới ép sát sàn.", "lyingraise"),
+  ],
 };
 const altsFor = name => (ALTS[name] || []).map(a => ({ ...a }));
 const WARM = ["Back Squat", "Bench Press", "Deadlift", "Overhead Press"];
@@ -356,16 +402,15 @@ const OPTIONAL = ["Triceps Pushdown", "Face Pull", "Hammer Curl", "Hanging Leg R
   "Leg Press", "Leg Curl", "Calf Raise"];
 
 const PROG_VERSION = 6;
-function seed() {
+const mkEx = (name, sets, reps, start, step, rest, unit, note, opt) =>
+  ({ id: uid(), name, sets, reps, start, step, rest, unit: unit || "kg",
+     note: note || "", fig: FIGKEY[name] || "", alts: altsFor(name), warm: WARM.includes(name),
+     opt: opt == null ? OPTIONAL.includes(name) : !!opt });
+/** Giáo án gốc — ghi chú viết riêng cho người dùng này (mức tạ cũ, squat là lift yếu). */
+function pplDays() {
   const ex = (name, sets, reps, start, step, rest, unit, note) =>
-    ({ id: uid(), name, sets, reps, start, step, rest, unit: unit || "kg",
-       note: note || "", fig: FIGKEY[name] || "", alts: altsFor(name), warm: WARM.includes(name),
-       opt: OPTIONAL.includes(name) });
-  return {
-    profile: { name: "", sex: "m", age: "", height: "", weight: "",
-      activity: 1.6, surplus: 450, proteinPerKg: 2, fatPerKg: 1.2,
-      goalWeight: "", startDate: today(), weeks: 8 },
-    days: [
+    mkEx(name, sets, reps, start, step, rest, unit, note);
+  return [
       { id: uid(), name: "Buổi Đẩy", exercises: [
         ex("Bench Press", 4, "6–8", 40, 2.5, 180, "kg", "Ngực. Siết bả vai xuống, chân đạp chắc sàn, hạ tạ tới ngang ngực rồi đẩy thẳng lên."),
         ex("Incline Dumbbell Press", 3, "8–10", 16, 2, 120, "kg/tay", "Ngực trên, ghế dốc khoảng 30°. Ghế dốc thường ngay cạnh ghế phẳng nên không phải đổi khu."),
@@ -390,8 +435,141 @@ function seed() {
         ex("Leg Curl", 3, "10–12", 25, 5, 60, "kg", "Đùi sau phần gần gối. Cuốn gót về phía mông, hạ chậm 2–3 giây."),
         ex("Calf Raise", 4, "12–15", 12, 2, 60, "kg", "Mũi chân đứng trên bậc, một tay vịn, tay kia cầm tạ. Hạ gót thật sâu, dừng 1 giây rồi nhón hết cỡ."),
       ]},
-    ],
-    log: {}, swap: {}, skip: {}, bw: [], progVersion: PROG_VERSION,
+  ];
+}
+
+/* ---------------- giáo án mẫu ----------------
+   Dựng theo các tổng quan nghiên cứu (nguồn ở TPL_WHY): 10–20 set mỗi nhóm cơ mỗi tuần,
+   mỗi nhóm ít nhất 2 lần/tuần, bài cô lập ở tư thế cơ bị kéo dài, luôn có bài riêng cho
+   đùi sau vì squat gần như không làm to đùi sau.
+   EXDB: tên bài → [đơn vị, khởi điểm, bước, ghi chú kỹ thuật]. Khởi điểm chỉ dùng khi bài
+   chưa có lịch sử — bài trùng tên với giáo án trước sẽ gợi ý theo lần tập gần nhất. */
+const EXDB = {
+  "Back Squat": ["kg", 42.5, 2.5, "Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân, lưng giữ thẳng."],
+  "Bench Press": ["kg", 40, 2.5, "Siết bả vai xuống, chân đạp chắc sàn, hạ tạ tới ngang ngực rồi đẩy thẳng lên."],
+  "Deadlift": ["kg", 52.5, 5, "Lưng thẳng, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng. Ít set vì rất mệt toàn thân."],
+  "Overhead Press": ["kg", 25, 2.5, "Siết mông và bụng để khỏi ưỡn lưng. Đòn không đã là 20kg."],
+  "Xà đeo tạ": ["+kg", 0, 2.5, "Treo thẳng tay ở dưới, kéo tới cằm qua xà. Đủ rep cao nhất ở mọi set thì đeo thêm 2.5kg."],
+  "Barbell Row": ["kg", 35, 2.5, "Người gập khoảng 45°, kéo tạ về phía rốn, không giật lưng."],
+  "Romanian Deadlift": ["kg", 40, 2.5, "Đùi sau. Đẩy hông ra sau, gối hơi cong, tạ trượt sát chân, hạ tới khi đùi sau căng hết cỡ."],
+  "Incline Dumbbell Press": ["kg/tay", 16, 2, "Ngực trên, ghế dốc khoảng 30°. Hạ tạ sâu tới khi ngực căng."],
+  "Lateral Raise": ["kg/tay", 6, 1, "Vai ngang. Nâng tới ngang vai rồi hạ chậm, không đu người. Set cuối làm tới khi gần như không nâng nổi."],
+  "Triceps Pushdown": ["kg", 15, 2.5, "Khuỷu giữ sát người, chỉ cẳng tay chuyển động."],
+  "Dumbbell Curl": ["kg/tay", 10, 1, "Lòng bàn tay ngửa, khuỷu đứng yên, hạ chậm 2 giây."],
+  "Hammer Curl": ["kg/tay", 10, 1, "Lòng bàn tay hướng vào nhau, khuỷu đứng yên."],
+  "Face Pull": ["kg", 12.5, 2.5, "Vai sau. Kéo dây về phía trán, siết bả vai, đừng nặng quá."],
+  "Leg Press": ["kg", 60, 5, "Hạ sâu tới khi lưng dưới sắp rời ghế thì dừng. Đừng khoá gối ở đỉnh."],
+  "Bulgarian Split Squat": ["kg/tay", 12, 1, "Chân sau gác ghế, dồn lực vào gót chân trước, hạ gối sau gần chạm sàn."],
+  "Calf Raise": ["kg", 12, 2, "Hạ gót thật sâu, dừng 1 giây ở dưới rồi nhón hết cỡ."],
+  "Hanging Leg Raise": ["+kg", 0, 1, "Treo người trên xà, cuộn hông lên bằng cơ bụng, không đu người lấy đà."],
+  "Lat Pulldown": ["kg", 45, 5, "Lưng xô. Kéo thanh về sát ngực trên, ngả người nhẹ, lên hết tầm cho xô căng ở trên."],
+  "Kéo cáp ngồi": ["kg", 40, 5, "Lưng giữa. Ngồi thẳng lưng, kéo tay cầm về rốn, siết bả vai, thả tay duỗi hết ra trước."],
+  "Row tạ tay một tay": ["kg", 22, 2, "Một gối và một tay tì ghế, kéo tạ về phía hông, hạ hết tầm cho xô căng."],
+  "Leg Curl ngồi máy": ["kg", 25, 5, "Đùi sau. Ngồi thì đùi sau bị kéo dài hơn nằm, nên tăng cơ nhiều hơn. Hạ chậm 2–3 giây."],
+  "Duỗi tay sau qua đầu": ["kg", 12, 2, "Cáp dây thừng hoặc một quả tạ tay. Khuỷu chỉ lên trần, hạ sâu sau đầu cho tay sau căng hết."],
+  "Hack Squat máy": ["kg", 40, 5, "Chỉ tính đĩa gắn thêm. Chân đặt giữa bàn, xuống sâu, gối đi theo mũi chân."],
+  "Incline Dumbbell Curl": ["kg/tay", 8, 1, "Nằm ghế dốc 45–60°, tay buông thẳng sau thân để tay trước bị kéo dài ở đầu rep. Nhẹ hơn cuốn đứng."],
+  "Leg Extension": ["kg", 30, 5, "Đùi trước — phần cơ thẳng đùi mà squat gần như không làm to. Dừng 1 giây ở đỉnh, hạ chậm."],
+  "Pec Deck": ["kg", 30, 5, "Mở tay ra sau tới khi ngực căng, khuỷu hơi cong, ép lại bằng ngực chứ không đẩy bằng tay."],
+  "Gập bụng cáp": ["kg", 20, 5, "Quỳ trước ròng rọc cao, dây thừng sau gáy, gập người bằng cơ bụng chứ không kéo bằng tay."],
+};
+/** [tên, set, rep, nghỉ (giây), bài phụ?] */
+const TPL = [
+  { id: "ppl", name: "Đẩy / Kéo / Chân", per: 6, perText: "5–6 buổi/tuần", time: "60–75 phút",
+    fit: "Giáo án ban đầu. Hợp khi đi tập gần như mỗi ngày; mỗi buổi chỉ quanh một khu của phòng nên đỡ chờ máy." },
+  { id: "ul4", name: "Trên / Dưới", per: 4, perText: "4 buổi/tuần", time: "60–70 phút",
+    fit: "Cân bằng nhất giữa thời gian và kết quả. Mỗi nhóm cơ 2 lần/tuần, có ngày nghỉ xen giữa (vd T2, T3 tập · T4 nghỉ · T5, T6 tập).",
+    days: [
+      ["Thân trên 1", [["Bench Press", 4, "6–8", 180], ["Barbell Row", 4, "6–8", 150], ["Overhead Press", 3, "6–8", 150],
+        ["Xà đeo tạ", 3, "5–8", 150], ["Lateral Raise", 4, "12–15", 60],
+        ["Duỗi tay sau qua đầu", 2, "10–12", 60, 1], ["Dumbbell Curl", 2, "8–12", 60, 1]]],
+      ["Thân dưới 1", [["Back Squat", 4, "6–8", 180], ["Romanian Deadlift", 3, "8–10", 150], ["Leg Press", 3, "10–12", 120],
+        ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 4, "12–15", 60, 1], ["Hanging Leg Raise", 3, "10–15", 60, 1]]],
+      ["Thân trên 2", [["Incline Dumbbell Press", 3, "8–12", 120], ["Lat Pulldown", 3, "8–12", 120], ["Kéo cáp ngồi", 3, "10–12", 90],
+        ["Lateral Raise", 4, "12–20", 60], ["Duỗi tay sau qua đầu", 3, "10–12", 60], ["Incline Dumbbell Curl", 3, "10–12", 60],
+        ["Pec Deck", 3, "12–15", 60, 1], ["Face Pull", 3, "15–20", 60, 1]]],
+      ["Thân dưới 2", [["Deadlift", 3, "5", 180], ["Bulgarian Split Squat", 3, "8–10/chân", 120], ["Leg Extension", 3, "12–15", 90],
+        ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 4, "12–15", 60, 1], ["Gập bụng cáp", 3, "12–15", 60, 1]]],
+    ] },
+  { id: "ulppl", name: "Trên / Dưới + Đẩy / Kéo / Chân", per: 5, perText: "5 buổi/tuần", time: "50–70 phút",
+    fit: "Đi được 5 buổi. Hai buổi đầu nặng (6–8 rep), ba buổi sau nhẹ tạ hơn, nhiều bài cô lập ở tư thế cơ bị kéo dài.",
+    days: [
+      ["Thân trên", [["Bench Press", 3, "6–8", 180], ["Xà đeo tạ", 3, "5–8", 150], ["Overhead Press", 3, "6–8", 150],
+        ["Kéo cáp ngồi", 3, "10–12", 90], ["Lateral Raise", 4, "12–15", 60],
+        ["Dumbbell Curl", 2, "8–12", 60, 1], ["Triceps Pushdown", 2, "10–12", 60, 1]]],
+      ["Thân dưới", [["Back Squat", 3, "6–8", 180], ["Romanian Deadlift", 3, "8–10", 150], ["Leg Press", 3, "10–12", 120],
+        ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 3, "12–15", 60, 1]]],
+      ["Buổi Đẩy", [["Incline Dumbbell Press", 4, "8–10", 120], ["Pec Deck", 3, "12–15", 60], ["Lateral Raise", 4, "12–20", 60],
+        ["Duỗi tay sau qua đầu", 3, "10–12", 60], ["Hanging Leg Raise", 3, "10–15", 60, 1]]],
+      ["Buổi Kéo", [["Deadlift", 2, "5", 180], ["Lat Pulldown", 3, "8–12", 120], ["Row tạ tay một tay", 3, "8–10/tay", 90],
+        ["Face Pull", 3, "15–20", 60], ["Incline Dumbbell Curl", 3, "10–12", 60], ["Hammer Curl", 2, "10–12", 60, 1]]],
+      ["Buổi Chân", [["Hack Squat máy", 3, "8–10", 150], ["Bulgarian Split Squat", 2, "8–10/chân", 120], ["Leg Extension", 3, "12–15", 90],
+        ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 4, "12–15", 60, 1], ["Gập bụng cáp", 3, "12–15", 60, 1]]],
+    ] },
+  { id: "fb3", name: "Toàn thân", per: 3, perText: "3 buổi/tuần", time: "~60 phút",
+    fit: "Tuần chỉ đi được 3 buổi, tập một hôm nghỉ một hôm. Mỗi nhóm cơ 2–3 lần/tuần, mỗi buổi ít set nên ít mỏi dồn.",
+    days: [
+      ["Toàn thân A", [["Back Squat", 3, "6–8", 180], ["Bench Press", 3, "6–8", 180], ["Xà đeo tạ", 3, "5–8", 150],
+        ["Romanian Deadlift", 3, "8–10", 120], ["Lateral Raise", 3, "12–15", 60], ["Duỗi tay sau qua đầu", 2, "10–12", 60, 1],
+        ["Face Pull", 2, "15–20", 60, 1]]],
+      ["Toàn thân B", [["Leg Press", 3, "10–12", 120], ["Incline Dumbbell Press", 3, "8–10", 120], ["Barbell Row", 3, "8–10", 120],
+        ["Leg Curl ngồi máy", 3, "10–12", 90], ["Lateral Raise", 3, "12–15", 60],
+        ["Incline Dumbbell Curl", 2, "10–12", 60, 1], ["Calf Raise", 3, "12–15", 60, 1]]],
+      ["Toàn thân C", [["Deadlift", 2, "5", 180], ["Overhead Press", 3, "6–8", 150], ["Lat Pulldown", 3, "8–12", 120],
+        ["Bulgarian Split Squat", 3, "8–10/chân", 120], ["Leg Curl ngồi máy", 2, "10–12", 90],
+        ["Pec Deck", 2, "12–15", 60, 1], ["Leg Extension", 2, "12–15", 60, 1]]],
+    ] },
+  { id: "fb2", name: "Tối thiểu", per: 2, perText: "2 buổi/tuần", time: "~60 phút",
+    fit: "Tuần bận, đi công tác, mới ốm dậy. Đủ để giữ cơ và sức, chưa đủ để tăng nhanh — rảnh lại thì quay về giáo án chính.",
+    days: [
+      ["Tối thiểu A", [["Back Squat", 3, "6–8", 180], ["Bench Press", 3, "6–8", 180], ["Xà đeo tạ", 3, "5–8", 150],
+        ["Romanian Deadlift", 2, "8–10", 120], ["Lateral Raise", 3, "12–15", 60],
+        ["Dumbbell Curl", 2, "8–12", 60, 1], ["Duỗi tay sau qua đầu", 2, "10–12", 60, 1]]],
+      ["Tối thiểu B", [["Leg Press", 3, "10–12", 120], ["Overhead Press", 3, "6–8", 150], ["Barbell Row", 3, "8–10", 120],
+        ["Incline Dumbbell Press", 2, "8–10", 120], ["Leg Curl ngồi máy", 2, "10–12", 90],
+        ["Lateral Raise", 3, "12–15", 60], ["Calf Raise", 3, "12–15", 60, 1]]],
+    ] },
+];
+const tplOf = id => TPL.find(t => t.id === id) || TPL[0];
+function tplDays(t) {
+  if (!t.days) return pplDays();
+  return t.days.map(([name, list]) => ({ id: uid(), name, exercises: list.map(([n, sets, reps, rest, opt]) => {
+    const [unit, start, step, note] = EXDB[n];
+    return mkEx(n, sets, reps, start, step, rest, unit, note, !!opt);
+  }) }));
+}
+
+/* Set mỗi tuần cho từng nhóm cơ, cách đếm "phân số" của Pelland 2025: nhóm chính 1 set,
+   nhóm phụ (tay sau khi đẩy ngực, tay trước khi kéo…) nửa set. */
+const MUSCLES = [["nguc", "Ngực"], ["lung", "Lưng"], ["vai", "Vai ngang"], ["vaisau", "Vai sau"],
+  ["tt", "Tay trước"], ["ts", "Tay sau"], ["dt", "Đùi trước"], ["ds", "Đùi sau"], ["bc", "Bắp chân"]];
+const PRESS = { nguc: 1, ts: .5 }, PULL = { lung: 1, tt: .5 }, ROW = { lung: 1, tt: .5, vaisau: .5 };
+const MUSCLE_OF = {
+  "Bench Press": PRESS, "Incline Dumbbell Press": PRESS, "Pec Deck": { nguc: 1 },
+  "Overhead Press": { vai: .5, ts: .5 }, "Lateral Raise": { vai: 1 },
+  "Xà đeo tạ": PULL, "Lat Pulldown": PULL, "Barbell Row": ROW, "Kéo cáp ngồi": ROW, "Row tạ tay một tay": ROW,
+  "Face Pull": { vaisau: 1 }, "Dumbbell Curl": { tt: 1 }, "Hammer Curl": { tt: 1 }, "Incline Dumbbell Curl": { tt: 1 },
+  "Triceps Pushdown": { ts: 1 }, "Duỗi tay sau qua đầu": { ts: 1 },
+  "Back Squat": { dt: 1 }, "Leg Press": { dt: 1 }, "Hack Squat máy": { dt: 1 }, "Bulgarian Split Squat": { dt: 1 },
+  "Leg Extension": { dt: 1 }, "Romanian Deadlift": { ds: 1 }, "Leg Curl": { ds: 1 }, "Leg Curl ngồi máy": { ds: 1 },
+  "Deadlift": { ds: .5, lung: .5, dt: .5 }, "Calf Raise": { bc: 1 },
+};
+function weeklySets(t) {
+  const days = tplDays(t), out = {};
+  days.forEach(d => d.exercises.forEach(e => {
+    const m = MUSCLE_OF[e.name] || {};
+    for (const k in m) out[k] = (out[k] || 0) + m[k] * e.sets * t.per / days.length;
+  }));
+  return out;
+}
+
+function seed(programId) {
+  return {
+    profile: { name: "", sex: "m", age: "", height: "", weight: "",
+      activity: 1.6, surplus: 450, proteinPerKg: 2, fatPerKg: 1.2,
+      goalWeight: "", startDate: today(), weeks: 8 },
+    days: tplDays(tplOf(programId)),
+    log: {}, swap: {}, skip: {}, bw: [], progVersion: PROG_VERSION, programId: tplOf(programId).id,
   };
 }
 
@@ -429,7 +607,7 @@ function migrate(old) {
 function refresh(d) {
   if (d.progVersion >= PROG_VERSION) return d;
   const daGhi = Object.keys(d.log || {}).some(k => (d.log[k] || []).length);
-  if (!daGhi) d.days = seed().days;
+  if (!daGhi) d.days = seed(d.programId).days;
   else { if (d.progVersion < 4) regroup(d); repair(d); }
   d.progVersion = PROG_VERSION;
   return d;
@@ -437,7 +615,7 @@ function refresh(d) {
 /** Bài thay thế nằm trong dữ liệu đã lưu: bản cũ (chưa có ảnh, tên cũ) phải thay bằng bản hiện tại, bài tự thêm thì giữ. */
 function repair(d) {
   const base = new Map();
-  seed().days.forEach(x => x.exercises.forEach(e => base.set(e.name, e)));
+  seed(d.programId).days.forEach(x => x.exercises.forEach(e => base.set(e.name, e)));
   d.days.forEach(x => x.exercises.forEach(e => {
     const b = base.get(e.name);
     if (!b) { e.fig = e.fig || FIGKEY[e.name] || ""; return; }
@@ -503,6 +681,28 @@ function remapDays(d) {
     d[f] = out;
   });
 }
+/** Đổi giáo án: bài đã có nhật ký của giáo án cũ cất vào oldDays để tab Nhật ký vẫn gọi
+ *  đúng tên; bài trùng tên ở giáo án mới gợi ý tạ theo lịch sử cũ (xem perf()). */
+function useTemplate(id) {
+  const logged = new Set();
+  for (const k in S.log) if ((S.log[k] || []).length) logged.add(k.split("|")[2]);
+  const keep = S.days.map(d => ({ ...d, exercises: d.exercises.filter(e => logged.has(e.id)) }))
+    .filter(d => d.exercises.length);
+  S.oldDays = (S.oldDays || []).concat(keep);
+  const prev = new Map();
+  S.days.forEach(d => d.exercises.forEach(e => { if (!prev.has(e.name)) prev.set(e.name, e); }));
+  S.days = seed(id).days;
+  // mức khởi điểm, bước tạ, bài thay thế tự thêm: giữ theo bài cùng tên
+  S.days.forEach(d => d.exercises.forEach(e => {
+    const o = prev.get(e.name); if (!o) return;
+    e.start = o.start; e.step = o.step;
+    e.alts = e.alts.concat((o.alts || []).filter(a => !e.alts.some(b => b.id === a.id)));
+  }));
+  S.programId = tplOf(id).id; S.progVersion = PROG_VERSION;
+  curDay = S.days[0].id; exIdx = 0; editIdx = null;
+}
+const allDays = () => S.days.concat(S.oldDays || []);
+
 let saveTimer = null;
 function save(now) {
   clearTimeout(saveTimer);
@@ -599,7 +799,7 @@ function perf(ex) {
   for (const k in S.log) {
     const [d, dayId, exId] = k.split("|");
     if (d >= curDate || exId === ex.id || !(S.log[k] || []).length || (best && d <= best.date)) continue;
-    const dd = S.days.find(x => x.id === dayId), e = dd && dd.exercises.find(x => x.id === exId);
+    const dd = allDays().find(x => x.id === dayId), e = dd && dd.exercises.find(x => x.id === exId);
     if (e && eff(e, d, dayId).name === ex.name) best = { date: d, sets: S.log[k] };
   }
   return best;
@@ -726,6 +926,11 @@ const COOLDOWN = {
     ["Đùi sau: gác gót lên bục thấp, gập hông lưng thẳng · 45 giây mỗi bên", "ham"],
     ["Mông: nằm ngửa bắt chéo cổ chân lên gối (số 4), kéo đùi về ngực · 45 giây mỗi bên", "fig4"],
     ["Bắp chuối: chống tay vào tường, chân sau thẳng, gót sát sàn · 30 giây mỗi bên", "calf"]],
+  tren: [["Ngực, vai trước: đan tay sau lưng, duỗi thẳng rồi nâng lên, ưỡn ngực · 30–45 giây", "chest"],
+    ["Lưng xô: một tay vịn tường cao, ngả hông ra xa · 30 giây mỗi bên", "latwall"],
+    ["Vai sau: kéo tay ngang ngực, tay kia giữ ở khuỷu · 30 giây mỗi bên", "rearsh"],
+    ["Tay sau: gập khuỷu qua đầu, tay kia kéo nhẹ · 30 giây mỗi bên", "triceps"],
+    ["Thở chậm bằng bụng · 1 phút", ""]],
   chung: [["Ngực, vai trước: đan tay sau lưng, duỗi thẳng rồi nâng lên · 30–45 giây", "chest"],
     ["Child's pose · 45 giây", "childs"],
     ["Hông trước: quỳ một gối, đẩy hông tới · 45 giây mỗi bên", "hipflex"],
@@ -734,7 +939,8 @@ const COOLDOWN = {
 };
 function cooldown(d) {
   const n = d.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase();
-  const list = COOLDOWN[/day/.test(n) ? "day" : /keo/.test(n) ? "keo" : /chan/.test(n) ? "chan" : "chung"];
+  const list = COOLDOWN[/day/.test(n) ? "day" : /keo/.test(n) ? "keo" : /chan|duoi/.test(n) ? "chan"
+    : /tren/.test(n) ? "tren" : "chung"];
   return `<details class="note" open style="text-align:left;margin:14px 0 0">
     <summary>Giãn cơ sau buổi · ~5 phút</summary>
     <ul class="cool">${list.map(([t, k]) => `<li>${k
@@ -897,8 +1103,8 @@ function sessionRows(date) {
   for (const k in S.log) {
     if (!k.startsWith(date + "|") || !(S.log[k] || []).length) continue;
     const [, dayId, exId] = k.split("|");
-    const di = S.days.findIndex(x => x.exercises.some(e => e.id === exId));
-    const d = di >= 0 ? S.days[di] : null, e = d && d.exercises.find(x => x.id === exId);
+    const all = allDays(), di = all.findIndex(x => x.exercises.some(e => e.id === exId));
+    const d = di >= 0 ? all[di] : null, e = d && d.exercises.find(x => x.id === exId);
     rows.push({ dayId: d ? d.id : dayId, sets: S.log[k],
       order: e ? di * 100 + d.exercises.indexOf(e) : 9999,
       name: e ? eff(e, date, d.id).name : "Bài đã xoá" });
@@ -913,7 +1119,7 @@ function viewHistory() {
     const list = sessionRows(date), tally = {};
     list.forEach(r => { tally[r.dayId] = (tally[r.dayId] || 0) + r.sets.length; });
     const top = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
-    const d = S.days.find(x => x.id === top);
+    const d = allDays().find(x => x.id === top);
     const rows = list.map(r => `<div class="lrow"><div>${esc(r.name)}</div>
         <div class="num muted">${r.sets.map(x => `${esc(x.kg)}×${esc(x.reps)}`).join("  ")}</div></div>`).join("");
     return `<div class="card">
@@ -955,6 +1161,47 @@ function installCard() {
 }
 
 /* ---------------- TÔI ---------------- */
+const TPL_WHY = [
+  ["Số set", "10–20 set mỗi nhóm cơ mỗi tuần. Thêm set vẫn thêm cơ nhưng lợi ích giảm dần; sức mạnh chững sớm hơn cơ.",
+    "Pelland 2025", "https://pubmed.ncbi.nlm.nih.gov/41343037/"],
+  ["Chia buổi", "Tập toàn thân hay chia nhóm cơ cho kết quả như nhau khi tổng số set bằng nhau — chọn theo số buổi bạn đi được, không có kiểu nào \"tốt hơn\".",
+    "Ramos-Campo 2024", "https://www.ovid.com/jnls/nsca-jscr/fulltext/10.1519/jsc.0000000000004774~efficacy-of-split-versus-full-body-resistance-training-on"],
+  ["Sát hết sức", "Set càng gần hết sức cơ càng tăng. Bài nặng dừng khi còn 1–3 rep; bài cô lập set cuối làm tới khi gần như không nổi.",
+    "Robinson 2024", "https://link.springer.com/article/10.1007/s40279-024-02069-2"],
+  ["Nghỉ giữa set", "Nghỉ trên 60 giây tăng cơ hơn, quá 90 giây không thêm gì cho cơ. Bài nặng vẫn nghỉ 2–3 phút để giữ được tạ.",
+    "Singer 2024", "https://www.frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2024.1429789/full"],
+  ["Cơ bị kéo dài", "Duỗi tay sau qua đầu làm to tay sau hơn pushdown khoảng 40%; cuốn đùi ngồi hơn cuốn đùi nằm. Các giáo án mới ưu tiên những bài này.",
+    "Maeo 2023, 2021", "https://www.tandfonline.com/doi/full/10.1080/17461391.2022.2100279"],
+  ["Đùi sau", "Squat gần như không làm to đùi sau, nên giáo án nào cũng có RDL và cuốn đùi; đá đùi thêm cho phần đùi trước squat bỏ sót.",
+    "Kubo 2019", "https://www.researchgate.net/publication/333950507_Effects_of_squat_training_with_different_depths_on_lower_limb_muscle_volumes"],
+];
+function templatesSec() {
+  const cur = tplOf(S.programId);
+  const cards = TPL.map(t => {
+    const w = weeklySets(t), on = t.id === cur.id;
+    const mus = MUSCLES.map(([k, lab]) => `<span style="white-space:nowrap">${lab} <b style="color:var(--chalk)">${Math.round(w[k] || 0)}</b></span>`).join(" · ");
+    const days = tplDays(t).map(d => `<p style="margin-top:10px"><b style="color:var(--chalk)">${esc(d.name)}</b><br>${d.exercises.map(e =>
+      `${esc(e.name)} ${e.sets}×${esc(e.reps)}${e.opt ? " (phụ)" : ""}`).join(" · ")}</p>`).join("");
+    return `<div class="card" style="padding:14px;background:var(--ground)${on ? ";border-color:var(--brass)" : ""}">
+      <div class="spread" style="align-items:flex-start">
+        <div class="num" style="font-size:20px">${esc(t.name)}</div>
+        <span class="badge" style="white-space:nowrap">${esc(t.perText)}</span></div>
+      <p class="small muted" style="margin:6px 0 0">${esc(t.fit)} <span class="dim">Mỗi buổi ${esc(t.time)}.</span></p>
+      <p class="small dim" style="margin:10px 0 0;line-height:1.7">Set/tuần: ${mus}</p>
+      <details class="note" style="margin-top:6px"><summary>Xem các buổi</summary>${days}</details>
+      ${on ? `<div class="small" style="color:var(--brass);margin-top:10px">● Đang dùng</div>`
+        : `<button class="ghost sm" data-usetpl="${t.id}" style="margin-top:10px;width:100%">Dùng giáo án này</button>`}
+    </div>`;
+  }).join("");
+  return `<details class="sec"><summary>Giáo án</summary><div class="body">
+    <p class="small muted" style="margin:14px 0 12px">Đang dùng <b style="color:var(--chalk)">${esc(cur.name)}</b>.
+      Chọn theo số buổi bạn thật sự đi được mỗi tuần. Đổi giáo án vẫn giữ nhật ký; bài trùng tên gợi ý tạ theo lần tập gần nhất.</p>
+    <div class="stack">${cards}</div>
+    <details class="note"><summary>Vì sao thiết kế như vậy</summary><ul>${TPL_WHY.map(([h, t, src, url]) =>
+      `<li><b style="color:var(--chalk)">${h}.</b> ${esc(t)} <a href="${url}" target="_blank" rel="noopener" style="color:var(--brass)">${src}</a></li>`).join("")}</ul>
+      <p>Set/tuần đếm theo số buổi ghi trên mỗi giáo án; bài phụ tính cả, bài nhiều khớp tính nửa set cho nhóm cơ phụ (vd đẩy ngực → tay sau).</p></details>
+  </div></details>`;
+}
 /** Nhịp tăng cân từ lần cân mới nhất so với lần cân cách đó 1–3 tuần (bw xếp mới → cũ). */
 function gainPace(bw) {
   const last = bw[0], gap = e => (new Date(last.date) - new Date(e.date)) / 864e5;
@@ -1028,6 +1275,7 @@ function viewMe() {
       Số liệu chỉ nằm trong trình duyệt máy này, không gửi đi đâu.</div>
     <div class="card">${profileForm}</div>
     <p class="small dim" style="margin-top:18px;text-align:center">Giáo án ở tab Tập dùng được ngay, không cần điền gì.</p>
+    <div style="margin-top:16px">${templatesSec()}</div>
     <div style="margin-top:16px">${installCard()}</div>`;
 
   const bmi = latest / Math.pow(p.height / 100, 2);
@@ -1119,6 +1367,8 @@ function viewMe() {
 
     <details class="sec"><summary>Thông số</summary><div class="body">${profileForm}</div></details>
 
+    ${templatesSec()}
+
     <details class="sec"><summary>Chương trình</summary><div class="body">
       <p class="small muted" style="margin:14px 0 0">Sửa gì cũng được, lưu ngay khi gõ. <b>Khởi điểm</b> là mức tạ gợi ý cho buổi đầu, <b>bước ±</b> là mức tăng giảm mỗi lần bấm nút.</p>
       ${program}
@@ -1131,7 +1381,7 @@ function viewMe() {
         <button class="ghost" id="exportBtn">⬇ Xuất file JSON</button>
         <button class="ghost" id="importBtn">⬆ Nhập từ file JSON</button>
         <input type="file" id="importFile" accept="application/json,.json" hidden>
-        <button class="ghost danger" id="resetBtn">Khôi phục chương trình gốc</button>
+        <button class="ghost danger" id="resetBtn">Khôi phục giáo án gốc</button>
       </div>
     </div></details>
   </div>`;
@@ -1340,11 +1590,17 @@ document.addEventListener("click", e => {
     installPrompt.userChoice.finally(() => { installPrompt = null; render(); });
     return;
   }
+  if (el.dataset.usetpl) {
+    const t = tplOf(el.dataset.usetpl);
+    if (confirm(`Chuyển sang giáo án "${t.name}" (${t.perText})?\n\nNhật ký, cân nặng và lịch sử tạ vẫn giữ — bài trùng tên gợi ý tạ theo lần tập gần nhất. Chỉnh sửa riêng trong Chương trình của giáo án hiện tại sẽ mất.`)) {
+      useTemplate(t.id); save(true); tab = "train"; render(); window.scrollTo(0, 0);
+      toast("Đã chuyển sang " + t.name);
+    } return;
+  }
   if (el.id === "importBtn") { $("#importFile").click(); return; }
   if (el.id === "resetBtn") {
-    if (confirm("Khôi phục chương trình gốc?\nNhật ký và cân nặng vẫn được giữ.")) {
-      const f = seed();
-      S.days = f.days; S.progVersion = PROG_VERSION; curDay = S.days[0].id; exIdx = 0;
+    if (confirm(`Khôi phục giáo án "${tplOf(S.programId).name}" về bản gốc?\nNhật ký và cân nặng vẫn được giữ.`)) {
+      useTemplate(S.programId);
       save(true); render(); toast("Đã khôi phục");
     } return;
   }

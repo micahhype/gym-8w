@@ -45,6 +45,14 @@ Vì không có PT đi kèm, app tự lo mấy việc PT hay nhắc:
 - **Nhịp tăng cân** — trong tab Tôi, so các lần cân cách nhau 1–3 tuần và báo
   nên ăn thêm, giữ nguyên hay bớt.
 
+**Giáo án mẫu** (tab Tôi → Giáo án): ngoài Đẩy / Kéo / Chân còn Trên / Dưới
+(4 buổi), Trên / Dưới + Đẩy / Kéo / Chân (5 buổi), Toàn thân (3 buổi) và Tối
+thiểu (2 buổi, cho tuần bận). Dựng theo các tổng quan nghiên cứu về số set,
+tần suất, độ sát hết sức, thời gian nghỉ và bài tập ở tư thế cơ bị kéo dài;
+mỗi giáo án hiện số set/tuần cho từng nhóm cơ. Đổi giáo án vẫn giữ nhật ký:
+bài đã tập của giáo án cũ được cất lại để tab Nhật ký gọi đúng tên, bài trùng
+tên gợi ý tạ theo lần tập gần nhất.
+
 Chương trình có `progVersion`: khi bản mặc định đổi, app tự thay vào nếu bạn
 chưa ghi buổi nào; đã tập rồi thì xếp lại các bài theo bản mới nhưng giữ id,
 mức tạ và nhật ký của từng bài (khoá nhật ký được đổi theo buổi mới, bài trùng
@@ -72,7 +80,7 @@ Copy `index.html` lên bất kỳ host tĩnh nào.
 
 ## Nguồn ảnh
 
-Ảnh động tác trong `img/` (cả bài chính lẫn bài thay thế, 51 động tác) lấy từ
+Ảnh động tác trong `img/` (cả bài chính lẫn bài thay thế, 55 động tác) lấy từ
 [free-exercise-db](https://github.com/yuhonas/free-exercise-db),
 giấy phép **Unlicense** (phạm vi công cộng). Đã thu nhỏ còn 400px và nén để
 service worker lưu được cho chế độ offline.
