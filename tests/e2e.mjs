@@ -281,6 +281,45 @@ ok(/7 ngày qua ăn trung bình 2\.300 kcal \(4 ngày có ghi\) → nhắm kho�
 // today() theo giờ máy
 ok(await ev(`today() === (d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"))(new Date())`), "today() theo giờ máy");
 
+console.log("== Bữa nhiều món");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 })`);
+await click("[data-tab=an]"); await sleep(120);
+const find = async (q, name) => { await type("#foodQ", q); await sleep(80);
+  return ev(`(() => { const b = [...document.querySelectorAll("#foodResults .foodrow")].find(b => b.textContent.includes(${JSON.stringify(name)})); if (b) b.click(); return !!b; })()`); };
+ok(await find("broccoli", "Bông cải xanh") && await find("sup lo xanh", "Bông cải xanh"), "tìm bằng tên khác: broccoli, súp lơ xanh");
+ok(await find("trung chien", "Trứng gà chiên"), "tìm 'trung chien' ra trứng chiên");
+ok(await find("thit lon ran", "Thịt heo chiên"), "tìm 'thit lon ran' ra thịt heo chiên");
+// bữa trưa: 200 g cơm, 1 trứng chiên, 200 g thịt heo chiên, 50 g bông cải
+await find("com trang", "Cơm trắng"); await sleep(60); await click('[data-fmode="g"]'); await sleep(60); await type("#foodG", "200");
+await click("[data-totray]"); await sleep(120);
+ok(await ev(`tray().length === 1 && foodQ === "" && !!$("#tray")`), "+ Vào bữa: khay hiện, ô tìm xoá trắng");
+await find("trung chien", "Trứng gà chiên"); await sleep(60); await click("[data-totray]"); await sleep(100);
+await find("thit heo chien", "Thịt heo chiên"); await sleep(60); await type("#foodG", "200"); await click("[data-totray]"); await sleep(100);
+await find("bong cai xanh", "Bông cải xanh"); await sleep(60); await type("#foodG", "50"); await click("[data-totray]"); await sleep(100);
+ok(await ev(`JSON.stringify(sumItems(tray()), (k, v) => typeof v === "number" ? Math.round(v) : v)`) === '{"kcal":938,"p":65}', "khay 4 món: 938 kcal · 65 g");
+ok(await ev(`$("#tray").textContent.replace(/\s+/g, " ").includes("938 kcal · 65 g đạm")`), "khay hiện tổng 938 kcal · 65 g");
+await shot("tray.png"); await noOverflow("khay bữa");
+await reload(); await click("[data-tab=an]"); await sleep(120);
+ok(await ev(`tray().length`) === 4, "tải lại khay vẫn còn");
+await click("[data-traydel='1']"); await sleep(80);
+ok(await ev(`tray().length === 3 && !tray().some(x => x.name.startsWith("Trứng"))`), "bỏ một món khỏi khay");
+await find("trung chien", "Trứng gà chiên"); await sleep(60); await click("[data-totray]"); await sleep(100);
+await type("#trayName", "Cơm trưa"); await ev(`$("#trayFav").checked = true`);
+await click("[data-traylog]"); await sleep(150);
+const e = await ev(`foodDay(today()).at(-1)`);
+ok(e.name === "Cơm trưa" && e.kcal === 938 && Math.round(e.p) === 65 && e.items.length === 4 && e.q === "4 món", "ghi thành một dòng 'Cơm trưa' 938 kcal, 4 món");
+ok(await ev(`tray().length === 0 && !$("#tray")`), "ghi xong khay trống");
+ok(await ev(`[...document.querySelectorAll("#view details.note summary")].some(x => x.textContent === "4 món")`), "dòng đã ăn có '4 món' bấm xem chi tiết");
+const fav = await ev(`favs().at(-1)`);
+ok(fav.name === "Cơm trưa" && fav.items.length === 4, "lưu 'Cơm trưa' thành món quen kèm chi tiết");
+await ev(`document.querySelector('[data-fav="' + favs().at(-1).id + '"]').click()`); await sleep(100);
+ok(await ev(`foodDay(today()).length === 2 && foodDay(today()).at(-1).items.length === 4 && foodTotals(today()).kcal === 1876`), "bấm món quen 'Cơm trưa' → ghi lại cả bữa");
+// tự nhập cũng vào bữa được
+await click('[data-custom="1"]'); await sleep(60);
+await type("#cName", "Canh chua nhà"); await type("#cKcal", "90"); await type("#cP", "6"); await click("[data-customtray]"); await sleep(100);
+ok(await ev(`tray().length === 1 && tray()[0].name === "Canh chua nhà"`), "món tự nhập cũng vào bữa được");
+await shot("food-meal.png"); await noOverflow("tab Ăn có bữa gộp");
+
 console.log("== Giữ màn hình sáng");
 await put(`d.setupDone = true`);
 const lock = () => ev(`new Promise(r => setTimeout(() => r(!!wakeLock && !wakeLock.released), 300))`);
