@@ -42,7 +42,9 @@ Vì không có PT đi kèm, app tự lo mấy việc PT hay nhắc:
   RDL, bench, OHP: hít căng bụng rồi nín trong rep (kèm lưu ý cho người huyết áp
   cao); bài còn lại: thở ra khi gắng sức, hít vào khi hạ.
 - **Bỏ qua set** — dưới nút ghi set có *Bỏ qua set* và *Bỏ qua bài*: set bỏ qua
-  vẫn tính vào tiến độ để bài coi như xong, nhưng không vào nhật ký. Bấm × ở
+  vẫn tính vào tiến độ để bài coi như xong, nhưng không vào nhật ký.
+  Bỏ qua xong một bài thì tự sang bài chưa tập kế tiếp (bỏ qua bài đã xong,
+  hết thì vòng lại bài còn dở); tập hết rồi thì ra màn Xong buổi. Bấm × ở
   dòng "đã bỏ qua" để hoàn lại.
 - **Bài chính / bài phụ** — bài phụ có viền đứt và nhãn "Phụ". Nút *Ẩn bài
   phụ* ở thanh trên chỉ giữ lại bài chính cho ngày mệt hay phòng đông; xong
@@ -112,7 +114,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 41 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 50 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

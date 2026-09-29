@@ -1057,7 +1057,7 @@ function viewTrain() {
         <button class="ghost" id="restSkip">Bỏ qua</button>
       </div></div>`;
   } else if (finished) {
-    const pr = progress(), next = nextI != null ? eff(d.exercises[nextI], curDate, d.id) : null;
+    const pr = progress(), nextU = nextUnfinished(exIdx), next = nextU != null ? eff(d.exercises[nextU], curDate, d.id) : null;
     const optLeft = d.exercises.findIndex(e => e.opt && rested(curDate, d.id, e) < e.sets);
     action = !ex.opt && !S.hideOpt && optLeft >= 0 && pr.mainDone >= pr.mainTotal
       ? `<div class="card" style="text-align:center;border-color:var(--jade)">
@@ -1066,7 +1066,7 @@ function viewTrain() {
           <div class="pair"><button class="ghost" data-jump="${optLeft}">Làm bài phụ</button>
             <button class="ghost" data-goto="history">Kết thúc buổi</button></div>${cooldown(d)}</div>`
       : next
-      ? `<button class="btn jade" data-jump="${nextI}">Bài tiếp · ${esc(next.name)}${next.opt ? " (phụ)" : ""}</button>`
+      ? `<button class="btn jade" data-jump="${nextU}">Bài tiếp · ${esc(next.name)}${next.opt ? " (phụ)" : ""}</button>`
       : pr.done >= pr.total
         ? `<div class="card" style="text-align:center;border-color:var(--jade)">
             <div class="num" style="font-size:38px;color:var(--jade)">Xong buổi</div>
@@ -1618,6 +1618,12 @@ function firstUnfinished() {
   for (const i of vis) if (rested(curDate, d.id, d.exercises[i]) < d.exercises[i].sets) return i;
   return vis.length ? vis[0] : 0;
 }
+/** Bài chưa xong kế tiếp sau bài i (vòng lại từ đầu), bỏ qua bài đã xong; không còn thì null. */
+function nextUnfinished(i) {
+  const d = day(), vis = visible(d), pos = vis.indexOf(i);
+  const order = vis.slice(pos + 1).concat(vis.slice(0, Math.max(pos, 0)));
+  return order.find(j => rested(curDate, d.id, d.exercises[j]) < d.exercises[j].sets) ?? null;
+}
 
 /* ---------------- sự kiện ---------------- */
 document.querySelectorAll(".tab").forEach(b =>
@@ -1667,7 +1673,13 @@ document.addEventListener("click", e => {
     if (left <= 0) return;
     const n = el.dataset.skip === "rest" ? left : 1;
     S.skip[k] = skipped(curDate, d.id, ex.id) + n;
-    editIdx = null; save(true); stopRest();
+    editIdx = null; save(true);
+    // bài vừa xong vì bỏ qua: sang bài chưa tập kế tiếp. Ở lại khi đã xong hết (màn Xong buổi)
+    // hoặc vừa xong hết bài chính mà còn bài phụ (màn hỏi làm bài phụ hay về).
+    const pr = progress(), optLeft = d.exercises.some(e => e.opt && rested(curDate, d.id, e) < e.sets);
+    const nx = rested(curDate, d.id, ex) >= ex.sets ? nextUnfinished(exIdx) : null;
+    if (nx != null && !(!ex.opt && !S.hideOpt && optLeft && pr.mainDone >= pr.mainTotal)) { exIdx = nx; window.scrollTo(0, 0); }
+    stopRest();
     toast(n > 1 ? `Đã bỏ qua ${n} set còn lại` : "Đã bỏ qua 1 set");
     return;
   }

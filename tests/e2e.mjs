@@ -116,6 +116,44 @@ await click("[data-tab=history]"); await sleep(150);
 heads = await ev(`[...document.querySelectorAll('.wkhead')].map(x => x.textContent).join(" | ")`);
 ok(heads.startsWith("Tuần 5 · 28/09 – 04/10 · 1 buổi | Tuần 4 · 21/09 – 27/09 · 3 buổi"), "sau khi lùi: tuần thứ Hai – Chủ nhật");
 
+console.log("== Bỏ qua bài");
+// Buổi Đẩy (PPL): 0 Bench · 1 Incline · 2 OHP · 3 Lateral · 4 Pushdown (phụ). Incline đã tập xong.
+const today_ = await ev(`today()`);
+await put(`d.setupDone = true; const x = d.days[0];
+  d.log["${today_}|" + x.id + "|" + x.exercises[1].id] = [1,2,3].map(() => ({kg:"16",reps:"10"}))`);
+await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
+await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`exIdx`) === 2, "bỏ qua Bench → sang OHP, bỏ qua Incline đã xong");
+await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`exIdx`) === 3, "bỏ qua OHP → Lateral");
+await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`exIdx === 3 && document.querySelector('#view').textContent.includes("Xong bài chính")`), "hết bài chính, còn bài phụ: ở lại hỏi làm bài phụ hay về");
+await ev(`exIdx = 4; render()`); await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`document.querySelector('#view').textContent.includes("Xong buổi")`), "hết mọi bài: màn Xong buổi");
+// vòng lại: bài trước còn dở thì quay về bài đó
+await put(`d.setupDone = true`);
+await ev(`curDay = S.days[0].id; exIdx = 2; render()`);
+await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`exIdx`) === 3, "bỏ qua OHP → Lateral");
+await ev(`exIdx = 4; render()`); await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`exIdx`) === 0, "bỏ qua bài cuối → vòng lại Bench còn dở");
+// ẩn bài phụ: xong hết bài chính là Xong buổi
+await put(`d.setupDone = true; d.hideOpt = true; const x = d.days[0];
+  [0,1,2].forEach(i => d.log["${today_}|" + x.id + "|" + x.exercises[i].id] = Array.from({length: x.exercises[i].sets}, () => ({kg:"20",reps:"8"})))`);
+await ev(`curDay = S.days[0].id; exIdx = 3; render()`);
+await click("[data-skip=rest]"); await sleep(150);
+ok(await ev(`document.querySelector('#view').textContent.includes("Xong buổi")`), "ẩn bài phụ + xong bài chính → Xong buổi");
+// bỏ từng set: chỉ chuyển khi bài đã xong
+await put(`d.setupDone = true`);
+await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
+await click("[data-skip=one]"); await sleep(120);
+ok(await ev(`exIdx`) === 0, "bỏ 1 set, bài chưa xong: ở lại");
+// nút "Bài tiếp" sau khi tập xong trỏ tới bài chưa tập
+await put(`d.setupDone = true; const x = d.days[0];
+  [0,1].forEach(i => d.log["${today_}|" + x.id + "|" + x.exercises[i].id] = Array.from({length: x.exercises[i].sets}, () => ({kg:"20",reps:"8"})))`);
+await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
+ok(await ev(`document.querySelector('.btn.jade[data-jump]')?.dataset.jump`) === "2", "Bài tiếp bỏ qua bài đã xong");
+
 console.log("== Giữ màn hình sáng");
 await put(`d.setupDone = true`);
 const lock = () => ev(`new Promise(r => setTimeout(() => r(!!wakeLock && !wakeLock.released), 300))`);
