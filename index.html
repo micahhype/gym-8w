@@ -1160,14 +1160,53 @@ const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 let installPrompt = null;
 
+/* ---------------- chạy trong app Android (Capacitor) ----------------
+   Cùng một file index.html; khi được bọc trong android-app/ thì có thêm plugin gốc.
+   Trên web các hàm dưới đây không làm gì. */
+const NATIVE = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+const plug = n => (NATIVE && window.Capacitor.Plugins && Capacitor.Plugins[n]) || null;
+let notifReady = null;
+/** Xin quyền thông báo + tạo kênh "Đồng hồ nghỉ" (rung, kêu, hiện đè) một lần. */
+function notifSetup() {
+  const LN = plug("LocalNotifications");
+  if (!LN) return Promise.resolve(false);
+  return notifReady = notifReady || LN.requestPermissions()
+    .then(r => r.display === "granted" && LN.createChannel({ id: "rest", name: "Đồng hồ nghỉ",
+      description: "Báo khi hết giờ nghỉ giữa set", importance: 5, visibility: 1, vibration: true })
+      .then(() => true))
+    .catch(() => false);
+}
+/** Hết giờ nghỉ lúc app đang ẩn (tắt màn hình, mở app nhạc…) thì báo bằng thông báo hệ thống,
+ *  vì khi ẩn trình duyệt dừng đồng hồ JS. App hiện lên lại thì huỷ để khỏi báo hai lần. */
+async function restNotify() {
+  const LN = plug("LocalNotifications");
+  if (!LN) return;
+  try {
+    await LN.cancel({ notifications: [{ id: 1 }] });
+    if (!restEnd || document.visibilityState === "visible" || restEnd <= Date.now() + 1000) return;
+    if (!(await notifSetup())) return;
+    const d = day(), ex = d && d.exercises[exIdx];
+    await LN.schedule({ notifications: [{ id: 1, channelId: "rest", title: "Hết giờ nghỉ",
+      body: ex ? "Vào set tiếp — " + eff(ex, curDate, d.id).name : "Vào set tiếp",
+      schedule: { at: new Date(restEnd), allowWhileIdle: true } }] });
+  } catch (e) { /* không có quyền — vẫn còn đồng hồ trong app */ }
+}
+document.addEventListener("visibilitychange", restNotify);
+
 /* ---------------- giữ màn hình sáng ----------------
    Screen Wake Lock: chỉ giữ khi đang ở tab Tập và trang đang hiện. Trình duyệt tự nhả
    khoá khi ẩn trang, nên lúc hiện lại phải xin lại. Không hỗ trợ thì thôi, không báo lỗi. */
 let wakeLock = null, wakeBusy = false;
-const wakeOK = () => "wakeLock" in navigator;
+const wakeOK = () => !!plug("KeepAwake") || "wakeLock" in navigator;
+let nativeAwake = false;
 async function syncWake() {
   if (!wakeOK() || wakeBusy) return;
   const want = S.keepAwake !== false && tab === "train" && document.visibilityState === "visible";
+  const KA = plug("KeepAwake");
+  if (KA) {  // app Android: cờ giữ màn hình của cửa sổ, không bị nhả khi ẩn
+    if (want !== nativeAwake) { nativeAwake = want; (want ? KA.keepAwake() : KA.allowSleep()).catch(() => {}); }
+    return;
+  }
   wakeBusy = true;
   try {
     if (want && !wakeLock) {
@@ -1196,7 +1235,7 @@ function wakeCard() {
 }
 
 function installCard() {
-  if (isStandalone()) return "";
+  if (NATIVE || isStandalone()) return "";
   const how = installPrompt
     ? `<button class="btn" id="installBtn" style="margin-top:14px">Cài lên màn hình chính</button>`
     : isIOS()
@@ -1445,7 +1484,7 @@ function viewMe() {
       <div class="stack">
         <button class="ghost" id="exportBtn">⬇ Xuất file JSON</button>
         <button class="ghost" id="importBtn">⬆ Nhập từ file JSON</button>
-        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <input type="file" id="importFile"${NATIVE ? "" : ' accept="application/json,.json"'} hidden>
         <button class="ghost danger" id="resetBtn">Khôi phục giáo án gốc</button>
       </div>
     </div></details>
@@ -1494,11 +1533,11 @@ function startRest(sec) {
   clearInterval(restTimer);
   restTimer = setInterval(() => {
     const left = Math.ceil((restEnd - Date.now()) / 1000);
-    if (left <= 0) { clearInterval(restTimer); restTimer = null; restEnd = 0; buzz(); render(); return; }
+    if (left <= 0) { clearInterval(restTimer); restTimer = null; restEnd = 0; buzz(); restNotify(); render(); return; }
     const el = $("#restNum"); if (el) el.textContent = mmss(left);
   }, 250);
 }
-function stopRest() { clearInterval(restTimer); restTimer = null; restEnd = 0; render(); }
+function stopRest() { clearInterval(restTimer); restTimer = null; restEnd = 0; restNotify(); render(); }
 
 function firstUnfinished() {
   const d = day(), vis = visible(d);
@@ -1587,11 +1626,12 @@ document.addEventListener("click", e => {
     save(true);
     if (editIdx != null) { editIdx = null; render(); toast("Đã cập nhật"); return; }
     ensureAudio();
+    notifSetup();  // hỏi quyền thông báo ngay lần ghi set đầu, lúc người dùng đang cầm máy
     startRest(+ex.rest || 120);
     return;
   }
   if (el.id === "cancelEdit") { editIdx = null; render(); return; }
-  if (el.id === "restAdd") { restEnd += 30000; const n = $("#restNum");
+  if (el.id === "restAdd") { restEnd += 30000; restNotify(); const n = $("#restNum");
     if (n) n.textContent = mmss(Math.ceil((restEnd - Date.now()) / 1000)); return; }
   if (el.id === "restSkip") { stopRest(); return; }
 
@@ -1644,6 +1684,15 @@ document.addEventListener("click", e => {
     } return;
   }
 
+  if (el.id === "exportBtn" && NATIVE) {
+    // WebView không tải file xuống được: ghi vào bộ nhớ tạm rồi mở bảng Chia sẻ (Drive, Zalo, email…)
+    const FS = plug("Filesystem"), SH = plug("Share"), name = "gym-book-" + today() + ".json";
+    if (!FS || !SH) { toast("Thiếu plugin xuất file"); return; }
+    FS.writeFile({ path: name, data: JSON.stringify(S, null, 2), directory: "CACHE", encoding: "utf8" })
+      .then(r => SH.share({ title: name, files: [r.uri] }))
+      .catch(err => { if (!/cancel/i.test(String(err && err.message))) toast("Không xuất được: " + (err && err.message)); });
+    return;
+  }
   if (el.id === "exportBtn") {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: "application/json" }));
@@ -1744,7 +1793,7 @@ window.addEventListener("beforeinstallprompt", e => {
   if (tab === "me") render();
 });
 window.addEventListener("appinstalled", () => { installPrompt = null; if (tab === "me") render(); });
-if ("serviceWorker" in navigator) {
+if (!NATIVE && "serviceWorker" in navigator) {
   window.addEventListener("load", () =>
     navigator.serviceWorker.register("./sw.js").catch(() => { /* offline không bắt buộc */ }));
 }

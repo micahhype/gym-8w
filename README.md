@@ -75,6 +75,32 @@ Mở link bằng trình duyệt trên điện thoại rồi thêm vào màn hìn
 Mở từ icon sẽ chạy toàn màn hình (không thanh địa chỉ) và dùng được cả khi mất
 mạng — service worker lưu sẵn trang, icon và font.
 
+## App Android
+
+`android-app/` bọc chính `index.html` bằng [Capacitor](https://capacitorjs.com/),
+thêm những thứ bản web không làm được:
+
+- **Báo hết giờ nghỉ khi đã tắt màn hình** hoặc đang ở app khác — thông báo hệ
+  thống có rung và chuông, đúng giây (quyền `USE_EXACT_ALARM`).
+- **Giữ màn hình sáng** bằng cờ của cửa sổ Android thay cho Wake Lock.
+- **Xuất JSON** mở bảng Chia sẻ (Drive, Zalo, email…) vì WebView không tải file.
+
+Dữ liệu của app nằm riêng, không chung với trình duyệt: xuất JSON ở bản web rồi
+nhập vào app (tab Tôi → Dữ liệu).
+
+Build APK (cần JDK 21 và Android SDK 36; Java mới hơn thì Gradle 8 không chạy):
+
+```
+cd android-app
+npm install
+echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+JAVA_HOME=/đường/dẫn/jdk-21 npm run apk
+# → android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+`npm run apk` chép bản web mới nhất vào `www/` rồi mới build, nên sửa
+`index.html` xong chỉ cần chạy lại lệnh này.
+
 ## Chạy local
 
 ```
