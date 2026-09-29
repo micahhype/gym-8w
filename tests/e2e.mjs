@@ -199,6 +199,77 @@ await put(`d.setupDone = true; d.programId = "ul4"; d.progVersion = 6; d.days = 
   const e = d.days[0].exercises.find(e => e.name === "Triceps Pushdown"); d.log["2026-09-20|" + d.days[0].id + "|" + e.id] = [{kg:"20",reps:"12"}]`);
 ok(await ev(`S.days[0].exercises.some(e => e.name === "Triceps Pushdown")`), "giáo án khác PPL: không đổi bài");
 
+console.log("== Ăn uống");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 })`);
+ok(await ev(`document.querySelectorAll("nav .tab").length`) === 4, "thanh tab có 4 mục");
+await click("[data-tab=an]"); await sleep(150);
+ok(await ev(`tab === "an" && foodDate === today()`), "mở tab Ăn ở ngày hôm nay");
+ok(await ev(`document.querySelectorAll("[data-fav]").length`) === 6, "6 món quen mặc định");
+await shot("food-empty.png"); await noOverflow("tab Ăn");
+await click("[data-fav]"); await sleep(120);
+ok(await ev(`foodTotals(today()).kcal`) === 750 && await ev(`foodDay(today())[0].t.length`) === 5, "bấm món quen → ghi 750 kcal, có giờ");
+// tìm không dấu
+await ev(`$("#foodQ").focus()`); await type("#foodQ", "pho bo"); await sleep(100);
+ok(await ev(`[...document.querySelectorAll("#foodResults .foodrow")].map(b => b.textContent).join("|").includes("Phở bò")`), "gõ không dấu 'pho bo' ra Phở bò");
+ok(await ev(`document.activeElement.id`) === "foodQ", "gõ tìm không mất con trỏ");
+await ev(`[...document.querySelectorAll("#foodResults .foodrow")].find(b => b.textContent.includes("Phở bò")).click()`); await sleep(100);
+ok(await ev(`!!document.querySelector("[data-fmode]")`) === false, "món cả suất (tô) không có chế độ gam");
+await click('[data-fqset="1.5"]'); await sleep(80);
+ok(await ev(`$("#foodCalc").textContent`) === "675 kcal · 38 g đạm", "1,5 tô phở = 675 kcal");
+await click("[data-addsel]"); await sleep(120);
+ok(await ev(`foodDay(today()).at(-1).q`) === "1,5 tô" && await ev(`foodTotals(today()).kcal`) === 1425, "thêm 1,5 tô phở, tổng 1 425");
+// theo gam
+await type("#foodQ", "uc ga chin"); await sleep(80);
+await click("#foodResults .foodrow"); await sleep(80);
+ok(await ev(`!!$("#foodG")`), "món tính theo 100 g: mở sẵn ô gam");
+ok(!(await ev(`document.querySelector("#view").textContent.includes("1 100 g")`)), "không hiện '1 100 g'");
+await click('[data-fmode="q"]'); await sleep(80); await click('[data-fqset="1.5"]'); await sleep(80);
+ok(await ev(`$("#foodQtxt").textContent`) === "1,5 × 100 g", "theo phần: '1,5 × 100 g'");
+await click('[data-fmode="g"]'); await sleep(80);
+await type("#foodG", "180"); await sleep(80);
+ok(await ev(`$("#foodCalc").textContent`) === "297 kcal · 56 g đạm", "180 g ức gà chín = 297 kcal, 56 g đạm");
+await shot("food-gram.png");
+await click("[data-addsel]"); await sleep(120);
+ok(await ev(`foodDay(today()).at(-1).q`) === "180 g" && await ev(`foodDay(today()).at(-1).p`) === 55.8, "ghi theo gam, lưu đạm lẻ");
+// lọc nhóm
+await type("#foodQ", ""); await click('[data-fgroup="bs"]'); await sleep(100);
+ok(await ev(`document.querySelectorAll("#foodResults .foodrow").length`) === 3, "nhóm Bổ sung: 3 món");
+// lưu món quen từ món đã chọn
+await click("#foodResults .foodrow"); await sleep(80); await click('[data-fqset="2"]'); await click("[data-favsel]"); await sleep(100);
+ok(await ev(`favs().at(-1).name`) === "Whey · 2 muỗng" && await ev(`favs().at(-1).kcal`) === 240, "lưu 'Whey · 2 muỗng' thành món quen");
+// tự nhập
+await click('[data-custom="1"]'); await sleep(80);
+await type("#cName", "Cơm nhà"); await type("#cKcal", "600"); await type("#cP", "30");
+await ev(`$("#cFav").checked = true`); await click("[data-addcustom]"); await sleep(120);
+ok(await ev(`foodDay(today()).at(-1).name === "Cơm nhà" && favs().some(f => f.name === "Cơm nhà")`), "tự nhập món + lưu món quen");
+// xoá
+const before = await ev(`foodDay(today()).length`);
+await click("[data-fdel]"); await sleep(100);
+ok(await ev(`foodDay(today()).length`) === before - 1, "xoá một món đã ăn");
+// sửa món quen
+await click("[data-favedit]"); await sleep(80); const nf = await ev(`favs().length`);
+await click("[data-favdel]"); await sleep(80);
+ok(await ev(`favs().length`) === nf - 1, "xoá món quen");
+await click("[data-favedit]"); await sleep(80);
+await shot("food.png"); await noOverflow("tab Ăn có dữ liệu");
+// xem ngày trước, không đi quá hôm nay
+await click('[data-fday="1"]'); await sleep(80);
+ok(await ev(`foodDate === today()`), "không sang được ngày mai");
+await click('[data-fday="-1"]'); await sleep(80);
+ok(await ev(`foodDate === addDays(today(), -1) && document.querySelector("#view").textContent.includes("Chưa ghi gì")`), "xem hôm qua");
+// lưu, tải lại, xuất/nhập
+await reload();
+ok(await ev(`foodDay(today()).length`) === before - 1 && await ev(`!!S.favs`), "tải lại vẫn còn");
+// nối với nhịp tăng cân: 4 ngày ăn ~2 300, cân không lên
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 });
+  d.bw = [{date: addDays(today(), -10), kg: 56}, {date: today(), kg: 56}];
+  d.food = {}; [1,2,3,4].forEach(i => d.food[addDays(today(), -i)] = [{id: "x" + i, name: "Cơm", kcal: 2300, p: 110}])`);
+await click("[data-tab=me]"); await sleep(150);
+const pace = await ev(`document.querySelector("#view").textContent.replace(/\s+/g, " ")`);
+ok(/7 ngày qua ăn trung bình 2\.300 kcal \(4 ngày có ghi\) → nhắm khoảng 2\.550 kcal/.test(pace), "cân không lên: gợi ý ăn 2 550 dựa trên số thật: " + (pace.match(/.{0,40}7 ngày qua.{0,120}/) || [pace.slice(0, 300)])[0]);
+// today() theo giờ máy
+ok(await ev(`today() === (d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"))(new Date())`), "today() theo giờ máy");
+
 console.log("== Giữ màn hình sáng");
 await put(`d.setupDone = true`);
 const lock = () => ev(`new Promise(r => setTimeout(() => r(!!wakeLock && !wakeLock.released), 300))`);

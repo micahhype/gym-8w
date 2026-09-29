@@ -15,6 +15,12 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   Phòng đông, máy bận: bấm một bài thay thế ngay dưới tên bài (Bench → đẩy ngực
   tạ tay, Xà → Lat Pulldown…). Bài thay thế có lịch sử tạ riêng nên không làm
   lệch gợi ý của bài chính; buổi sau tự về lại bài chính.
+- **Ăn** — ghi bữa ăn, chỉ đếm calo và đạm so với mục tiêu ở tab Tôi. *Món quen*
+  bấm một lần là ghi (mặc định lấy từ thực đơn mẫu + whey, Ensure; lưu thêm bằng ☆
+  hoặc tự nhập). Tìm trong 143 món Việt, gõ không dấu cũng ra; chọn theo phần/tô
+  (½, 1, 1½, 2…) hoặc nhập gam với món có khối lượng (thịt cá tính theo 100 g thì
+  mở sẵn ô gam). Xem lại ngày trước. Có từ 3 ngày ghi trong tuần thì phần *Nhịp
+  tăng cân* ở tab Tôi so với mức ăn thật và gợi ý nên ăn bao nhiêu.
 - **Nhật ký** — các buổi đã ghi, nhóm theo tuần, mỗi buổi thu gọn một dòng
   (tên buổi, số bài, số set, tổng khối lượng tạ × rep); bấm để xem chi tiết.
   Tuần đếm từ ngày bắt đầu giáo án (mặc định thứ Hai của tuần đầu), tiêu đề
@@ -115,7 +121,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 61 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 87 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

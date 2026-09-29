@@ -189,11 +189,24 @@ details.sess[open]>summary::after{transform:rotate(90deg)}
 details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
 .wkhead{margin:10px 2px -2px;color:var(--dim)}
 
+/* ---------- ăn ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.favs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fav{position:relative;display:flex}
+.favbtn{width:100%;min-height:64px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  color:var(--chalk);padding:10px 12px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:4px;font:inherit;font-size:14px;line-height:1.3}
+.favbtn:active{background:var(--raised)}
+.favdel{position:absolute;top:-8px;right:-8px;width:32px;height:32px;background:var(--ground);color:var(--rust);border-color:#4d2c25}
+.foodrow{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:inherit;font:inherit;
+  cursor:pointer;padding:12px 2px;text-align:left}
+.foodrow[aria-expanded=true]{color:var(--brass)}
+.foodsel{margin:10px 0 12px;background:var(--ground)}
+
 /* ---------- nav ---------- */
 nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(13,16,20,.97);
   backdrop-filter:blur(14px);border-top:1px solid var(--line);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));
-  display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .tab{background:transparent;border:0;color:var(--dim);padding:8px 2px 6px;border-radius:11px;
   display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px}
 .tab .ico{font-size:21px;line-height:1}
@@ -215,6 +228,7 @@ body.onb nav{display:none}
 </div>
 <nav>
   <button class="tab" data-tab="train"><span class="ico">🏋</span><span class="lb">Tập</span></button>
+  <button class="tab" data-tab="an"><span class="ico">🍚</span><span class="lb">Ăn</span></button>
   <button class="tab" data-tab="history"><span class="ico">📓</span><span class="lb">Nhật ký</span></button>
   <button class="tab" data-tab="me"><span class="ico">⚖</span><span class="lb">Tôi</span></button>
 </nav>
@@ -223,7 +237,9 @@ body.onb nav{display:none}
 "use strict";
 const KEY = "soSat.v2";
 const uid = () => Math.random().toString(36).slice(2, 9);
-const today = () => new Date().toISOString().slice(0, 10);
+/** Ngày theo giờ máy. toISOString() là giờ UTC — ở Việt Nam trước 7h sáng sẽ ra ngày hôm qua. */
+const today = () => { const x = new Date();
+  return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -929,7 +945,7 @@ function renderTop() {
   const el = $("#topbar");
   if (tab !== "train") {
     el.innerHTML = `<div class="topline"><div class="session">${tab === "setup" ? "Gym <em>Book</em>"
-      : tab === "history" ? "Nhật <em>ký</em>" : "Hồ <em>sơ</em>"}</div></div>`;
+      : tab === "an" ? "Ăn <em>uống</em>" : tab === "history" ? "Nhật <em>ký</em>" : "Hồ <em>sơ</em>"}</div></div>`;
     return;
   }
   const d = day(), pr = progress(), hasOpt = pr.optTotal > 0;
@@ -1308,6 +1324,350 @@ function installCard() {
     </div>${how}</div>`;
 }
 
+/* ---------------- ĂN ----------------
+   Chỉ đếm calo và đạm — đủ cho mục tiêu tăng cơ, ghi nhanh hơn nhiều so với đếm đủ chất.
+   FOODS: [tên, nhóm, đơn vị, gam (hoặc ml) mỗi đơn vị, kcal mỗi đơn vị, đạm (g) mỗi đơn vị].
+   Nguyên liệu theo Bảng thành phần thực phẩm Việt Nam (Viện Dinh dưỡng); món nấu sẵn là
+   ước lượng cho một suất phổ biến ở quán — sai số ±20–30%, cái cân mới là trọng tài.
+   gam = 0: không nhập theo gam được (món cả suất). Nhật ký lưu luôn số kcal/đạm lúc ghi,
+   nên sửa bảng này không làm đổi số của những ngày cũ. */
+const FOOD_GROUPS = [["com", "Cơm, tinh bột"], ["nuoc", "Món nước"], ["dia", "Cơm đĩa, món chính"],
+  ["sang", "Bánh, ăn sáng"], ["dam", "Thịt, cá, trứng, đậu"], ["rau", "Rau, canh"],
+  ["trai", "Trái cây"], ["sua", "Sữa, đồ uống"], ["bs", "Bổ sung"], ["vat", "Ăn vặt"]];
+const FOODS = [
+  ["Cơm trắng", "com", "chén", 150, 195, 4],
+  ["Cơm gạo lứt", "com", "chén", 150, 165, 3.8],
+  ["Gạo tẻ (sống)", "com", "100 g", 100, 344, 7.9],
+  ["Bún tươi", "com", "100 g", 100, 110, 1.7],
+  ["Bánh phở", "com", "100 g", 100, 141, 3.2],
+  ["Mì gói", "com", "gói", 75, 350, 7],
+  ["Khoai lang luộc", "com", "củ", 150, 130, 2.4],
+  ["Khoai tây luộc", "com", "củ", 150, 115, 3],
+  ["Bắp luộc", "com", "bắp", 150, 145, 5],
+  ["Yến mạch", "com", "phần", 40, 150, 5.4],
+  ["Bánh mì không", "com", "ổ", 80, 210, 7],
+  ["Bánh mì sandwich", "com", "lát", 30, 80, 2.7],
+  ["Xôi trắng", "com", "gói", 200, 360, 7],
+  ["Phở bò", "nuoc", "tô", 0, 450, 25],
+  ["Phở gà", "nuoc", "tô", 0, 420, 25],
+  ["Bún bò Huế", "nuoc", "tô", 0, 550, 28],
+  ["Bún riêu", "nuoc", "tô", 0, 450, 20],
+  ["Bún cá", "nuoc", "tô", 0, 420, 22],
+  ["Bún chả", "nuoc", "suất", 0, 600, 25],
+  ["Bún thịt nướng", "nuoc", "tô", 0, 550, 22],
+  ["Bún đậu mắm tôm", "nuoc", "suất", 0, 650, 25],
+  ["Hủ tiếu Nam Vang", "nuoc", "tô", 0, 450, 22],
+  ["Mì Quảng", "nuoc", "tô", 0, 550, 25],
+  ["Cao lầu", "nuoc", "tô", 0, 500, 22],
+  ["Bánh canh cua", "nuoc", "tô", 0, 480, 20],
+  ["Miến gà", "nuoc", "tô", 0, 400, 22],
+  ["Mì tôm trứng", "nuoc", "tô", 0, 450, 13],
+  ["Cháo gà", "nuoc", "tô", 0, 300, 15],
+  ["Cháo lòng", "nuoc", "tô", 0, 400, 20],
+  ["Bò kho bánh mì", "nuoc", "suất", 0, 600, 28],
+  ["Cà ri gà bánh mì", "nuoc", "suất", 0, 650, 28],
+  ["Cơm tấm sườn", "dia", "đĩa", 0, 650, 28],
+  ["Cơm tấm sườn bì chả trứng", "dia", "đĩa", 0, 850, 38],
+  ["Cơm gà luộc", "dia", "đĩa", 0, 650, 32],
+  ["Cơm gà xối mỡ", "dia", "đĩa", 0, 750, 30],
+  ["Cơm chiên trứng", "dia", "đĩa", 0, 600, 15],
+  ["Cơm chiên Dương Châu", "dia", "đĩa", 0, 650, 18],
+  ["Cơm bò lúc lắc", "dia", "đĩa", 0, 700, 35],
+  ["Cơm văn phòng (1 mặn + rau)", "dia", "suất", 0, 650, 28],
+  ["Cơm sườn xào chua ngọt", "dia", "đĩa", 0, 700, 28],
+  ["Cơm cá kho", "dia", "suất", 0, 600, 28],
+  ["Mì xào bò", "dia", "đĩa", 0, 650, 25],
+  ["Hủ tiếu xào", "dia", "đĩa", 0, 650, 20],
+  ["Bánh xèo", "dia", "cái", 0, 300, 10],
+  ["Nem nướng (cuốn)", "dia", "suất", 0, 400, 20],
+  ["Gà nướng", "dia", "1/4 con", 0, 400, 40],
+  ["Vịt quay", "dia", "100 g", 100, 330, 18],
+  ["Bò bít tết", "dia", "miếng", 150, 350, 40],
+  ["Bánh mì chảo", "dia", "suất", 0, 700, 30],
+  ["Pizza", "dia", "miếng", 0, 280, 12],
+  ["Hamburger", "dia", "cái", 0, 500, 25],
+  ["Gà rán", "dia", "miếng", 0, 280, 18],
+  ["Khoai tây chiên", "dia", "phần vừa", 0, 320, 4],
+  ["Kimbap", "dia", "cuộn", 0, 450, 15],
+  ["Bánh mì thịt", "sang", "ổ", 0, 450, 17],
+  ["Bánh mì trứng (2 trứng)", "sang", "ổ", 0, 400, 17],
+  ["Bánh mì pate chả", "sang", "ổ", 0, 380, 13],
+  ["Bánh mì gà", "sang", "ổ", 0, 420, 20],
+  ["Xôi đậu xanh", "sang", "gói", 0, 400, 9],
+  ["Xôi gà", "sang", "hộp", 0, 520, 20],
+  ["Xôi mặn (xá xíu, lạp xưởng)", "sang", "hộp", 0, 550, 16],
+  ["Bánh cuốn", "sang", "đĩa", 0, 400, 12],
+  ["Bánh ướt chả lụa", "sang", "đĩa", 0, 400, 15],
+  ["Bánh bèo", "sang", "đĩa", 0, 300, 8],
+  ["Bánh bao nhân thịt", "sang", "cái", 150, 330, 11],
+  ["Bánh chưng", "sang", "miếng", 200, 450, 12],
+  ["Ức gà (chín)", "dam", "100 g", 100, 165, 31],
+  ["Ức gà (sống)", "dam", "100 g", 100, 120, 23],
+  ["Đùi gà bỏ da (chín)", "dam", "100 g", 100, 190, 26],
+  ["Thịt heo nạc (chín)", "dam", "100 g", 100, 190, 27],
+  ["Thịt heo nạc (sống)", "dam", "100 g", 100, 139, 19],
+  ["Thịt ba chỉ luộc", "dam", "100 g", 100, 400, 16],
+  ["Sườn nướng", "dam", "miếng", 120, 350, 22],
+  ["Thịt kho trứng", "dam", "phần", 0, 350, 20],
+  ["Thịt bò nạc (chín)", "dam", "100 g", 100, 220, 30],
+  ["Thịt bò nạc (sống)", "dam", "100 g", 100, 118, 21],
+  ["Cá hồi (chín)", "dam", "100 g", 100, 210, 22],
+  ["Cá basa (chín)", "dam", "100 g", 100, 170, 18],
+  ["Cá thu (chín)", "dam", "100 g", 100, 190, 22],
+  ["Cá kho tộ", "dam", "phần", 120, 250, 22],
+  ["Cá ngừ hộp (ngâm nước)", "dam", "hộp", 100, 130, 28],
+  ["Tôm luộc", "dam", "100 g", 100, 100, 22],
+  ["Mực xào", "dam", "100 g", 100, 150, 16],
+  ["Chả lụa", "dam", "100 g", 100, 140, 21],
+  ["Xúc xích", "dam", "cây", 40, 120, 5],
+  ["Trứng gà luộc", "dam", "quả", 50, 75, 6.5],
+  ["Trứng gà ốp la", "dam", "quả", 50, 100, 6.5],
+  ["Trứng vịt", "dam", "quả", 70, 130, 9],
+  ["Trứng vịt lộn", "dam", "quả", 0, 180, 13],
+  ["Đậu phụ", "dam", "bìa", 100, 95, 11],
+  ["Đậu phụ chiên", "dam", "bìa", 100, 190, 12],
+  ["Đậu phụ sốt cà", "dam", "phần", 0, 150, 10],
+  ["Đậu phộng", "dam", "nắm", 30, 170, 7.5],
+  ["Bơ đậu phộng", "dam", "muỗng canh", 16, 95, 4],
+  ["Hạt điều", "dam", "nắm", 30, 165, 5],
+  ["Rau luộc", "rau", "đĩa", 150, 40, 3],
+  ["Rau xào", "rau", "đĩa", 150, 120, 3],
+  ["Canh rau", "rau", "bát", 0, 40, 2],
+  ["Canh chua cá", "rau", "bát", 0, 120, 10],
+  ["Canh bí đỏ thịt bằm", "rau", "bát", 0, 100, 6],
+  ["Dưa leo, cà chua", "rau", "100 g", 100, 18, 1],
+  ["Gỏi cuốn", "rau", "cuốn", 0, 70, 4.5],
+  ["Dầu ăn", "rau", "muỗng canh", 13, 117, 0],
+  ["Chuối", "trai", "quả", 100, 90, 1.1],
+  ["Táo", "trai", "quả", 150, 80, 0.4],
+  ["Cam", "trai", "quả", 150, 60, 1.3],
+  ["Xoài", "trai", "quả", 200, 140, 1.6],
+  ["Đu đủ", "trai", "miếng", 200, 70, 1],
+  ["Dưa hấu", "trai", "miếng", 300, 90, 1.8],
+  ["Thanh long", "trai", "quả", 250, 150, 3],
+  ["Bơ (trái)", "trai", "nửa quả", 100, 160, 2],
+  ["Nho", "trai", "100 g", 100, 70, 0.7],
+  ["Ổi", "trai", "quả", 150, 100, 3.8],
+  ["Sữa tươi có đường", "sua", "hộp 180ml", 180, 140, 5.6],
+  ["Sữa tươi không đường", "sua", "hộp 180ml", 180, 115, 5.8],
+  ["Sữa tươi (ly)", "sua", "ly 250ml", 250, 160, 8],
+  ["Sữa đặc", "sua", "muỗng canh", 20, 65, 1.6],
+  ["Sữa chua", "sua", "hộp", 100, 100, 3.5],
+  ["Sữa chua Hy Lạp", "sua", "hộp", 100, 100, 9],
+  ["Sữa đậu nành", "sua", "ly 250ml", 250, 130, 7],
+  ["Phô mai miếng", "sua", "miếng", 15, 40, 1.8],
+  ["Cà phê sữa đá", "sua", "ly", 0, 150, 2],
+  ["Bạc xỉu", "sua", "ly", 0, 200, 3],
+  ["Cà phê đen có đường", "sua", "ly", 0, 50, 0.3],
+  ["Trà sữa trân châu", "sua", "ly M", 0, 450, 5],
+  ["Sinh tố bơ", "sua", "ly", 0, 350, 4],
+  ["Nước cam ép", "sua", "ly 250ml", 250, 110, 1.7],
+  ["Nước mía", "sua", "ly", 300, 180, 0],
+  ["Nước ngọt", "sua", "lon", 330, 140, 0],
+  ["Bia", "sua", "lon", 330, 145, 1.2],
+  ["Whey", "bs", "muỗng", 30, 120, 24],
+  ["Ensure", "bs", "ly", 0, 230, 9],
+  ["Thanh protein", "bs", "thanh", 0, 200, 20],
+  ["Bánh bông lan", "vat", "cái", 40, 150, 3],
+  ["Bánh quy", "vat", "3 cái", 30, 140, 2],
+  ["Snack", "vat", "gói", 50, 270, 3],
+  ["Socola", "vat", "thanh", 40, 210, 3],
+  ["Kem", "vat", "que", 0, 150, 3],
+  ["Chè đậu", "vat", "cốc", 0, 300, 7],
+  ["Chè thập cẩm", "vat", "cốc", 0, 350, 6],
+  ["Chả giò", "vat", "cuốn", 0, 100, 3.5],
+  ["Bánh tráng trộn", "vat", "phần", 0, 350, 8],
+  ["Bắp xào", "vat", "ly", 0, 300, 6],
+];
+/** Món quen mặc định: thực đơn mẫu trong mục Dinh dưỡng + whey, Ensure. */
+const FAV_SEED = [
+  ["Sáng: 3 trứng + 2 lát bánh mì + sữa", 750, 40], ["Trưa: 2 chén cơm + thịt/cá + rau", 800, 48],
+  ["Trước tập: chuối + bơ đậu phộng", 300, 9], ["Tối: 2 chén cơm + ức gà + trứng + rau", 750, 48],
+  ["Whey · 1 muỗng", 120, 24], ["Ensure · 1 ly", 230, 9]];
+const unaccent = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
+const FOOD_IDX = FOODS.map(f => unaccent(f[0] + " " + f[2]));
+const nowHM = () => { const x = new Date(); return String(x.getHours()).padStart(2, "0") + ":" + String(x.getMinutes()).padStart(2, "0"); };
+const fmtQ = q => String(n1(q)).replace(".", ",");
+/** "100 g" là đơn vị đo sẵn: hiện "100 g" chứ không "1 100 g", nhân thì "1,5 × 100 g". */
+const perUnit = u => /^\d/.test(u) ? u : "1 " + u;
+const qtyText = (q, u) => /^\d/.test(u) ? fmtQ(q) + " × " + u : fmtQ(q) + " " + u;
+let foodDate = today(), foodQ = "", foodGroup = "", foodSel = null, favEdit = false, showCustom = false;
+
+function favs() {
+  if (!S.favs) S.favs = FAV_SEED.map(([name, kcal, p]) => ({ id: uid(), name, kcal, p }));
+  return S.favs;
+}
+const foodDay = d => (S.food || {})[d] || [];
+function foodTotals(d) {
+  return foodDay(d).reduce((a, e) => ({ kcal: a.kcal + (+e.kcal || 0), p: a.p + (+e.p || 0) }), { kcal: 0, p: 0 });
+}
+/** Trung bình 7 ngày trước ngày d (không tính d, chỉ tính ngày có ghi). */
+function foodAvg(d) {
+  const days = [];
+  for (let i = 1; i <= 7; i++) { const x = addDays(d, -i); if (foodDay(x).length) days.push(foodTotals(x)); }
+  if (!days.length) return null;
+  return { n: days.length, kcal: days.reduce((a, t) => a + t.kcal, 0) / days.length, p: days.reduce((a, t) => a + t.p, 0) / days.length };
+}
+function addFood(e) {
+  if (!S.food) S.food = {};
+  (S.food[foodDate] = S.food[foodDate] || []).push({ id: uid(), t: foodDate === today() ? nowHM() : "", ...e });
+  save(true);
+}
+/** Số lượng đang chọn → kcal/đạm. Theo gam thì tính theo tỉ lệ gam / gam mỗi đơn vị. */
+function selCalc() {
+  const f = FOODS[foodSel.i], k = foodSel.gram ? (+foodSel.g || 0) / f[3] : foodSel.q;
+  return { kcal: Math.round(f[4] * k), p: n1(f[5] * k),
+    q: foodSel.gram ? Math.round(+foodSel.g || 0) + (/ml/.test(f[2]) ? " ml" : " g") : qtyText(foodSel.q, f[2]) };
+}
+function foodBar(label, val, goal, unit) {
+  const pct = goal ? Math.min(100, Math.round(val / goal * 100)) : 0;
+  return `<div style="margin-top:12px">
+    <div class="spread small"><span class="muted">${label}</span>
+      <span><b class="num" style="font-size:20px">${Math.round(val).toLocaleString("vi-VN")}</b>
+      <span class="dim">${goal ? " / " + Math.round(goal).toLocaleString("vi-VN") : ""} ${unit}</span></span></div>
+    ${goal ? `<div class="bar" style="margin-top:6px"><i style="width:${pct}%;${val >= goal ? "background:var(--jade)" : ""}"></i></div>` : ""}</div>`;
+}
+function foodRow(i) {
+  const f = FOODS[i], open = foodSel && foodSel.i === i;
+  const row = `<button class="lrow foodrow" data-food="${i}" aria-expanded="${open}">
+      <span style="text-align:left">${esc(f[0])}<span class="small dim" style="display:block">${esc(perUnit(f[2]))}</span></span>
+      <span class="num muted" style="white-space:nowrap">${f[4]} kcal · ${Math.round(f[5])} g</span></button>`;
+  if (!open) return row;
+  const c = selCalc();
+  return row + `<div class="card foodsel">
+    ${f[3] ? `<div class="pair" style="margin-bottom:12px">
+      <button class="chip" data-fmode="q" aria-pressed="${!foodSel.gram}">${/^\d/.test(f[2]) ? "Theo phần " + esc(f[2]) : "Theo " + esc(f[2])}</button>
+      <button class="chip" data-fmode="g" aria-pressed="${!!foodSel.gram}">Theo ${/ml/.test(f[2]) ? "ml" : "gam"}</button></div>` : ""}
+    ${foodSel.gram
+      ? `<label class="f"><span>${/ml/.test(f[2]) ? "ml" : "Gam"}${/^\d/.test(f[2]) ? "" : ` (1 ${esc(f[2])} ≈ ${f[3]})`}</span>
+          <input id="foodG" type="number" inputmode="decimal" value="${esc(foodSel.g)}"></label>`
+      : `<div class="row" style="justify-content:center;gap:8px;flex-wrap:wrap">
+          <button class="iconbtn" data-fq="-0.5" aria-label="Bớt nửa">−</button>
+          ${[0.5, 1, 1.5, 2].map(q => `<button class="chip" data-fqset="${q}" aria-pressed="${foodSel.q === q}">${fmtQ(q)}</button>`).join("")}
+          <button class="iconbtn" data-fq="0.5" aria-label="Thêm nửa">+</button></div>`}
+    <div class="spread" style="margin:14px 0 12px"><span class="muted small" id="foodQtxt">${esc(c.q)}</span>
+      <span class="num" style="font-size:20px" id="foodCalc">${c.kcal} kcal · ${Math.round(c.p)} g đạm</span></div>
+    <div class="pair"><button class="ghost" data-favsel="1">☆ Lưu món quen</button>
+      <button class="btn" data-addsel="1" style="min-height:48px">Thêm</button></div></div>`;
+}
+function foodResults() {
+  const toks = unaccent(foodQ).split(/\s+/).filter(Boolean);
+  const hits = FOODS.map((f, i) => i).filter(i => (!foodGroup || FOODS[i][1] === foodGroup)
+    && toks.every(t => FOOD_IDX[i].includes(t)));
+  if (!toks.length && !foodGroup) return `<p class="small dim" style="margin:10px 2px 0">Gõ tên món (không dấu cũng được) hoặc chọn một nhóm.</p>`;
+  if (!hits.length) return `<p class="small dim" style="margin:10px 2px 0">Không thấy món này — bấm <b>Tự nhập món</b> ở dưới.</p>`;
+  return hits.slice(0, 40).map(foodRow).join("");
+}
+function viewFood() {
+  const t = targets(), tot = foodTotals(foodDate), list = foodDay(foodDate), avg = foodAvg(foodDate);
+  const isToday = foodDate === today();
+  const left = t ? [t.kcal - tot.kcal, t.protein - tot.p] : null;
+  return `
+  <div class="spread" style="margin:4px 0 2px">
+    <button class="iconbtn" data-fday="-1" aria-label="Ngày trước">‹</button>
+    <div class="num" style="font-size:20px">${isToday ? "Hôm nay" : THU[new Date(foodDate + "T00:00:00").getDay()]} · ${fmtDate(foodDate)}</div>
+    <button class="iconbtn" data-fday="1" aria-label="Ngày sau"${isToday ? " disabled style=\"opacity:.35\"" : ""}>›</button></div>
+  <div class="card" style="margin-top:12px;padding-top:4px">
+    ${foodBar("Calo", tot.kcal, t && t.kcal, "kcal")}
+    ${foodBar("Đạm", tot.p, t && t.protein, "g")}
+    <p class="small ${left && left[0] <= 0 && left[1] <= 0 ? "" : "muted"}" style="margin:12px 0 0;${left && left[0] <= 0 && left[1] <= 0 ? "color:var(--jade)" : ""}">${!t
+      ? `Điền tuổi, chiều cao, cân nặng ở tab Tôi để có mục tiêu mỗi ngày.`
+      : left[0] <= 0 && left[1] <= 0 ? "Đủ cả calo lẫn đạm hôm nay."
+      : `Còn thiếu ${[left[0] > 0 ? Math.round(left[0]).toLocaleString("vi-VN") + " kcal" : "", left[1] > 0 ? Math.round(left[1]) + " g đạm" : ""].filter(Boolean).join(" · ")}.`}</p>
+  </div>
+
+  <div class="spread" style="margin:20px 2px 8px"><div class="tiny dim">Món quen · bấm là ghi</div>
+    <button class="ghost sm" data-favedit="1" style="min-height:34px;padding:4px 12px">${favEdit ? "Xong" : "Sửa"}</button></div>
+  <div class="favs">${favs().map(f => `<div class="fav">
+      <button class="favbtn" data-fav="${f.id}"${favEdit ? " disabled" : ""}><span>${esc(f.name)}</span>
+        <span class="small dim">${f.kcal} kcal · ${Math.round(f.p)} g</span></button>
+      ${favEdit ? `<button class="iconbtn favdel" data-favdel="${f.id}" aria-label="Xoá món quen ${esc(f.name)}">×</button>` : ""}</div>`).join("")
+    || `<p class="small dim">Chưa có món quen. Chọn một món bên dưới rồi bấm ☆ để lưu.</p>`}</div>
+
+  <div style="margin-top:20px">
+    <input id="foodQ" type="search" placeholder="Tìm món: pho bo, com tam, uc ga…" value="${esc(foodQ)}" autocomplete="off" aria-label="Tìm món">
+    <div class="chips" style="margin-top:10px">${FOOD_GROUPS.map(([k, lab]) =>
+      `<button class="chip" data-fgroup="${k}" aria-pressed="${foodGroup === k}">${lab}</button>`).join("")}</div>
+    <div id="foodResults" style="margin-top:6px">${foodResults()}</div>
+  </div>
+
+  ${showCustom ? `<div class="card" style="margin-top:14px">
+      <label class="f"><span>Tên món</span><input id="cName" placeholder="VD: Cơm nhà bà ngoại"></label>
+      <div class="g2" style="margin-top:10px">
+        <label class="f"><span>Calo (kcal)</span><input id="cKcal" type="number" inputmode="numeric"></label>
+        <label class="f"><span>Đạm (g)</span><input id="cP" type="number" inputmode="decimal"></label></div>
+      <label class="row small muted" style="gap:9px;margin-top:12px;cursor:pointer">
+        <input type="checkbox" id="cFav" style="width:20px;height:20px;min-height:20px;padding:0;flex:none;accent-color:var(--brass)">
+        Lưu thành món quen</label>
+      <div class="pair" style="margin-top:12px"><button class="ghost" data-custom="0">Huỷ</button>
+        <button class="btn" data-addcustom="1" style="min-height:48px">Thêm</button></div></div>`
+    : `<button class="ghost" data-custom="1" style="width:100%;margin-top:14px">+ Tự nhập món</button>`}
+
+  <div class="tiny dim" style="margin:22px 2px 6px">${isToday ? "Đã ăn hôm nay" : "Đã ăn ngày này"}</div>
+  <div class="card" style="padding:4px 16px">${list.length ? list.map(e => `<div class="lrow">
+      <div style="min-width:0">${esc(e.name)}<span class="small dim" style="display:block">${[e.t, e.q].filter(Boolean).map(esc).join(" · ")}</span></div>
+      <div class="row" style="gap:8px"><span class="num muted" style="white-space:nowrap">${Math.round(e.kcal)} kcal · ${Math.round(e.p)} g</span>
+        <button class="iconbtn" data-fdel="${e.id}" aria-label="Xoá ${esc(e.name)}">×</button></div></div>`).join("")
+    : `<p class="small dim" style="margin:12px 0">Chưa ghi gì.</p>`}</div>
+  ${avg ? `<p class="small muted" style="margin:14px 2px 0">7 ngày trước: trung bình <b style="color:var(--chalk)">${Math.round(avg.kcal).toLocaleString("vi-VN")} kcal</b> · ${Math.round(avg.p)} g đạm mỗi ngày (${avg.n} ngày có ghi).</p>` : ""}
+  <p class="small dim" style="margin:10px 2px 0">Số calo món nấu sẵn là ước lượng cho một suất ở quán (±20–30%). Đừng cân đo quá kỹ — ghi đều quan trọng hơn ghi đúng từng calo.</p>`;
+}
+/** Chỉ vẽ lại danh sách kết quả khi gõ tìm, để ô tìm không mất con trỏ. */
+function refreshFoodResults() { const el = $("#foodResults"); if (el) el.innerHTML = foodResults(); }
+function refreshSel() {
+  if (!foodSel) return;
+  const c = selCalc(), a = $("#foodCalc"), b = $("#foodQtxt");
+  if (a) a.textContent = `${c.kcal} kcal · ${Math.round(c.p)} g đạm`;
+  if (b) b.textContent = c.q;
+}
+function foodClick(el) {
+  if (el.dataset.fday) {
+    const nd = addDays(foodDate, +el.dataset.fday);
+    if (nd > today()) return true;
+    foodDate = nd; foodSel = null; render(); return true;
+  }
+  if (el.dataset.fav) {
+    const f = favs().find(x => x.id === el.dataset.fav); if (!f) return true;
+    addFood({ name: f.name, kcal: f.kcal, p: f.p, q: f.q || "" }); render(); toast("Đã ghi " + f.name); return true;
+  }
+  if (el.dataset.favedit) { favEdit = !favEdit; render(); return true; }
+  if (el.dataset.favdel) { S.favs = favs().filter(x => x.id !== el.dataset.favdel); save(true); render(); return true; }
+  if (el.dataset.fgroup) { foodGroup = foodGroup === el.dataset.fgroup ? "" : el.dataset.fgroup; foodSel = null; render(); return true; }
+  if (el.dataset.food !== undefined) {
+    const i = +el.dataset.food;
+    // món ghi theo "100 g" thì mở sẵn ô gam — cân thịt, cá thì nhập gam tiện hơn
+    foodSel = foodSel && foodSel.i === i ? null : { i, q: 1, gram: /^\d+ g$/.test(FOODS[i][2]), g: FOODS[i][3] || "" };
+    refreshFoodResults(); return true;
+  }
+  if (el.dataset.fmode) { foodSel.gram = el.dataset.fmode === "g"; refreshFoodResults(); return true; }
+  if (el.dataset.fqset) { foodSel.q = +el.dataset.fqset; refreshFoodResults(); return true; }
+  if (el.dataset.fq) { foodSel.q = Math.max(0.5, foodSel.q + +el.dataset.fq); refreshFoodResults(); return true; }
+  if (el.dataset.addsel || el.dataset.favsel) {
+    const c = selCalc(), name = FOODS[foodSel.i][0];
+    if (!(c.kcal > 0 || c.p > 0)) { toast("Nhập số lượng đã"); return true; }
+    if (el.dataset.favsel) {
+      favs().push({ id: uid(), name: name + " · " + c.q, kcal: c.kcal, p: c.p, q: c.q }); save(true);
+      render(); toast("Đã lưu món quen"); return true;
+    }
+    addFood({ name, kcal: c.kcal, p: c.p, q: c.q }); foodSel = null; render(); toast(`Đã ghi ${name} · ${c.kcal} kcal`); return true;
+  }
+  if (el.dataset.custom) { showCustom = el.dataset.custom === "1"; render(); if (showCustom) $("#cName").focus(); return true; }
+  if (el.dataset.addcustom) {
+    const name = $("#cName").value.trim(), kcal = Math.round(+$("#cKcal").value || 0), p = n1(+$("#cP").value || 0);
+    if (!name || !(kcal > 0 || p > 0)) { toast("Nhập tên và calo hoặc đạm"); return true; }
+    addFood({ name, kcal, p, q: "" });
+    if ($("#cFav").checked) favs().push({ id: uid(), name, kcal, p });
+    showCustom = false; save(true); render(); toast("Đã ghi " + name); return true;
+  }
+  if (el.dataset.fdel) {
+    const arr = foodDay(foodDate), e = arr.find(x => x.id === el.dataset.fdel); if (!e) return true;
+    S.food[foodDate] = arr.filter(x => x !== e);
+    if (!S.food[foodDate].length) delete S.food[foodDate];
+    save(true); render(); toast("Đã xoá " + e.name); return true;
+  }
+  return false;
+}
+
 /* ---------------- TÔI ---------------- */
 const TPL_WHY = [
   ["Số set", "10–20 set mỗi nhóm cơ mỗi tuần. Thêm set vẫn thêm cơ nhưng lợi ích giảm dần; sức mạnh chững sớm hơn cơ.",
@@ -1372,9 +1732,15 @@ function gainPace(bw) {
   const [color, msg] = rate < 0.1 ? ["var(--rust)", "Chậm quá — thêm 200–300 kcal mỗi ngày (một cốc sữa hoặc Ensure)."]
     : rate > 0.6 ? ["var(--brass)", "Hơi nhanh, dễ tích mỡ — bớt 150–200 kcal mỗi ngày."]
     : ["var(--jade)", "Đúng nhịp — giữ nguyên cách ăn."];
+  const avg = foodAvg(addDays(today(), 1));
+  const ate = avg && avg.n >= 3 ? `<div class="small muted" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">
+      7 ngày qua ăn trung bình <b style="color:var(--chalk)">${Math.round(avg.kcal).toLocaleString("vi-VN")} kcal</b> (${avg.n} ngày có ghi)${
+      rate < 0.1 ? ` → nhắm khoảng <b style="color:var(--chalk)">${(Math.round((avg.kcal + 250) / 50) * 50).toLocaleString("vi-VN")} kcal</b>.`
+      : rate > 0.6 ? ` → nhắm khoảng <b style="color:var(--chalk)">${(Math.round((avg.kcal - 150) / 50) * 50).toLocaleString("vi-VN")} kcal</b>.`
+      : " — đây là mức ăn hợp với bạn, tin số này hơn con số tính theo công thức."}</div>` : "";
   return `<div class="card" style="margin-top:14px;border-color:${color}">
     <div class="num" style="font-size:22px;color:${color}">${rate > 0 ? "+" : ""}${rate} kg/tuần</div>
-    <div class="small muted">${msg} Mục tiêu 0.25–0.5 kg/tuần.</div></div>`;
+    <div class="small muted">${msg} Mục tiêu 0.25–0.5 kg/tuần.</div>${ate}</div>`;
 }
 function altEditor(d, e) {
   const f = (a, field) => `data-altf="${d.id}|${e.id}|${esc(a.id)}|${field}"`;
@@ -1605,7 +1971,8 @@ function render() {
   // vẽ lại tab Tôi (thêm bài, thêm bài thay thế…) không được gập mục người dùng đang mở
   const wasOpen = tab === "me" && lastTab === "me"
     ? [...document.querySelectorAll("#view details")].map(x => x.open) : null;
-  $("#view").innerHTML = tab === "setup" ? viewSetup() : tab === "train" ? viewTrain() : tab === "history" ? viewHistory() : viewMe();
+  $("#view").innerHTML = tab === "setup" ? viewSetup() : tab === "train" ? viewTrain() : tab === "an" ? viewFood()
+    : tab === "history" ? viewHistory() : viewMe();
   if (wasOpen) document.querySelectorAll("#view details").forEach((x, i) => { if (i < wasOpen.length) x.open = wasOpen[i]; });
   lastTab = tab;
   syncWake();
@@ -1658,10 +2025,13 @@ function nextUnfinished(i) {
 
 /* ---------------- sự kiện ---------------- */
 document.querySelectorAll(".tab").forEach(b =>
-  b.addEventListener("click", () => { tab = b.dataset.tab; render(); window.scrollTo(0, 0); }));
+  b.addEventListener("click", () => {
+    if (b.dataset.tab === "an" && tab !== "an") { foodDate = today(); foodSel = null; favEdit = false; }
+    tab = b.dataset.tab; render(); window.scrollTo(0, 0); }));
 
 document.addEventListener("click", e => {
   const el = e.target.closest("button"); if (!el) return;
+  if (tab === "an" && foodClick(el)) return;
 
   if (el.dataset.goto) { tab = el.dataset.goto; render(); window.scrollTo(0, 0); return; }
   if (el.id === "pickerBtn") { showPicker = !showPicker; render(); return; }
@@ -1851,6 +2221,8 @@ document.addEventListener("click", e => {
 const NUMFIELDS = ["age", "height", "weight", "goalWeight", "activity", "surplus", "proteinPerKg", "fatPerKg", "weeks"];
 document.addEventListener("input", e => {
   const el = e.target;
+  if (el.id === "foodQ") { foodQ = el.value; foodSel = null; refreshFoodResults(); return; }
+  if (el.id === "foodG") { if (foodSel) { foodSel.g = el.value; refreshSel(); } return; }
   if (el.id === "keepAwake") {
     S.keepAwake = el.checked; save(true); syncWake();
     toast(el.checked ? "Màn hình sẽ sáng khi ở tab Tập" : "Màn hình tự tắt như bình thường"); return;
