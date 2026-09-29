@@ -413,9 +413,9 @@ const ALTS = {
 const altsFor = name => (ALTS[name] || []).map(a => ({ ...a }));
 const WARM = ["Back Squat", "Bench Press", "Deadlift", "Overhead Press"];
 const OPTIONAL = ["Triceps Pushdown", "Face Pull", "Hammer Curl", "Hanging Leg Raise",
-  "Leg Press", "Leg Curl", "Calf Raise"];
+  "Leg Press", "Leg Curl", "Calf Raise", "Duỗi tay sau qua đầu", "Leg Curl ngồi máy"];
 
-const PROG_VERSION = 6;
+const PROG_VERSION = 7;
 const mkEx = (name, sets, reps, start, step, rest, unit, note, opt) =>
   ({ id: uid(), name, sets, reps, start, step, rest, unit: unit || "kg",
      note: note || "", fig: FIGKEY[name] || "", alts: altsFor(name), warm: WARM.includes(name),
@@ -430,13 +430,13 @@ function pplDays() {
         ex("Incline Dumbbell Press", 3, "8–10", 16, 2, 120, "kg/tay", "Ngực trên, ghế dốc khoảng 30°. Ghế dốc thường ngay cạnh ghế phẳng nên không phải đổi khu."),
         ex("Overhead Press", 3, "6–8", 25, 2.5, 150, "kg", "Vai trước. Siết mông và bụng để khỏi ưỡn lưng. Đòn không đã là 20kg."),
         ex("Lateral Raise", 4, "12–15", 6, 1, 60, "kg/tay", "Vai ngang, giúp nở vai. Nhẹ thôi, nâng tới ngang vai rồi hạ chậm."),
-        ex("Triceps Pushdown", 3, "10–12", 15, 2.5, 60, "kg", "Tay sau. Khuỷu giữ sát người, chỉ cẳng tay chuyển động."),
+        ex("Duỗi tay sau qua đầu", 3, "10–12", 12, 2, 60, "kg", "Tay sau. Tay ở trên đầu thì tay sau bị kéo dài, to nhanh hơn pushdown. Cáp dây thừng hoặc một quả tạ tay, khuỷu chỉ lên trần, hạ sâu sau đầu."),
       ]},
       { id: uid(), name: "Buổi Kéo", exercises: [
         ex("Deadlift", 3, "5", 52.5, 5, 180, "kg", "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng."),
         ex("Xà đeo tạ", 4, "5–8", 5, 2.5, 150, "+kg", "Lưng xô. Balo đựng tạ hoặc đai. Đủ 8 rep ở set cuối 2 buổi liên tiếp thì tăng 2.5kg."),
         ex("Barbell Row", 4, "8–10", 35, 2.5, 120, "kg", "Lưng giữa. Người gập khoảng 45°, kéo tạ về phía rốn. Dùng luôn đòn vừa deadlift."),
-        ex("Dumbbell Curl", 3, "8–12", 10, 1, 60, "kg/tay", "Tay trước. Lòng bàn tay ngửa lên, khuỷu đứng yên, hạ chậm 2 giây."),
+        ex("Incline Dumbbell Curl", 3, "8–12", 8, 1, 60, "kg/tay", "Tay trước. Nằm ghế dốc 45–60°, tay buông thẳng sau thân để tay trước bị kéo dài ở đầu rep. Khuỷu đứng yên, hạ chậm 2 giây."),
         ex("Face Pull", 4, "15", 12.5, 2.5, 60, "kg", "Vai sau, giúp chống gù vai. Kéo dây về phía trán, siết bả vai, đừng nặng quá."),
         ex("Hammer Curl", 3, "10–12", 10, 1, 60, "kg/tay", "Lòng bàn tay hướng vào nhau. Làm xen kẽ từng set với Face Pull."),
         ex("Hanging Leg Raise", 3, "10–15", 0, 1, 60, "+kg", "Bụng. Treo người trên xà, nâng chân bằng cơ bụng, không đu người lấy đà."),
@@ -446,7 +446,7 @@ function pplDays() {
         ex("Romanian Deadlift", 3, "8–10", 40, 2.5, 120, "kg", "Đùi sau. Đẩy hông ra sau, gối hơi cong, tạ trượt sát chân. Dùng luôn đòn vừa squat, chỉ cần bớt tạ."),
         ex("Bulgarian Split Squat", 3, "8–10/chân", 12, 1, 120, "kg/tay", "Tập từng chân nên cân lại chân yếu hơn. Chân sau gác ghế, dồn lực vào gót chân trước."),
         ex("Leg Press", 3, "10–12", 60, 5, 120, "kg", "Thêm khối lượng cho đùi mà không dồn thêm mỏi lên cột sống sau squat. Đừng duỗi khoá gối ở đỉnh."),
-        ex("Leg Curl", 3, "10–12", 25, 5, 60, "kg", "Đùi sau phần gần gối. Cuốn gót về phía mông, hạ chậm 2–3 giây."),
+        ex("Leg Curl ngồi máy", 3, "10–12", 25, 5, 60, "kg", "Đùi sau. Ngồi thì đùi sau bị kéo dài hơn nằm nên tăng cơ nhiều hơn. Hạ chậm 2–3 giây."),
         ex("Calf Raise", 4, "12–15", 12, 2, 60, "kg", "Mũi chân đứng trên bậc, một tay vịn, tay kia cầm tạ. Hạ gót thật sâu, dừng 1 giây rồi nhón hết cỡ."),
       ]},
   ];
@@ -644,9 +644,40 @@ function refresh(d) {
   if (d.progVersion >= PROG_VERSION) return d;
   const daGhi = Object.keys(d.log || {}).some(k => (d.log[k] || []).length);
   if (!daGhi) d.days = seed(d.programId).days;
-  else { if (d.progVersion < 4) regroup(d); repair(d); }
+  else { if (d.progVersion < 4) regroup(d); if (d.progVersion < 7) swapV7(d); repair(d); }
   d.progVersion = PROG_VERSION;
   return d;
+}
+/** v7: ba bài của Đẩy / Kéo / Chân đổi sang bài tập ở tư thế cơ bị kéo dài (Maeo 2021, 2023).
+ *  Giữ id ô bài nên tiến độ, nhật ký không đổi; các set cũ được đánh dấu là của bài thay thế
+ *  mang tên bài cũ, nên lịch sử tạ cũ không làm lệch gợi ý của bài mới mà vẫn dùng lại được
+ *  khi máy bận. Khởi điểm bài mới ước từ mức tạ gần nhất của bài cũ. */
+const SWAP_V7 = {
+  "Triceps Pushdown": ["Duỗi tay sau qua đầu", "pushdown", kg => Math.max(5, Math.round(kg * .7 / 2.5) * 2.5)],
+  "Leg Curl": ["Leg Curl ngồi máy", "lying-leg-curl", kg => kg],
+  "Dumbbell Curl": ["Incline Dumbbell Curl", "db-curl", kg => Math.max(4, kg - 2)],
+};
+function swapV7(d) {
+  if (tplOf(d.programId).id !== "ppl") return;
+  const base = new Map();
+  pplDays().forEach(x => x.exercises.forEach(e => base.set(e.name, e)));
+  d.days.forEach(x => x.exercises.forEach(e => {
+    const m = SWAP_V7[e.name]; if (!m) return;
+    const [name, oldAlt, conv] = m, b = base.get(name);
+    let lastKg = null, lastDate = "";
+    for (const k in d.log) {
+      const [date, , exId] = k.split("|");
+      if (exId !== e.id || !(d.log[k] || []).length) continue;
+      const sw = (d.swap || {})[k] || "", a = (e.alts || []).find(y => y.id === sw);
+      if (!sw) {  // set của bài cũ → gắn nhãn bài thay thế mang tên bài cũ
+        d.swap[k] = oldAlt;
+        if (date > lastDate) { lastDate = date; lastKg = Math.max(...d.log[k].map(s => +s.kg || 0)); }
+      } else if (a && a.name === name) delete d.swap[k];  // từng dùng bài mới làm bài thay → giờ là bài chính
+    }
+    Object.assign(e, { name, note: b.note, fig: FIGKEY[name] || "", reps: b.reps,
+      start: lastKg != null ? conv(lastKg) : b.start, step: b.step,
+      alts: (e.alts || []).filter(a => a.name !== name) });
+  }));
 }
 /** Bài thay thế nằm trong dữ liệu đã lưu: bản cũ (chưa có ảnh, tên cũ) phải thay bằng bản hiện tại, bài tự thêm thì giữ. */
 function repair(d) {

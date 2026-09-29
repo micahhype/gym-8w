@@ -58,6 +58,7 @@ const fp = fs.mkdtempSync("/tmp/gymbook-") + "/backup.json"; fs.writeFileSync(fp
 await ev(`localStorage.clear()`); await reload();
 const doc = await send("DOM.getDocument"), q = await send("DOM.querySelector", { nodeId: doc.result.root.nodeId, selector: "#importFile" });
 await send("DOM.setFileInputFiles", { nodeId: q.result.nodeId, files: [fp] }); await sleep(600);
+fs.rmSync(fp.replace(/\/backup\.json$/, ""), { recursive: true, force: true });
 ok(await ev(`tab === "train" && S.setupDone && Object.keys(S.log).length === 1 && +S.profile.weight === 58`), "nhập file từ màn chào → tab Tập, đủ dữ liệu");
 await put(`delete d.setupDone; d.bw = [{date: "2026-09-01", kg: 55}]`);
 ok(await ev(`tab === "train"`), "dữ liệu cũ (chưa có cờ) đã có cân nặng: không hiện màn chào");
@@ -153,6 +154,50 @@ await put(`d.setupDone = true; const x = d.days[0];
   [0,1].forEach(i => d.log["${today_}|" + x.id + "|" + x.exercises[i].id] = Array.from({length: x.exercises[i].sets}, () => ({kg:"20",reps:"8"})))`);
 await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
 ok(await ev(`document.querySelector('.btn.jade[data-jump]')?.dataset.jump`) === "2", "Bài tiếp bỏ qua bài đã xong");
+
+console.log("== Đổi 3 bài PPL (v7)");
+ok(await ev(`(() => { const n = tplDays(tplOf("ppl")).flatMap(d => d.exercises.map(e => e.name));
+  return n.includes("Duỗi tay sau qua đầu") && n.includes("Leg Curl ngồi máy") && n.includes("Incline Dumbbell Curl")
+    && !n.includes("Triceps Pushdown") && !n.includes("Leg Curl") && !n.includes("Dumbbell Curl"); })()`), "giáo án PPL mới có 3 bài mới");
+// dữ liệu v6: tên bài cũ, đã tập, một buổi từng dùng Leg Curl ngồi máy làm bài thay thế
+await put(`d.setupDone = true; d.progVersion = 6;
+  const back = { "Duỗi tay sau qua đầu": "Triceps Pushdown", "Leg Curl ngồi máy": "Leg Curl", "Incline Dumbbell Curl": "Dumbbell Curl" };
+  d.days.forEach(x => x.exercises.forEach(e => { if (back[e.name]) { e.name = back[e.name]; e.alts = altsFor(e.name); e.fig = FIGKEY[e.name]; e.note = "cũ"; } }));
+  const f = n => { for (const x of d.days) for (const e of x.exercises) if (e.name === n) return [x, e]; };
+  const [p1, pd] = f("Triceps Pushdown"), [p2, lc] = f("Leg Curl"), [p3, dc] = f("Dumbbell Curl");
+  d.log["2026-09-20|" + p1.id + "|" + pd.id] = [{kg:"20",reps:"12"},{kg:"20",reps:"11"}];
+  d.log["2026-09-22|" + p2.id + "|" + lc.id] = [{kg:"30",reps:"12"}];
+  d.log["2026-09-15|" + p2.id + "|" + lc.id] = [{kg:"25",reps:"12"}];
+  d.swap["2026-09-15|" + p2.id + "|" + lc.id] = "seated-leg-curl";
+  d.log["2026-09-21|" + p3.id + "|" + dc.id] = [{kg:"10",reps:"10"}];
+  window.__ids = [pd.id, lc.id, dc.id]; d.__ids = [pd.id, lc.id, dc.id]`);
+const v7 = await ev(`(() => { const ids = JSON.parse(localStorage.getItem("soSat.v2")).__ids;
+  const all = S.days.flatMap(x => x.exercises.map(e => [x, e])), by = id => all.find(([, e]) => e.id === id);
+  return { v: S.progVersion, names: ids.map(id => by(id)[1].name), starts: ids.map(id => by(id)[1].start),
+    figs: ids.map(id => by(id)[1].fig), notes: ids.map(id => by(id)[1].note),
+    sw: Object.fromEntries(Object.entries(S.swap)), ids,
+    sug: ids.map(id => { const [x, e] = by(id); curDay = x.id; return suggest(eff(e, curDate, x.id), 0).kg; }) }; })()`);
+ok(v7.v === 7, "lên progVersion 7");
+ok(JSON.stringify(v7.names) === JSON.stringify(["Duỗi tay sau qua đầu", "Leg Curl ngồi máy", "Incline Dumbbell Curl"]), "đổi tên, giữ id: " + v7.names);
+ok(JSON.stringify(v7.figs) === JSON.stringify(["ohext", "seatedlegcurl", "inclinecurl"]) && !v7.notes.includes("cũ"), "ảnh và ghi chú của bài mới");
+ok(JSON.stringify(v7.starts) === JSON.stringify([15, 30, 8]), "khởi điểm ước từ bài cũ (20×0.7→15, 30, 10−2): " + v7.starts);
+// Leg Curl ngồi máy: buổi 15/09 từng tập đúng máy này (25kg) → dùng lịch sử thật thay vì ước lượng
+ok(JSON.stringify(v7.sug.map(Number)) === JSON.stringify([15, 25, 8]), "gợi ý: khởi điểm mới, hoặc lịch sử thật của đúng bài mới: " + v7.sug);
+const swv = Object.values(v7.sw).sort().join(",");
+ok(swv === "db-curl,lying-leg-curl,pushdown", "set cũ gắn nhãn bài thay thế tên cũ, buổi dùng bài mới làm bài thay → thành bài chính: " + swv);
+await click("[data-tab=history]"); await sleep(150);
+const h7 = await ev(`document.querySelector('#view').textContent`);
+ok(/Triceps Pushdown/.test(h7) && /Leg Curl nằm máy/.test(h7) && /Dumbbell Curl/.test(h7) && /Leg Curl ngồi máy/.test(h7) && !/bài thay đã xoá|Bài đã xoá/.test(h7), "nhật ký cũ vẫn đúng tên bài đã tập");
+// máy bận: chọn lại Triceps Pushdown thì gợi ý theo tạ cũ
+await ev(`(() => { const id = JSON.parse(localStorage.getItem("soSat.v2")).__ids[0]; const x = S.days.find(x => x.exercises.some(e => e.id === id));
+  curDay = x.id; exIdx = x.exercises.findIndex(e => e.id === id); tab = "train"; render(); })()`);
+await click('[data-alt="pushdown"]'); await sleep(150);
+ok(await ev(`$("#kgVal").value`) === "20", "dùng Pushdown làm bài thay: gợi ý 20kg như cũ");
+await reload();
+ok(await ev(`S.progVersion === 7 && Object.values(S.swap).filter(v => v === "pushdown").length >= 1`), "tải lại không chuyển đổi hai lần");
+await put(`d.setupDone = true; d.programId = "ul4"; d.progVersion = 6; d.days = tplDays(tplOf("ulppl"));
+  const e = d.days[0].exercises.find(e => e.name === "Triceps Pushdown"); d.log["2026-09-20|" + d.days[0].id + "|" + e.id] = [{kg:"20",reps:"12"}]`);
+ok(await ev(`S.days[0].exercises.some(e => e.name === "Triceps Pushdown")`), "giáo án khác PPL: không đổi bài");
 
 console.log("== Giữ màn hình sáng");
 await put(`d.setupDone = true`);

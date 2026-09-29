@@ -6,6 +6,6 @@ cd "$(dirname "$0")/.."
 PROFILE=$(mktemp -d)
 python3 -m http.server 8765 >/dev/null 2>&1 & SRV=$!
 google-chrome --headless=new --remote-debugging-port=9333 --user-data-dir="$PROFILE" about:blank >/dev/null 2>&1 & CHR=$!
-trap 'kill $SRV $CHR 2>/dev/null; rm -rf "$PROFILE"' EXIT
+trap 'kill $SRV $CHR 2>/dev/null; wait $CHR 2>/dev/null; rm -rf "$PROFILE" 2>/dev/null' EXIT
 for _ in $(seq 1 30); do curl -s localhost:9333/json >/dev/null && curl -s localhost:8765 >/dev/null && break; sleep 0.3; done
 node tests/e2e.mjs "$@"

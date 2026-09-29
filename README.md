@@ -25,7 +25,8 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
 
 Giáo án mặc định là **đẩy / kéo / chân**, mục tiêu tăng cơ. Ba buổi xoay vòng,
 hợp với 5–6 buổi/tuần: mỗi buổi chỉ quanh một hai khu của phòng tập nên đỡ phải
-đi tới lui chờ máy. Mức tạ khởi điểm để thấp cho an toàn, app tự gợi ý tăng
+đi tới lui chờ máy. Tay sau, tay trước và đùi sau dùng bài ở tư thế cơ bị kéo dài
+(duỗi tay sau qua đầu, cuốn tạ ghế dốc, cuốn đùi ngồi). Mức tạ khởi điểm để thấp cho an toàn, app tự gợi ý tăng
 sau mỗi buổi; khối lượng dồn về đùi trước vì đó thường là nhóm bị bỏ khi tập
 kiểu chia nhóm cơ. Sửa thoải mái — nó chỉ là dữ liệu khởi tạo.
 
@@ -114,7 +115,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 50 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 61 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 
