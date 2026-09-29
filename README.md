@@ -14,6 +14,9 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   lệch gợi ý của bài chính; buổi sau tự về lại bài chính.
 - **Nhật ký** — các buổi đã ghi, nhóm theo tuần, mỗi buổi thu gọn một dòng
   (tên buổi, số bài, số set, tổng khối lượng tạ × rep); bấm để xem chi tiết.
+  Tuần đếm từ ngày bắt đầu giáo án (mặc định thứ Hai của tuần đầu), tiêu đề
+  tuần ghi rõ khoảng ngày. Ngày bắt đầu không phải thứ Hai thì tab Tôi có nút
+  lùi về thứ Hai cho khớp lịch.
 - **Tôi** — cân nặng, BMI, mục tiêu calo/đạm (Mifflin–St Jeor), trình sửa chương
   trình, xuất/nhập JSON.
 

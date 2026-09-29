@@ -228,6 +228,12 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const n1 = v => Math.round(v * 10) / 10;
 const fmtDate = s => { const [, m, d] = s.split("-"); return d + "/" + m; };
+/** Cộng ngày theo giờ máy (không qua UTC để khỏi lệch ngày). */
+const addDays = (s, n) => { const x = new Date(s + "T00:00:00"); x.setDate(x.getDate() + n);
+  return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
+/** Thứ Hai cùng tuần hoặc ngay trước ngày s — tuần giáo án khớp tuần lịch. */
+const mondayOf = s => addDays(s, -((new Date(s + "T00:00:00").getDay() + 6) % 7));
+const THU = ["Chủ nhật", "thứ Hai", "thứ Ba", "thứ Tư", "thứ Năm", "thứ Sáu", "thứ Bảy"];
 const mmss = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
 
 /* ---------------- hình minh hoạ động tác ----------------
@@ -574,7 +580,7 @@ function seed(programId) {
   return {
     profile: { name: "", sex: "m", age: "", height: "", weight: "",
       activity: 1.6, surplus: 450, proteinPerKg: 2, fatPerKg: 1.2,
-      goalWeight: "", startDate: today(), weeks: 8 },
+      goalWeight: "", startDate: mondayOf(today()), weeks: 8 },
     days: tplDays(tplOf(programId)),
     log: {}, swap: {}, skip: {}, bw: [], progVersion: PROG_VERSION, programId: tplOf(programId).id,
   };
@@ -1131,7 +1137,9 @@ function viewHistory() {
     const nSets = list.reduce((a, r) => a + r.sets.length, 0);
     const rows = list.map(r => `<div class="lrow"><div>${esc(r.name)}</div>
         <div class="num muted">${r.sets.map(x => `${esc(x.kg)}×${esc(x.reps)}`).join("  ")}</div></div>`).join("");
-    const w = weekNo(date), head = w !== wk ? `<div class="tiny wkhead">Tuần ${w} · ${dates.filter(x => weekNo(x) === w).length} buổi</div>` : "";
+    const w = weekNo(date), from = addDays(S.profile.startDate, (w - 1) * 7);
+    const range = isNaN(new Date(from + "T00:00:00")) ? "" : ` · ${fmtDate(from)} – ${fmtDate(addDays(from, 6))}`;
+    const head = w !== wk ? `<div class="tiny wkhead">Tuần ${w}${range} · ${dates.filter(x => weekNo(x) === w).length} buổi</div>` : "";
     wk = w;
     return `${head}<details class="card sess">
       <summary>
@@ -1221,6 +1229,14 @@ const TPL_WHY = [
   ["Đùi sau", "Squat gần như không làm to đùi sau, nên giáo án nào cũng có RDL và cuốn đùi; đá đùi thêm cho phần đùi trước squat bỏ sót.",
     "Kubo 2019", "https://www.researchgate.net/publication/333950507_Effects_of_squat_training_with_different_depths_on_lower_limb_muscle_volumes"],
 ];
+/** Ngày bắt đầu không phải thứ Hai thì tuần giáo án lệch tuần lịch — gợi ý lùi về thứ Hai. */
+function startHint(start) {
+  const x = new Date(start + "T00:00:00");
+  if (isNaN(x) || x.getDay() === 1) return "";
+  const mon = mondayOf(start);
+  return `<div class="small muted" style="margin-top:-2px">Ngày này là ${THU[x.getDay()]}, nên mỗi tuần giáo án chạy từ ${THU[x.getDay()]} tới ${THU[(x.getDay() + 6) % 7]}.
+    <button class="ghost sm" data-snapmon="${mon}" style="width:100%;margin-top:8px">Lùi về thứ Hai ${fmtDate(mon)} cho khớp lịch</button></div>`;
+}
 function templatesSec() {
   const cur = tplOf(S.programId);
   const cards = TPL.map(t => {
@@ -1313,6 +1329,7 @@ function viewMe() {
         <label class="f"><span>Ngày bắt đầu</span><input type="date" id="p-startDate" value="${esc(p.startDate)}"></label>
         <label class="f"><span>Số tuần</span><input type="number" inputmode="numeric" id="p-weeks" value="${esc(p.weeks)}"></label>
       </div>
+      ${startHint(p.startDate)}
     </div>`;
 
   if (!t) return `
@@ -1646,6 +1663,10 @@ document.addEventListener("click", e => {
       toast("Đã chuyển sang " + t.name);
     } return;
   }
+  if (el.dataset.snapmon) {
+    S.profile.startDate = el.dataset.snapmon; save(true); render();
+    toast("Tuần giờ bắt đầu từ thứ Hai · đang ở tuần " + weekNo(today())); return;
+  }
   if (el.id === "importBtn") { $("#importFile").click(); return; }
   if (el.id === "resetBtn") {
     if (confirm(`Khôi phục giáo án "${tplOf(S.programId).name}" về bản gốc?\nNhật ký và cân nặng vẫn được giữ.`)) {
@@ -1696,6 +1717,7 @@ document.addEventListener("input", e => {
 /* Vừa đủ (hoặc vừa thiếu) thông số → vẽ lại tab Tôi ở dạng tương ứng. */
 let hadProfile = !!targets();
 document.addEventListener("change", e => {
+  if (tab === "me" && e.target.id === "p-startDate") { render(); return; }
   if (tab === "me" && e.target.id && e.target.id.startsWith("p-") && !!targets() !== hadProfile) {
     hadProfile = !!targets(); render();
   }
