@@ -181,6 +181,13 @@ details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary::after{content:"+";color:var(--brass);font-size:26px;line-height:1}
 details.sec[open]>summary::after{content:"–"}
 details.sec>.body{padding:0 16px 16px;border-top:1px solid var(--line)}
+details.sess{padding:0}
+details.sess>summary{list-style:none;cursor:pointer;padding:13px 16px;display:flex;align-items:center;gap:12px}
+details.sess>summary::-webkit-details-marker{display:none}
+details.sess>summary::after{content:"▸";color:var(--dim);transition:transform .15s}
+details.sess[open]>summary::after{transform:rotate(90deg)}
+details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
+.wkhead{margin:10px 2px -2px;color:var(--dim)}
 
 /* ---------- nav ---------- */
 nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(13,16,20,.97);
@@ -1114,21 +1121,25 @@ function sessionRows(date) {
 function viewHistory() {
   const dates = sessionDates();
   if (!dates.length) return `<div class="empty">Chưa ghi buổi nào.<br>Sang tab Tập và bấm xong set đầu tiên.</div>`;
-  return `<div class="sub">${dates.length} buổi. Khối lượng = tạ × rep cộng dồn — con số này tăng đều nghĩa là bạn đang tiến bộ.</div>
+  let wk = null;
+  return `<div class="sub">${dates.length} buổi. Khối lượng = tạ × rep cộng dồn — con số này tăng đều nghĩa là bạn đang tiến bộ. Bấm vào một buổi để xem chi tiết.</div>
   <div class="stack">` + dates.map(date => {
     const list = sessionRows(date), tally = {};
     list.forEach(r => { tally[r.dayId] = (tally[r.dayId] || 0) + r.sets.length; });
     const top = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
     const d = allDays().find(x => x.id === top);
+    const nSets = list.reduce((a, r) => a + r.sets.length, 0);
     const rows = list.map(r => `<div class="lrow"><div>${esc(r.name)}</div>
         <div class="num muted">${r.sets.map(x => `${esc(x.kg)}×${esc(x.reps)}`).join("  ")}</div></div>`).join("");
-    return `<div class="card">
-      <div class="spread" style="margin-bottom:8px">
-        <div><div class="num" style="font-size:22px">${fmtDate(date)} · ${esc(d ? d.name : "?")}</div>
-          <div class="small dim">Tuần ${weekNo(date)}</div></div>
-        <div style="text-align:right"><div class="num" style="font-size:22px;color:var(--brass)">${Math.round(volume(date)).toLocaleString("vi-VN")}</div>
+    const w = weekNo(date), head = w !== wk ? `<div class="tiny wkhead">Tuần ${w} · ${dates.filter(x => weekNo(x) === w).length} buổi</div>` : "";
+    wk = w;
+    return `${head}<details class="card sess">
+      <summary>
+        <div style="flex:1;min-width:0"><div class="num" style="font-size:19px">${fmtDate(date)} · ${esc(d ? d.name : "?")}</div>
+          <div class="small dim">${list.length} bài · ${nSets} set</div></div>
+        <div style="text-align:right"><div class="num" style="font-size:19px;color:var(--brass)">${Math.round(volume(date)).toLocaleString("vi-VN")}</div>
           <div class="small dim">kg</div></div>
-      </div>${rows}</div>`;
+      </summary><div class="body">${rows}</div></details>`;
   }).join("") + `</div>`;
 }
 

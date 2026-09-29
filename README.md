@@ -12,7 +12,8 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   Phòng đông, máy bận: bấm một bài thay thế ngay dưới tên bài (Bench → đẩy ngực
   tạ tay, Xà → Lat Pulldown…). Bài thay thế có lịch sử tạ riêng nên không làm
   lệch gợi ý của bài chính; buổi sau tự về lại bài chính.
-- **Nhật ký** — các buổi đã ghi, kèm tổng khối lượng (tạ × rep).
+- **Nhật ký** — các buổi đã ghi, nhóm theo tuần, mỗi buổi thu gọn một dòng
+  (tên buổi, số bài, số set, tổng khối lượng tạ × rep); bấm để xem chi tiết.
 - **Tôi** — cân nặng, BMI, mục tiêu calo/đạm (Mifflin–St Jeor), trình sửa chương
   trình, xuất/nhập JSON.
 
