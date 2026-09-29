@@ -23,12 +23,11 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
 - **Tôi** — cân nặng, BMI, mục tiêu calo/đạm (Mifflin–St Jeor), trình sửa chương
   trình, xuất/nhập JSON.
 
-Kèm sẵn một giáo án **đẩy / kéo / chân** cho người từng tập tạ vài năm rồi
-nghỉ, mục tiêu tăng cân tăng cơ. Ba buổi xoay vòng, hợp với 5–6 buổi/tuần: mỗi
-buổi chỉ quanh một hai khu của phòng tập nên đỡ phải đi tới lui chờ máy. Mức tạ
-khởi điểm đặt ở khoảng 65% mức cũ; khối lượng dồn về đùi trước vì đó thường là
-nhóm bị bỏ khi tập kiểu chia nhóm cơ. Sửa thoải mái — nó chỉ là dữ liệu khởi
-tạo.
+Giáo án mặc định là **đẩy / kéo / chân**, mục tiêu tăng cơ. Ba buổi xoay vòng,
+hợp với 5–6 buổi/tuần: mỗi buổi chỉ quanh một hai khu của phòng tập nên đỡ phải
+đi tới lui chờ máy. Mức tạ khởi điểm để thấp cho an toàn, app tự gợi ý tăng
+sau mỗi buổi; khối lượng dồn về đùi trước vì đó thường là nhóm bị bỏ khi tập
+kiểu chia nhóm cơ. Sửa thoải mái — nó chỉ là dữ liệu khởi tạo.
 
 Vì không có PT đi kèm, app tự lo mấy việc PT hay nhắc:
 
@@ -109,6 +108,16 @@ JAVA_HOME=/đường/dẫn/jdk-21 npm run apk
 ```
 python3 -m http.server 8080
 ```
+
+## Test
+
+```
+tests/run.sh            # 41 bước qua Chrome headless ở khổ 400px
+tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
+```
+
+Cần `python3`, `google-chrome` và node ≥ 22. Script tự bật `http.server` và
+Chrome rồi tự tắt khi xong.
 
 ## Deploy
 

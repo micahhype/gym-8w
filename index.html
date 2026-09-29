@@ -420,7 +420,7 @@ const mkEx = (name, sets, reps, start, step, rest, unit, note, opt) =>
   ({ id: uid(), name, sets, reps, start, step, rest, unit: unit || "kg",
      note: note || "", fig: FIGKEY[name] || "", alts: altsFor(name), warm: WARM.includes(name),
      opt: opt == null ? OPTIONAL.includes(name) : !!opt });
-/** Giáo án gốc — ghi chú viết riêng cho người dùng này (mức tạ cũ, squat là lift yếu). */
+/** Giáo án Đẩy / Kéo / Chân — bản mặc định, ghi chú kèm vai trò của từng bài. */
 function pplDays() {
   const ex = (name, sets, reps, start, step, rest, unit, note) =>
     mkEx(name, sets, reps, start, step, rest, unit, note);
@@ -433,18 +433,18 @@ function pplDays() {
         ex("Triceps Pushdown", 3, "10–12", 15, 2.5, 60, "kg", "Tay sau. Khuỷu giữ sát người, chỉ cẳng tay chuyển động."),
       ]},
       { id: uid(), name: "Buổi Kéo", exercises: [
-        ex("Deadlift", 3, "5", 52.5, 5, 180, "kg", "Khởi điểm 52.5kg ≈ 65% mức cũ 80kg. Lưng thẳng tuyệt đối, đẩy sàn bằng chân chứ không giật bằng lưng."),
+        ex("Deadlift", 3, "5", 52.5, 5, 180, "kg", "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng."),
         ex("Xà đeo tạ", 4, "5–8", 5, 2.5, 150, "+kg", "Lưng xô. Balo đựng tạ hoặc đai. Đủ 8 rep ở set cuối 2 buổi liên tiếp thì tăng 2.5kg."),
         ex("Barbell Row", 4, "8–10", 35, 2.5, 120, "kg", "Lưng giữa. Người gập khoảng 45°, kéo tạ về phía rốn. Dùng luôn đòn vừa deadlift."),
         ex("Dumbbell Curl", 3, "8–12", 10, 1, 60, "kg/tay", "Tay trước. Lòng bàn tay ngửa lên, khuỷu đứng yên, hạ chậm 2 giây."),
-        ex("Face Pull", 4, "15", 12.5, 2.5, 60, "kg", "Vai sau, chống vai gù do ngồi bàn phím. Kéo dây về phía trán, siết bả vai, đừng nặng quá."),
+        ex("Face Pull", 4, "15", 12.5, 2.5, 60, "kg", "Vai sau, giúp chống gù vai. Kéo dây về phía trán, siết bả vai, đừng nặng quá."),
         ex("Hammer Curl", 3, "10–12", 10, 1, 60, "kg/tay", "Lòng bàn tay hướng vào nhau. Làm xen kẽ từng set với Face Pull."),
         ex("Hanging Leg Raise", 3, "10–15", 0, 1, 60, "+kg", "Bụng. Treo người trên xà, nâng chân bằng cơ bụng, không đu người lấy đà."),
       ]},
       { id: uid(), name: "Buổi Chân", exercises: [
-        ex("Back Squat", 4, "6–8", 42.5, 2.5, 180, "kg", "Bài quan trọng nhất với bạn — squat đang là lift yếu nhất so với thân trên. Xuống tới khi đùi song song sàn."),
+        ex("Back Squat", 4, "6–8", 42.5, 2.5, 180, "kg", "Đùi trước, bài chính của buổi. Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân."),
         ex("Romanian Deadlift", 3, "8–10", 40, 2.5, 120, "kg", "Đùi sau. Đẩy hông ra sau, gối hơi cong, tạ trượt sát chân. Dùng luôn đòn vừa squat, chỉ cần bớt tạ."),
-        ex("Bulgarian Split Squat", 3, "8–10/chân", 12, 1, 120, "kg/tay", "Sửa lệch chân trái phải. Chân sau gác ghế, dồn lực vào gót chân trước."),
+        ex("Bulgarian Split Squat", 3, "8–10/chân", 12, 1, 120, "kg/tay", "Tập từng chân nên cân lại chân yếu hơn. Chân sau gác ghế, dồn lực vào gót chân trước."),
         ex("Leg Press", 3, "10–12", 60, 5, 120, "kg", "Thêm khối lượng cho đùi mà không dồn thêm mỏi lên cột sống sau squat. Đừng duỗi khoá gối ở đỉnh."),
         ex("Leg Curl", 3, "10–12", 25, 5, 60, "kg", "Đùi sau phần gần gối. Cuốn gót về phía mông, hạ chậm 2–3 giây."),
         ex("Calf Raise", 4, "12–15", 12, 2, 60, "kg", "Mũi chân đứng trên bậc, một tay vịn, tay kia cầm tạ. Hạ gót thật sâu, dừng 1 giây rồi nhón hết cỡ."),
@@ -621,8 +621,23 @@ function migrate(old) {
   }));
   if (!old.swap) old.swap = {};
   if (!old.skip) old.skip = {};
+  old.days.concat(old.oldDays || []).forEach(d => d.exercises.forEach(e => {
+    if (NOTE_FIX[e.note]) e.note = NOTE_FIX[e.note];
+  }));
   return old;
 }
+/** Ghi chú cũ viết riêng cho một người (mức tạ cũ, thói quen ngồi máy) → bản chung.
+ *  Chỉ thay khi ghi chú còn đúng nguyên văn, người dùng đã sửa thì giữ. */
+const NOTE_FIX = {
+  "Khởi điểm 52.5kg ≈ 65% mức cũ 80kg. Lưng thẳng tuyệt đối, đẩy sàn bằng chân chứ không giật bằng lưng.":
+    "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng.",
+  "Vai sau, chống vai gù do ngồi bàn phím. Kéo dây về phía trán, siết bả vai, đừng nặng quá.":
+    "Vai sau, giúp chống gù vai. Kéo dây về phía trán, siết bả vai, đừng nặng quá.",
+  "Bài quan trọng nhất với bạn — squat đang là lift yếu nhất so với thân trên. Xuống tới khi đùi song song sàn.":
+    "Đùi trước, bài chính của buổi. Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân.",
+  "Sửa lệch chân trái phải. Chân sau gác ghế, dồn lực vào gót chân trước.":
+    "Tập từng chân nên cân lại chân yếu hơn. Chân sau gác ghế, dồn lực vào gót chân trước.",
+};
 /** Chương trình mặc định có bản mới: thay vào nếu người dùng chưa ghi buổi nào
  *  (đã tập rồi thì xếp lại theo bản mới nhưng giữ id, mức tạ và nhật ký của từng bài). */
 function refresh(d) {
