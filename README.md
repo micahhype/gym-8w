@@ -3,6 +3,9 @@
 Sổ tập tạ chạy hoàn toàn trong trình duyệt. Một file `index.html`, không backend,
 không tài khoản. Mọi số liệu nằm trong `localStorage` của máy bạn.
 
+- **Màn hình chào** — lần đầu mở: *Bắt đầu mới* (điền hồ sơ, bỏ qua được, rồi
+  chọn giáo án) hoặc *Nhập dữ liệu cũ* từ file JSON. Dữ liệu đã có từ trước thì
+  bỏ qua màn này.
 - **Tập** — mở là vào thẳng buổi hôm nay (tự chọn A hay B theo buổi gần nhất).
   Mỗi lần một bài, có thanh tiến độ và dãy chấm để biết đang ở đâu. Tạ và rep điền
   sẵn từ set trước, chỉnh bằng nút −/+, bấm một nút là xong set. Đồng hồ nghỉ tự

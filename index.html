@@ -204,6 +204,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(13,16,20,.
   background:var(--jade);color:#08201a;padding:13px 22px;border-radius:99px;font-weight:600;
   z-index:50;opacity:0;pointer-events:none;transition:opacity .18s;white-space:nowrap}
 .toast.show{opacity:1}
+body.onb nav{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -489,7 +490,7 @@ const EXDB = {
 /** [tên, set, rep, nghỉ (giây), bài phụ?] */
 const TPL = [
   { id: "ppl", name: "Đẩy / Kéo / Chân", per: 6, perText: "5–6 buổi/tuần", time: "60–75 phút",
-    fit: "Giáo án ban đầu. Hợp khi đi tập gần như mỗi ngày; mỗi buổi chỉ quanh một khu của phòng nên đỡ chờ máy." },
+    fit: "Hợp khi đi tập gần như mỗi ngày. Mỗi buổi chỉ quanh một khu của phòng nên đỡ chờ máy; nhiều set nhất trong các giáo án." },
   { id: "ul4", name: "Trên / Dưới", per: 4, perText: "4 buổi/tuần", time: "60–70 phút",
     fit: "Cân bằng nhất giữa thời gian và kết quả. Mỗi nhóm cơ 2 lần/tuần, có ngày nghỉ xen giữa (vd T2, T3 tập · T4 nghỉ · T5, T6 tập).",
     days: [
@@ -583,6 +584,7 @@ function seed(programId) {
       goalWeight: "", startDate: mondayOf(today()), weeks: 8 },
     days: tplDays(tplOf(programId)),
     log: {}, swap: {}, skip: {}, bw: [], progVersion: PROG_VERSION, programId: tplOf(programId).id,
+    setupDone: false,
   };
 }
 
@@ -591,11 +593,17 @@ function load() {
   try {
     const d = JSON.parse(localStorage.getItem(KEY) || "null");
     // migrate cả dữ liệu v2 đã lưu: chỉ điền trường còn thiếu nên chạy lại vô hại
-    if (d && d.profile && Array.isArray(d.days) && d.days.length) return refresh(migrate(d));
+    if (d && d.profile && Array.isArray(d.days) && d.days.length) return setupFlag(refresh(migrate(d)));
     const old = JSON.parse(localStorage.getItem("soSat.v1") || "null");
-    if (old && old.profile && Array.isArray(old.days)) return migrate(old);
+    if (old && old.profile && Array.isArray(old.days)) return setupFlag(migrate(old));
   } catch (e) { /* dữ liệu hỏng hoặc trình duyệt chặn — dùng bản mặc định */ }
   return seed();
+}
+/** Dữ liệu từ trước khi có màn hình chào: đã ghi gì (set, cân, hồ sơ) thì coi như thiết lập xong. */
+function setupFlag(d) {
+  if (d.setupDone == null) d.setupDone = Object.keys(d.log || {}).some(k => (d.log[k] || []).length)
+    || (d.bw || []).length > 0 || !!(d.profile && d.profile.weight);
+  return d;
 }
 /** v1 chưa có start/step/rest — lấy từ bản mặc định theo tên bài. */
 function migrate(old) {
@@ -874,7 +882,8 @@ function hiName(name) {
 function renderTop() {
   const el = $("#topbar");
   if (tab !== "train") {
-    el.innerHTML = `<div class="topline"><div class="session">${tab === "history" ? "Nhật <em>ký</em>" : "Hồ <em>sơ</em>"}</div></div>`;
+    el.innerHTML = `<div class="topline"><div class="session">${tab === "setup" ? "Gym <em>Book</em>"
+      : tab === "history" ? "Nhật <em>ký</em>" : "Hồ <em>sơ</em>"}</div></div>`;
     return;
   }
   const d = day(), pr = progress(), hasOpt = pr.optTotal > 0;
@@ -1276,10 +1285,11 @@ function startHint(start) {
   return `<div class="small muted" style="margin-top:-2px">Ngày này là ${THU[x.getDay()]}, nên mỗi tuần giáo án chạy từ ${THU[x.getDay()]} tới ${THU[(x.getDay() + 6) % 7]}.
     <button class="ghost sm" data-snapmon="${mon}" style="width:100%;margin-top:8px">Lùi về thứ Hai ${fmtDate(mon)} cho khớp lịch</button></div>`;
 }
-function templatesSec() {
+/** pick: màn thiết lập đầu — không có "Đang dùng", bấm là chọn luôn. */
+function tplCards(pick) {
   const cur = tplOf(S.programId);
-  const cards = TPL.map(t => {
-    const w = weeklySets(t), on = t.id === cur.id;
+  return TPL.map(t => {
+    const w = weeklySets(t), on = !pick && t.id === cur.id;
     const mus = MUSCLES.map(([k, lab]) => `<span style="white-space:nowrap">${lab} <b style="color:var(--chalk)">${Math.round(w[k] || 0)}</b></span>`).join(" · ");
     const days = tplDays(t).map(d => `<p style="margin-top:10px"><b style="color:var(--chalk)">${esc(d.name)}</b><br>${d.exercises.map(e =>
       `${esc(e.name)} ${e.sets}×${esc(e.reps)}${e.opt ? " (phụ)" : ""}`).join(" · ")}</p>`).join("");
@@ -1291,9 +1301,13 @@ function templatesSec() {
       <p class="small dim" style="margin:10px 0 0;line-height:1.7">Set/tuần: ${mus}</p>
       <details class="note" style="margin-top:6px"><summary>Xem các buổi</summary>${days}</details>
       ${on ? `<div class="small" style="color:var(--brass);margin-top:10px">● Đang dùng</div>`
+        : pick ? `<button class="btn" data-pick="${t.id}" style="margin-top:12px">Chọn giáo án này</button>`
         : `<button class="ghost sm" data-usetpl="${t.id}" style="margin-top:10px;width:100%">Dùng giáo án này</button>`}
     </div>`;
   }).join("");
+}
+function templatesSec() {
+  const cur = tplOf(S.programId), cards = tplCards(false);
   return `<details class="sec"><summary>Giáo án</summary><div class="body">
     <p class="small muted" style="margin:14px 0 12px">Đang dùng <b style="color:var(--chalk)">${esc(cur.name)}</b>.
       Chọn theo số buổi bạn thật sự đi được mỗi tuần. Đổi giáo án vẫn giữ nhật ký; bài trùng tên gợi ý tạ theo lần tập gần nhất.</p>
@@ -1338,10 +1352,20 @@ function altEditor(d, e) {
 }
 function viewMe() {
   const p = S.profile, t = targets();
-  const bw = [...S.bw].sort((a, b) => b.date.localeCompare(a.date));
-  const latest = bw[0] ? bw[0].kg : +p.weight;
+  const profileForm = profileFormHTML(p);
 
-  const profileForm = `
+  if (!t) return `
+    <h2>Thiết lập</h2>
+    <div class="sub">Nhập tuổi, chiều cao, cân nặng để trang tính mục tiêu calo và đạm.
+      Số liệu chỉ nằm trong máy này, không gửi đi đâu.</div>
+    <div class="card">${profileForm}</div>
+    <div style="margin-top:16px" class="stack">${templatesSec()}${dataSec()}</div>
+    <div style="margin-top:16px">${installCard()}</div>
+    <div style="margin-top:12px">${wakeCard()}</div>`;
+  return viewMeFull(p, t, profileForm);
+}
+function profileFormHTML(p) {
+  return `
     <div class="stack" style="padding-top:16px">
       <div class="g2">
         <label class="f"><span>Tên</span><input id="p-name" value="${esc(p.name)}" placeholder="Tuỳ bạn"></label>
@@ -1370,16 +1394,10 @@ function viewMe() {
       </div>
       ${startHint(p.startDate)}
     </div>`;
-
-  if (!t) return `
-    <h2>Thiết lập</h2>
-    <div class="sub">Nhập tuổi, chiều cao, cân nặng để trang tính mục tiêu calo và đạm.
-      Số liệu chỉ nằm trong trình duyệt máy này, không gửi đi đâu.</div>
-    <div class="card">${profileForm}</div>
-    <p class="small dim" style="margin-top:18px;text-align:center">Giáo án ở tab Tập dùng được ngay, không cần điền gì.</p>
-    <div style="margin-top:16px">${templatesSec()}</div>
-    <div style="margin-top:16px">${installCard()}</div>
-    <div style="margin-top:12px">${wakeCard()}</div>`;
+}
+function viewMeFull(p, t, profileForm) {
+  const bw = [...S.bw].sort((a, b) => b.date.localeCompare(a.date));
+  const latest = bw[0] ? bw[0].kg : +p.weight;
 
   const bmi = latest / Math.pow(p.height / 100, 2);
   const goal = +p.goalWeight || 0;
@@ -1479,28 +1497,69 @@ function viewMe() {
       <button class="ghost" id="addDay" style="margin-top:16px;width:100%">+ Thêm buổi tập</button>
     </div></details>
 
-    <details class="sec"><summary>Dữ liệu</summary><div class="body">
-      <p class="small muted" style="margin:14px 0">Mọi thứ nằm trong trình duyệt máy này. Xoá dữ liệu duyệt web là mất — xuất file định kỳ.</p>
+    ${dataSec()}
+  </div>`;
+}
+const importInput = () => `<input type="file" id="importFile"${NATIVE ? "" : ' accept="application/json,.json"'} hidden>`;
+function dataSec() {
+  return `<details class="sec"><summary>Dữ liệu</summary><div class="body">
+      <p class="small muted" style="margin:14px 0">Mọi thứ nằm trong ${NATIVE ? "app trên máy này. Gỡ app là mất" : "trình duyệt máy này. Xoá dữ liệu duyệt web là mất"} — xuất file định kỳ.</p>
       <div class="stack">
         <button class="ghost" id="exportBtn">⬇ Xuất file JSON</button>
         <button class="ghost" id="importBtn">⬆ Nhập từ file JSON</button>
-        <input type="file" id="importFile"${NATIVE ? "" : ' accept="application/json,.json"'} hidden>
+        ${importInput()}
         <button class="ghost danger" id="resetBtn">Khôi phục giáo án gốc</button>
       </div>
-    </div></details>
-  </div>`;
+    </div></details>`;
+}
+
+/* ---------------- màn hình chào (người mới) ----------------
+   Chưa thiết lập thì không vào thẳng tab Tập: chọn nhập dữ liệu cũ, hoặc điền hồ sơ
+   (bỏ qua được) rồi chọn giáo án. Chọn xong giáo án mới tính là thiết lập xong. */
+let onbStep = "welcome";
+function viewSetup() {
+  if (onbStep === "profile") return `
+    <div class="tiny dim" style="margin-top:4px">Bước 1 / 2</div>
+    <h2>Hồ sơ</h2>
+    <div class="sub">Tuổi, chiều cao, cân nặng để tính calo và đạm mỗi ngày. Không muốn điền thì bỏ qua, sửa lại sau ở tab Tôi.</div>
+    <div class="card">${profileFormHTML(S.profile)}</div>
+    <button class="btn" data-onb="program" style="margin-top:16px">Tiếp: chọn giáo án ›</button>
+    <div class="pair" style="margin-top:10px">
+      <button class="ghost" data-onb="welcome">‹ Quay lại</button>
+      <button class="ghost" data-onb="program">Bỏ qua</button></div>`;
+  if (onbStep === "program") return `
+    <div class="tiny dim" style="margin-top:4px">Bước 2 / 2</div>
+    <h2>Chọn giáo án</h2>
+    <div class="sub">Chọn theo số buổi bạn thật sự đi được mỗi tuần — kết quả tăng cơ gần như nhau nếu đủ số set. Đổi lại được bất cứ lúc nào ở tab Tôi, nhật ký vẫn giữ.</div>
+    <div class="stack">${tplCards(true)}</div>
+    <button class="ghost" data-onb="profile" style="margin-top:16px;width:100%">‹ Quay lại</button>`;
+  return `
+    <div style="text-align:center;padding:28px 0 8px">
+      <img src="./favicon.svg" alt="" width="88" height="88" style="border-radius:22px">
+      <h2 style="margin:18px 0 6px">Chào mừng tới Gym <span style="color:var(--brass)">Book</span></h2>
+      <p class="muted" style="margin:0 auto;max-width:320px">Ghi từng set, tự gợi ý tạ, đếm giờ nghỉ. Dữ liệu chỉ nằm trên máy bạn.</p>
+    </div>
+    <div class="stack" style="margin-top:24px">
+      <button class="btn" data-onb="profile">Bắt đầu mới</button>
+      <button class="ghost" id="importBtn">⬆ Nhập dữ liệu cũ (file JSON)</button>
+      ${importInput()}
+    </div>
+    <p class="small dim" style="margin-top:14px;text-align:center">Đã dùng Gym Book ở máy khác hoặc trên trình duyệt?
+      Mở bản đó → tab Tôi → Dữ liệu → Xuất file JSON, rồi nhập file ở đây.</p>`;
 }
 
 /* ---------------- render ---------------- */
 let lastTab = null;
 function render() {
+  if (!S.setupDone) tab = "setup";
+  document.body.classList.toggle("onb", tab === "setup");
   if (!curDay || !S.days.some(d => d.id === curDay)) curDay = autoDay();
   if (S.hideOpt && (day().exercises[exIdx] || {}).opt) exIdx = firstUnfinished();
   renderTop();
   // vẽ lại tab Tôi (thêm bài, thêm bài thay thế…) không được gập mục người dùng đang mở
   const wasOpen = tab === "me" && lastTab === "me"
     ? [...document.querySelectorAll("#view details")].map(x => x.open) : null;
-  $("#view").innerHTML = tab === "train" ? viewTrain() : tab === "history" ? viewHistory() : viewMe();
+  $("#view").innerHTML = tab === "setup" ? viewSetup() : tab === "train" ? viewTrain() : tab === "history" ? viewHistory() : viewMe();
   if (wasOpen) document.querySelectorAll("#view details").forEach((x, i) => { if (i < wasOpen.length) x.open = wasOpen[i]; });
   lastTab = tab;
   syncWake();
@@ -1705,6 +1764,12 @@ document.addEventListener("click", e => {
     installPrompt.userChoice.finally(() => { installPrompt = null; render(); });
     return;
   }
+  if (el.dataset.onb) { onbStep = el.dataset.onb; render(); window.scrollTo(0, 0); return; }
+  if (el.dataset.pick) {
+    useTemplate(el.dataset.pick); S.setupDone = true; save(true);
+    tab = "train"; render(); window.scrollTo(0, 0);
+    toast("Bắt đầu với " + tplOf(el.dataset.pick).name); return;
+  }
   if (el.dataset.usetpl) {
     const t = tplOf(el.dataset.usetpl);
     if (confirm(`Chuyển sang giáo án "${t.name}" (${t.perText})?\n\nNhật ký, cân nặng và lịch sử tạ vẫn giữ — bài trùng tên gợi ý tạ theo lần tập gần nhất. Chỉnh sửa riêng trong Chương trình của giáo án hiện tại sẽ mất.`)) {
@@ -1780,7 +1845,8 @@ document.addEventListener("change", e => {
     try {
       const d = JSON.parse(r.result);
       if (!d || !d.profile || !Array.isArray(d.days) || !d.days.length) throw new Error("thiếu trường bắt buộc");
-      S = migrate(d); curDay = autoDay(); exIdx = firstUnfinished(); hadProfile = !!targets();
+      S = migrate(d); S.setupDone = true; curDay = autoDay(); exIdx = firstUnfinished(); hadProfile = !!targets();
+      if (tab === "setup") tab = "train";
       save(true); render(); toast("Đã nhập dữ liệu");
     } catch (err) { toast("File không đọc được: " + err.message); }
   };
