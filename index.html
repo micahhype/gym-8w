@@ -191,6 +191,10 @@ details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
 
 /* ---------- ăn ---------- */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+/* nhóm món: một hàng cuộn ngang để kết quả tìm nằm ngay dưới ô tìm */
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 2px}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chips.scroll .chip{flex:none;white-space:nowrap}
 .favs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fav{position:relative;display:flex}
 .favbtn{width:100%;min-height:64px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
@@ -217,7 +221,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(13,16,20,.
   background:var(--jade);color:#08201a;padding:13px 22px;border-radius:99px;font-weight:600;
   z-index:50;opacity:0;pointer-events:none;transition:opacity .18s;white-space:nowrap}
 .toast.show{opacity:1}
-body.onb nav{display:none}
+body.onb nav,body.typing nav{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -1586,9 +1590,9 @@ function viewFood() {
 
   <div style="margin-top:20px">
     <input id="foodQ" type="search" placeholder="Tìm món: pho bo, com tam, uc ga…" value="${esc(foodQ)}" autocomplete="off" aria-label="Tìm món">
-    <div class="chips" style="margin-top:10px">${FOOD_GROUPS.map(([k, lab]) =>
+    <div class="chips scroll" style="margin-top:10px">${FOOD_GROUPS.map(([k, lab]) =>
       `<button class="chip" data-fgroup="${k}" aria-pressed="${foodGroup === k}">${lab}</button>`).join("")}</div>
-    <div id="foodResults" style="margin-top:6px">${foodResults()}</div>
+    <div id="foodResults" style="margin-top:6px${foodQ || foodGroup ? ";min-height:70vh" : ""}">${foodResults()}</div>
   </div>
 
   ${showCustom ? `<div class="card" style="margin-top:14px">
@@ -1612,6 +1616,21 @@ function viewFood() {
   ${avg ? `<p class="small muted" style="margin:14px 2px 0">7 ngày trước: trung bình <b style="color:var(--chalk)">${Math.round(avg.kcal).toLocaleString("vi-VN")} kcal</b> · ${Math.round(avg.p)} g đạm mỗi ngày (${avg.n} ngày có ghi).</p>` : ""}
   <p class="small dim" style="margin:10px 2px 0">Số calo món nấu sẵn là ước lượng cho một suất ở quán (±20–30%). Đừng cân đo quá kỹ — ghi đều quan trọng hơn ghi đúng từng calo.</p>`;
 }
+/** Chạm ô tìm: cuộn cho ô tìm lên sát thanh trên cùng, kết quả hiện ngay trên bàn phím.
+ *  Chờ bàn phím mở xong (màn hình co lại) rồi mới cuộn. */
+function scrollSearchUp() {
+  const el = $("#foodQ"); if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - $("#topbar").offsetHeight - 8;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+}
+// Đang tìm thì giữ chỗ cho vùng kết quả (70% màn hình) — trang đủ dài để cuộn ô tìm lên,
+// danh sách ngắn cũng không bị kẹt dưới bàn phím.
+const searching = on => { const r = $("#foodResults"); if (r) r.style.minHeight = on ? "70vh" : ""; };
+// Đang gõ tìm thì ẩn thanh tab dưới cùng: bàn phím đã chiếm nửa màn hình, nhường chỗ cho kết quả.
+document.addEventListener("focusin", e => { if (e.target.id === "foodQ") {
+  searching(true); document.body.classList.add("typing"); setTimeout(scrollSearchUp, 300); } });
+document.addEventListener("focusout", e => { if (e.target.id === "foodQ") {
+  document.body.classList.remove("typing"); if (!foodQ && !foodGroup) searching(false); } });
 /** Chỉ vẽ lại danh sách kết quả khi gõ tìm, để ô tìm không mất con trỏ. */
 function refreshFoodResults() { const el = $("#foodResults"); if (el) el.innerHTML = foodResults(); }
 function refreshSel() {
@@ -1632,7 +1651,12 @@ function foodClick(el) {
   }
   if (el.dataset.favedit) { favEdit = !favEdit; render(); return true; }
   if (el.dataset.favdel) { S.favs = favs().filter(x => x.id !== el.dataset.favdel); save(true); render(); return true; }
-  if (el.dataset.fgroup) { foodGroup = foodGroup === el.dataset.fgroup ? "" : el.dataset.fgroup; foodSel = null; render(); return true; }
+  if (el.dataset.fgroup) {
+    foodGroup = foodGroup === el.dataset.fgroup ? "" : el.dataset.fgroup; foodSel = null;
+    const x = document.querySelector(".chips.scroll"), sx = x ? x.scrollLeft : 0;
+    render(); const y = document.querySelector(".chips.scroll"); if (y) y.scrollLeft = sx;  // giữ vị trí hàng nút
+    if (foodGroup) scrollSearchUp(); return true;
+  }
   if (el.dataset.food !== undefined) {
     const i = +el.dataset.food;
     // món ghi theo "100 g" thì mở sẵn ô gam — cân thịt, cá thì nhập gam tiện hơn

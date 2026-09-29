@@ -27,6 +27,7 @@ const type = (sel, v) => ev(`{ const i = document.querySelector(${JSON.stringify
 const noOverflow = async m => ok(await ev(`document.documentElement.scrollWidth <= 400`), "không tràn ngang: " + m);
 await send("Runtime.enable"); await send("Page.enable"); await send("DOM.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 400, height: 860, deviceScaleFactor: 1, mobile: true });
+await send("Emulation.setFocusEmulationEnabled", { enabled: true });  // headless không có focus thật → focusin không bắn
 await send("Page.navigate", { url: base }); await sleep(1000);
 
 console.log("== Màn hình chào");
@@ -231,6 +232,16 @@ ok(await ev(`$("#foodCalc").textContent`) === "297 kcal · 56 g đạm", "180 g 
 await shot("food-gram.png");
 await click("[data-addsel]"); await sleep(120);
 ok(await ev(`foodDay(today()).at(-1).q`) === "180 g" && await ev(`foodDay(today()).at(-1).p`) === 55.8, "ghi theo gam, lưu đạm lẻ");
+// kết quả nằm ngay dưới ô tìm, không bị hàng nút nhóm đẩy xuống
+ok(await ev(`document.querySelector(".chips.scroll").offsetHeight`) < 60, "nút nhóm gọn một hàng");
+ok(await ev(`document.querySelector(".chips.scroll").scrollWidth > document.querySelector(".chips.scroll").clientWidth`), "hàng nút nhóm cuộn ngang được");
+ok(await ev(`document.querySelector("#foodResults").getBoundingClientRect().top - $("#foodQ").getBoundingClientRect().bottom`) < 70, "kết quả ngay dưới ô tìm");
+await ev(`window.scrollTo(0, 0); $("#foodQ").blur(); $("#foodQ").focus()`); await sleep(900);
+ok(await ev(`$("#foodQ").getBoundingClientRect().top - $("#topbar").offsetHeight`) < 30, "chạm ô tìm: tự cuộn lên sát đầu màn hình: "
+  + await ev(`JSON.stringify({ y: scrollY, top: $("#foodQ").getBoundingClientRect().top, bar: $("#topbar").offsetHeight, h: document.documentElement.scrollHeight, act: document.activeElement.id, mh: $("#foodResults").style.minHeight })`));
+ok(await ev(`getComputedStyle(document.querySelector("nav")).display`) === "none", "đang gõ tìm: ẩn thanh tab");
+await ev(`$("#foodQ").blur()`); await sleep(80);
+ok(await ev(`getComputedStyle(document.querySelector("nav")).display`) !== "none", "rời ô tìm: hiện lại thanh tab");
 // lọc nhóm
 await type("#foodQ", ""); await click('[data-fgroup="bs"]'); await sleep(100);
 ok(await ev(`document.querySelectorAll("#foodResults .foodrow").length`) === 3, "nhóm Bổ sung: 3 món");
