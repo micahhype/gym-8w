@@ -16,14 +16,14 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   tạ tay, Xà → Lat Pulldown…). Bài thay thế có lịch sử tạ riêng nên không làm
   lệch gợi ý của bài chính; buổi sau tự về lại bài chính.
 - **Ăn** — ghi bữa ăn, chỉ đếm calo và đạm so với mục tiêu ở tab Tôi. *Món quen*
-  bấm một lần là ghi (mặc định lấy từ thực đơn mẫu + whey, Ensure; lưu thêm bằng ☆
+  bấm một lần là ghi (mặc định vài món phổ biến; lưu món của mình bằng ☆
   hoặc tự nhập). Tìm trong 173 món Việt và nguyên liệu nấu ở nhà (thịt chiên, kho,
   xào, rau theo gam), gõ không dấu hoặc tên gọi khác cũng ra (súp lơ xanh,
   broccoli…); chọn theo phần/tô (½, 1, 1½, 2…) hoặc nhập gam với món có khối
   lượng (thịt cá, rau tính theo 100 g thì mở sẵn ô gam). Ăn nhiều món một bữa thì
   bấm *+ Vào bữa* cho từng món, app cộng sẵn rồi ghi một dòng (bấm "n món" để
   xem chi tiết), lưu được thành món quen. Xem lại ngày trước. Có từ 3 ngày ghi trong tuần thì phần *Nhịp
-  tăng cân* ở tab Tôi so với mức ăn thật và gợi ý nên ăn bao nhiêu.
+  cân nặng* ở tab Tôi so với mức ăn thật và gợi ý nên ăn bao nhiêu.
 - **Nhật ký → Tiến bộ** — biểu đồ sức mạnh từng bài (1RM ước tính theo Epley,
   tạ nặng nhất, hoặc tổng tạ × rep), cân nặng so với mục tiêu, số set mỗi tuần,
   calo 14 ngày so với mục tiêu. Chạm lên biểu đồ để xem số từng ngày; mỗi biểu
@@ -37,8 +37,8 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   Giấy, Đêm, và *Tự động* (Sáng ↔ Đêm theo chế độ sáng/tối của máy). Theme chỉ
   là bộ biến CSS theo `data-theme` trên `<html>`; lựa chọn lưu trong dữ liệu và
   trong `localStorage` để áp trước khi vẽ, không nháy màu.
-- **Tôi** — cân nặng, BMI, mục tiêu calo/đạm (Mifflin–St Jeor), trình sửa chương
-  trình, xuất/nhập JSON.
+- **Tôi** — cân nặng, BMI, mục tiêu (tăng cơ / giữ cân / giảm mỡ) và calo/đạm
+  mỗi ngày (Mifflin–St Jeor) chia gợi ý theo bữa, trình sửa chương trình, xuất/nhập JSON.
 
 Giáo án mặc định là **đẩy / kéo / chân**, mục tiêu tăng cơ. Ba buổi xoay vòng,
 hợp với 5–6 buổi/tuần: mỗi buổi chỉ quanh một hai khu của phòng tập nên đỡ phải
@@ -71,8 +71,8 @@ Vì không có PT đi kèm, app tự lo mấy việc PT hay nhắc:
 - **Giữ màn hình sáng** — ở tab Tập màn hình không tự tắt (Screen Wake Lock),
   để xem đồng hồ nghỉ khỏi mở khoá máy. Sang tab khác hoặc ẩn app thì thả ra.
   Tắt được trong tab Tôi; mặc định bật.
-- **Nhịp tăng cân** — trong tab Tôi, so các lần cân cách nhau 1–3 tuần và báo
-  nên ăn thêm, giữ nguyên hay bớt.
+- **Nhịp cân nặng** — trong tab Tôi, so các lần cân cách nhau 1–3 tuần với nhịp
+  hợp mục tiêu (tăng cơ, giữ cân hay giảm mỡ) và báo nên ăn thêm, giữ nguyên hay bớt.
 
 **Giáo án mẫu** (tab Tôi → Giáo án): ngoài Đẩy / Kéo / Chân còn Trên / Dưới
 (4 buổi), Trên / Dưới + Đẩy / Kéo / Chân (5 buổi), Toàn thân (3 buổi) và Tối
@@ -132,7 +132,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 149 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 156 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

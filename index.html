@@ -559,7 +559,7 @@ function pplDays() {
         ex("Duỗi tay sau qua đầu", 3, "10–12", 12, 2, 60, "kg", "Tay sau. Tay ở trên đầu thì tay sau bị kéo dài, to nhanh hơn pushdown. Cáp dây thừng hoặc một quả tạ tay, khuỷu chỉ lên trần, hạ sâu sau đầu."),
       ]},
       { id: uid(), name: "Buổi Kéo", exercises: [
-        ex("Deadlift", 3, "5", 52.5, 5, 180, "kg", "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng."),
+        ex("Deadlift", 3, "5", 60, 5, 180, "kg", "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng."),
         ex("Xà đeo tạ", 4, "5–8", 5, 2.5, 150, "+kg", "Lưng xô. Balo đựng tạ hoặc đai. Đủ 8 rep ở set cuối 2 buổi liên tiếp thì tăng 2.5kg."),
         ex("Barbell Row", 4, "8–10", 35, 2.5, 120, "kg", "Lưng giữa. Người gập khoảng 45°, kéo tạ về phía rốn. Dùng luôn đòn vừa deadlift."),
         ex("Incline Dumbbell Curl", 3, "8–12", 8, 1, 60, "kg/tay", "Tay trước. Nằm ghế dốc 45–60°, tay buông thẳng sau thân để tay trước bị kéo dài ở đầu rep. Khuỷu đứng yên, hạ chậm 2 giây."),
@@ -568,7 +568,7 @@ function pplDays() {
         ex("Hanging Leg Raise", 3, "10–15", 0, 1, 60, "+kg", "Bụng. Treo người trên xà, nâng chân bằng cơ bụng, không đu người lấy đà."),
       ]},
       { id: uid(), name: "Buổi Chân", exercises: [
-        ex("Back Squat", 4, "6–8", 42.5, 2.5, 180, "kg", "Đùi trước, bài chính của buổi. Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân."),
+        ex("Back Squat", 4, "6–8", 40, 2.5, 180, "kg", "Đùi trước, bài chính của buổi. Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân."),
         ex("Romanian Deadlift", 3, "8–10", 40, 2.5, 120, "kg", "Đùi sau. Đẩy hông ra sau, gối hơi cong, tạ trượt sát chân. Dùng luôn đòn vừa squat, chỉ cần bớt tạ."),
         ex("Bulgarian Split Squat", 3, "8–10/chân", 12, 1, 120, "kg/tay", "Tập từng chân nên cân lại chân yếu hơn. Chân sau gác ghế, dồn lực vào gót chân trước."),
         ex("Leg Press", 3, "10–12", 60, 5, 120, "kg", "Thêm khối lượng cho đùi mà không dồn thêm mỏi lên cột sống sau squat. Đừng duỗi khoá gối ở đỉnh."),
@@ -585,9 +585,9 @@ function pplDays() {
    EXDB: tên bài → [đơn vị, khởi điểm, bước, ghi chú kỹ thuật]. Khởi điểm chỉ dùng khi bài
    chưa có lịch sử — bài trùng tên với giáo án trước sẽ gợi ý theo lần tập gần nhất. */
 const EXDB = {
-  "Back Squat": ["kg", 42.5, 2.5, "Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân, lưng giữ thẳng."],
+  "Back Squat": ["kg", 40, 2.5, "Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân, lưng giữ thẳng."],
   "Bench Press": ["kg", 40, 2.5, "Siết bả vai xuống, chân đạp chắc sàn, hạ tạ tới ngang ngực rồi đẩy thẳng lên."],
-  "Deadlift": ["kg", 52.5, 5, "Lưng thẳng, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng. Ít set vì rất mệt toàn thân."],
+  "Deadlift": ["kg", 60, 5, "Lưng thẳng, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng. Ít set vì rất mệt toàn thân."],
   "Overhead Press": ["kg", 25, 2.5, "Siết mông và bụng để khỏi ưỡn lưng. Đòn không đã là 20kg."],
   "Xà đeo tạ": ["+kg", 0, 2.5, "Treo thẳng tay ở dưới, kéo tới cằm qua xà. Đủ rep cao nhất ở mọi set thì đeo thêm 2.5kg."],
   "Barbell Row": ["kg", 35, 2.5, "Người gập khoảng 45°, kéo tạ về phía rốn, không giật lưng."],
@@ -706,7 +706,7 @@ function weeklySets(t) {
 function seed(programId) {
   return {
     profile: { name: "", sex: "m", age: "", height: "", weight: "",
-      activity: 1.6, surplus: 450, proteinPerKg: 2, fatPerKg: 1.2,
+      activity: 1.55, surplus: 300, proteinPerKg: 2, fatPerKg: 1,
       goalWeight: "", startDate: mondayOf(today()), weeks: 8 },
     days: tplDays(tplOf(programId)),
     log: {}, swap: {}, skip: {}, bw: [], progVersion: PROG_VERSION, programId: tplOf(programId).id,
@@ -748,21 +748,18 @@ function migrate(old) {
   if (!old.swap) old.swap = {};
   if (!old.skip) old.skip = {};
   old.days.concat(old.oldDays || []).forEach(d => d.exercises.forEach(e => {
-    if (NOTE_FIX[e.note]) e.note = NOTE_FIX[e.note];
+    const fix = e.note && NOTE_FIX[strHash(e.note)]; if (fix) e.note = fix;
   }));
   return old;
 }
-/** Ghi chú cũ viết riêng cho một người (mức tạ cũ, thói quen ngồi máy) → bản chung.
- *  Chỉ thay khi ghi chú còn đúng nguyên văn, người dùng đã sửa thì giữ. */
+/** Ghi chú cũ của bản đầu (viết riêng cho một người) → bản chung. So bằng mã băm để code
+ *  không còn giữ nguyên văn cũ; chỉ thay khi ghi chú còn y nguyên, người dùng đã sửa thì giữ. */
+const strHash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = (h * 33 + s.charCodeAt(i)) >>> 0; return h.toString(36); };
 const NOTE_FIX = {
-  "Khởi điểm 52.5kg ≈ 65% mức cũ 80kg. Lưng thẳng tuyệt đối, đẩy sàn bằng chân chứ không giật bằng lưng.":
-    "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng.",
-  "Vai sau, chống vai gù do ngồi bàn phím. Kéo dây về phía trán, siết bả vai, đừng nặng quá.":
-    "Vai sau, giúp chống gù vai. Kéo dây về phía trán, siết bả vai, đừng nặng quá.",
-  "Bài quan trọng nhất với bạn — squat đang là lift yếu nhất so với thân trên. Xuống tới khi đùi song song sàn.":
-    "Đùi trước, bài chính của buổi. Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân.",
-  "Sửa lệch chân trái phải. Chân sau gác ghế, dồn lực vào gót chân trước.":
-    "Tập từng chân nên cân lại chân yếu hơn. Chân sau gác ghế, dồn lực vào gót chân trước.",
+  "1ftezw3": "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng.",
+  "1uaf6f3": "Vai sau, giúp chống gù vai. Kéo dây về phía trán, siết bả vai, đừng nặng quá.",
+  "53xulu": "Đùi trước, bài chính của buổi. Xuống tới khi đùi song song sàn hoặc sâu hơn, gối đi theo hướng mũi chân.",
+  "1wd7vj": "Tập từng chân nên cân lại chân yếu hơn. Chân sau gác ghế, dồn lực vào gót chân trước.",
 };
 /** Chương trình mặc định có bản mới: thay vào nếu người dùng chưa ghi buổi nào
  *  (đã tập rồi thì xếp lại theo bản mới nhưng giữ id, mức tạ và nhật ký của từng bài). */
@@ -1882,11 +1879,10 @@ const FOODS = [
   ["Bánh tráng trộn", "vat", "phần", 0, 350, 8],
   ["Bắp xào", "vat", "ly", 0, 300, 6],
 ];
-/** Món quen mặc định: thực đơn mẫu trong mục Dinh dưỡng + whey, Ensure. */
+/** Món quen mặc định: vài món phổ biến để bấm thử; người dùng tự lưu món của mình bằng ☆. */
 const FAV_SEED = [
-  ["Sáng: 3 trứng + 2 lát bánh mì + sữa", 750, 40], ["Trưa: 2 chén cơm + thịt/cá + rau", 800, 48],
-  ["Trước tập: chuối + bơ đậu phộng", 300, 9], ["Tối: 2 chén cơm + ức gà + trứng + rau", 750, 48],
-  ["Whey · 1 muỗng", 120, 24], ["Ensure · 1 ly", 230, 9]];
+  ["Cơm trắng · 1 chén", 195, 4], ["Trứng gà luộc · 2 quả", 150, 13], ["Ức gà (chín) · 150 g", 248, 47],
+  ["Phở bò · 1 tô", 450, 25], ["Sữa tươi không đường · 1 hộp", 115, 6], ["Whey · 1 muỗng", 120, 24]];
 const unaccent = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
 const FOOD_IDX = FOODS.map(f => unaccent(f[0] + " " + f[2] + " " + (f[6] || "")));
 const nowHM = () => { const x = new Date(); return String(x.getHours()).padStart(2, "0") + ":" + String(x.getMinutes()).padStart(2, "0"); };
@@ -2208,23 +2204,36 @@ function templatesSec() {
   </div></details>`;
 }
 /** Nhịp tăng cân từ lần cân mới nhất so với lần cân cách đó 1–3 tuần (bw xếp mới → cũ). */
+/* Mục tiêu suy ra từ mức chênh calo (dữ liệu cũ không có trường riêng):
+   dương = tăng cơ, âm = giảm mỡ, quanh 0 = giữ cân. Chọn mục tiêu thì đặt sẵn mức chênh. */
+const GOALS = [["tang", "Tăng cơ, tăng cân", 300], ["giu", "Giữ cân, tăng sức", 0], ["giam", "Giảm mỡ", -400]];
+const goalOf = p => (+p.surplus || 0) > 100 ? "tang" : (+p.surplus || 0) < -100 ? "giam" : "giu";
+/** Nhịp cân mỗi tuần theo mục tiêu: [thấp, cao] kg/tuần là đúng nhịp. */
+const PACE = { tang: [0.1, 0.6, "0,25–0,5"], giu: [-0.2, 0.2, "−0,2 đến +0,2"], giam: [-1, -0.1, "−0,25 đến −0,75"] };
 function gainPace(bw) {
   const last = bw[0], gap = e => (new Date(last.date) - new Date(e.date)) / 864e5;
   const base = last && bw.filter(e => gap(e) >= 7 && gap(e) <= 21).pop();
-  if (!base) return `<p class="small muted" style="margin:14px 0 0">Cân 1–2 lần mỗi tuần. Có số liệu cách nhau từ 1 tuần, app sẽ cho biết có cần ăn thêm không.</p>`;
-  const rate = n1((last.kg - base.kg) / gap(base) * 7);
-  const [color, msg] = rate < 0.1 ? ["var(--rust)", "Chậm quá — thêm 200–300 kcal mỗi ngày (một cốc sữa hoặc Ensure)."]
-    : rate > 0.6 ? ["var(--brass)", "Hơi nhanh, dễ tích mỡ — bớt 150–200 kcal mỗi ngày."]
+  if (!base) return `<p class="small muted" style="margin:14px 0 0">Cân 1–2 lần mỗi tuần. Có số liệu cách nhau từ 1 tuần, app sẽ cho biết có cần chỉnh cách ăn không.</p>`;
+  const rate = n1((last.kg - base.kg) / gap(base) * 7), goal = goalOf(S.profile), [lo, hi, band] = PACE[goal];
+  const low = rate < lo, high = rate > hi;
+  const [color, msg] = low
+    ? goal === "giam" ? ["var(--brass)", "Giảm nhanh quá, dễ mất cơ — ăn thêm khoảng 200 kcal mỗi ngày."]
+      : ["var(--rust)", goal === "tang" ? "Chậm quá — thêm 200–300 kcal mỗi ngày (một bữa phụ nhỏ: sữa, chuối, bơ đậu phộng)."
+        : "Đang sụt cân — thêm 150–200 kcal mỗi ngày."]
+    : high
+    ? goal === "tang" ? ["var(--brass)", "Hơi nhanh, dễ tích mỡ — bớt 150–200 kcal mỗi ngày."]
+      : ["var(--rust)", goal === "giam" ? "Chưa giảm — bớt 200–300 kcal mỗi ngày, ưu tiên giữ đủ đạm."
+        : "Đang lên cân — bớt 150–200 kcal mỗi ngày."]
     : ["var(--jade)", "Đúng nhịp — giữ nguyên cách ăn."];
+  const adj = low ? (goal === "tang" ? 250 : 200) : high ? (goal === "giam" ? -250 : -150) : 0;
   const avg = foodAvg(addDays(today(), 1));
   const ate = avg && avg.n >= 3 ? `<div class="small muted" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">
       7 ngày qua ăn trung bình <b style="color:var(--chalk)">${Math.round(avg.kcal).toLocaleString("vi-VN")} kcal</b> (${avg.n} ngày có ghi)${
-      rate < 0.1 ? ` → nhắm khoảng <b style="color:var(--chalk)">${(Math.round((avg.kcal + 250) / 50) * 50).toLocaleString("vi-VN")} kcal</b>.`
-      : rate > 0.6 ? ` → nhắm khoảng <b style="color:var(--chalk)">${(Math.round((avg.kcal - 150) / 50) * 50).toLocaleString("vi-VN")} kcal</b>.`
+      adj ? ` → nhắm khoảng <b style="color:var(--chalk)">${(Math.round((avg.kcal + adj) / 50) * 50).toLocaleString("vi-VN")} kcal</b>.`
       : " — đây là mức ăn hợp với bạn, tin số này hơn con số tính theo công thức."}</div>` : "";
   return `<div class="card" style="margin-top:14px;border-color:${color}">
     <div class="num" style="font-size:22px;color:${color}">${rate > 0 ? "+" : ""}${rate} kg/tuần</div>
-    <div class="small muted">${msg} Mục tiêu 0.25–0.5 kg/tuần.</div>${ate}</div>`;
+    <div class="small muted">${msg} Nhịp hợp với mục tiêu: ${band} kg/tuần.</div>${ate}</div>`;
 }
 function altEditor(d, e) {
   const f = (a, field) => `data-altf="${d.id}|${e.id}|${esc(a.id)}|${field}"`;
@@ -2266,10 +2275,10 @@ function profileFormHTML(p) {
     <div class="stack" style="padding-top:16px">
       <div class="g2">
         <label class="f"><span>Tên</span><input id="p-name" value="${esc(p.name)}" placeholder="Tuỳ bạn"></label>
-        <label class="f"><span>Tuổi</span><input type="number" inputmode="numeric" id="p-age" value="${esc(p.age)}" placeholder="29"></label>
-        <label class="f"><span>Cao (cm)</span><input type="number" inputmode="numeric" id="p-height" value="${esc(p.height)}" placeholder="172"></label>
-        <label class="f"><span>Nặng (kg)</span><input type="number" step="0.1" inputmode="decimal" id="p-weight" value="${esc(p.weight)}" placeholder="54"></label>
-        <label class="f"><span>Mục tiêu (kg)</span><input type="number" step="0.1" inputmode="decimal" id="p-goalWeight" value="${esc(p.goalWeight)}" placeholder="60"></label>
+        <label class="f"><span>Tuổi</span><input type="number" inputmode="numeric" id="p-age" value="${esc(p.age)}" placeholder="VD 25"></label>
+        <label class="f"><span>Cao (cm)</span><input type="number" inputmode="numeric" id="p-height" value="${esc(p.height)}" placeholder="VD 170"></label>
+        <label class="f"><span>Nặng (kg)</span><input type="number" step="0.1" inputmode="decimal" id="p-weight" value="${esc(p.weight)}" placeholder="VD 65"></label>
+        <label class="f"><span>Mục tiêu (kg)</span><input type="number" step="0.1" inputmode="decimal" id="p-goalWeight" value="${esc(p.goalWeight)}" placeholder="Tuỳ chọn"></label>
         <label class="f"><span>Giới tính</span><select id="p-sex">
           <option value="m"${p.sex === "m" ? " selected" : ""}>Nam</option>
           <option value="f"${p.sex === "f" ? " selected" : ""}>Nữ</option></select></label>
@@ -2280,8 +2289,10 @@ function profileFormHTML(p) {
         <option value="1.55"${+p.activity === 1.55 ? " selected" : ""}>Tập 3–4 buổi/tuần</option>
         <option value="1.6"${+p.activity === 1.6 ? " selected" : ""}>Tập 3 buổi + chơi thể thao</option>
         <option value="1.725"${+p.activity === 1.725 ? " selected" : ""}>Tập 6 buổi/tuần</option></select></label>
+      <label class="f"><span>Mục tiêu</span><select id="goalSel">${GOALS.map(([k, lab]) =>
+        `<option value="${k}"${goalOf(p) === k ? " selected" : ""}>${lab}</option>`).join("")}</select></label>
       <div class="g3">
-        <label class="f"><span>Dư kcal</span><input type="number" step="50" inputmode="numeric" id="p-surplus" value="${esc(p.surplus)}"></label>
+        <label class="f"><span>Chênh kcal</span><input type="number" step="50" inputmode="numeric" id="p-surplus" value="${esc(p.surplus)}"></label>
         <label class="f"><span>Đạm g/kg</span><input type="number" step="0.1" inputmode="decimal" id="p-proteinPerKg" value="${esc(p.proteinPerKg)}"></label>
         <label class="f"><span>Béo g/kg</span><input type="number" step="0.1" inputmode="decimal" id="p-fatPerKg" value="${esc(p.fatPerKg)}"></label>
       </div>
@@ -2374,15 +2385,16 @@ function viewMeFull(p, t, profileForm) {
         <div><div class="num" style="font-size:22px">${Math.round(t.fat)}<span style="font-size:14px"> g</span></div><div class="small dim">chất béo</div></div>
       </div>
       <p class="small muted" style="border-top:1px solid var(--line);padding-top:12px;margin:0 0 16px">
-        Chuyển hoá cơ bản ${Math.round(t.bmr)} · duy trì ${Math.round(t.tdee)} · dư ${esc(p.surplus)} kcal
-        → tăng khoảng <b style="color:var(--chalk)">${n1((+p.surplus || 0) / 1100)} kg/tuần</b>.
+        Chuyển hoá cơ bản ${Math.round(t.bmr)} · duy trì ${Math.round(t.tdee)} · chênh ${(+p.surplus || 0) > 0 ? "+" : ""}${esc(p.surplus)} kcal
+        → khoảng <b style="color:var(--chalk)">${(+p.surplus || 0) > 0 ? "+" : ""}${n1((+p.surplus || 0) / 1100)} kg/tuần</b>.
         Công thức Mifflin–St Jeor, sai số ±10% — cái cân mới là trọng tài.</p>
-      <div class="lrow"><div><b>Sáng</b><div class="small muted">3 trứng + 2 lát bánh mì + 500 ml sữa</div></div><div class="num muted">~750</div></div>
-      <div class="lrow"><div><b>Trưa</b><div class="small muted">2 chén cơm + 150 g thịt/cá + rau</div></div><div class="num muted">~800</div></div>
-      <div class="lrow"><div><b>Trước tập</b><div class="small muted">1 quả chuối + 30 g bơ đậu phộng</div></div><div class="num muted">~300</div></div>
-      <div class="lrow"><div><b>Tối</b><div class="small muted">2 chén cơm + 100 g ức gà + 1 trứng + rau</div></div><div class="num muted">~750</div></div>
-      <div class="lrow"><div><b>Trước ngủ</b><div class="small muted">1 scoop whey hoặc 250 ml sữa</div></div><div class="num muted">~150</div></div>
-      <p class="small dim" style="margin:12px 0 0">≈ 2 750 kcal / 145 g đạm. Sữa và bơ đậu phộng là cách rẻ nhất để thêm calo mà không thấy no.</p>
+      <div class="tiny dim" style="margin-bottom:4px">Chia gợi ý theo bữa</div>
+      ${[["Sáng", .25], ["Trưa", .3], ["Bữa phụ / trước tập", .15], ["Tối", .3]].map(([m, f]) =>
+        `<div class="lrow"><div><b>${m}</b></div><div class="num muted">~${Math.round(t.kcal * f / 10) * 10} kcal · ${Math.round(t.protein * f)} g</div></div>`).join("")}
+      <p class="small dim" style="margin:12px 0 0">${goalOf(p) === "giam"
+        ? "Giảm mỡ: giữ đủ đạm và ăn nhiều rau để đỡ đói; tập tạ đều để giữ cơ."
+        : goalOf(p) === "tang" ? "Khó ăn đủ thì thêm sữa, chuối, bơ đậu phộng — thêm calo mà không thấy no."
+        : "Giữ cân: ăn quanh mức duy trì, chủ yếu là đủ đạm."} Ghi bữa ăn ở tab Ăn để so với mục tiêu.</p>
     </div></details>
 
     <details class="sec"><summary>Thông số</summary><div class="body">${profileForm}</div></details>
@@ -2767,6 +2779,11 @@ document.addEventListener("change", e => {
 });
 
 document.addEventListener("change", e => { if (e.target.id === "progEx") { progEx = e.target.value; render(); } });
+document.addEventListener("change", e => {
+  if (e.target.id !== "goalSel") return;
+  const g = GOALS.find(x => x[0] === e.target.value); if (!g) return;
+  S.profile.surplus = g[2]; save(true); render(); toast("Mục tiêu: " + g[1] + " · chênh " + (g[2] > 0 ? "+" : "") + g[2] + " kcal");
+});
 document.addEventListener("change", e => {
   if (e.target.id !== "importFile") return;
   const f = e.target.files[0]; if (!f) return;

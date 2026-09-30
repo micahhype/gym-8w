@@ -53,7 +53,7 @@ await click("[data-onb=profile]"); await sleep(100);
 await ev(`[...document.querySelectorAll('[data-onb=program]')].find(b => b.textContent.trim() === "Bỏ qua").click()`); await sleep(100);
 await click("[data-pick=fb3]"); await sleep(150);
 ok(await ev(`tab === "train" && S.programId === "fb3" && !targets()`), "bỏ qua hồ sơ vẫn tập được");
-const backup = await ev(`(() => { const d = seed("ppl"); Object.assign(d.profile, {weight: 58, age: 29, height: 172});
+const backup = await ev(`(() => { const d = seed("ppl"); Object.assign(d.profile, {weight: 58, age: 25, height: 170});
   const e = d.days[0].exercises[0]; d.log["2026-09-20|" + d.days[0].id + "|" + e.id] = [{kg:"50",reps:"8"}]; delete d.setupDone; return JSON.stringify(d); })()`);
 const fp = fs.mkdtempSync("/tmp/gymbook-") + "/backup.json"; fs.writeFileSync(fp, backup);
 await ev(`localStorage.clear()`); await reload();
@@ -70,7 +70,7 @@ await click("[data-tab=me]"); await sleep(150);
 ok(await ev(`!!document.querySelector('#importBtn') && !!document.querySelector('#exportBtn') && !!document.querySelector('[data-usetpl=ul4]')`), "tab Tôi chưa có hồ sơ vẫn có Dữ liệu + Giáo án");
 
 console.log("== Giáo án mẫu");
-await put(`d.profile = { ...d.profile, age: 29, height: 172, weight: 56, startDate: "2026-09-01" };
+await put(`d.profile = { ...d.profile, age: 25, height: 170, weight: 60, startDate: "2026-09-01" };
   const push = d.days[0], legs = d.days[2], f = n => push.exercises.find(e => e.name === n);
   d.log["2026-09-20|" + push.id + "|" + f("Bench Press").id] = [{kg:"50",reps:"8"},{kg:"50",reps:"7"}];
   d.log["2026-09-20|" + push.id + "|" + f("Lateral Raise").id] = [{kg:"8",reps:"14"}];
@@ -94,11 +94,11 @@ ok(await ev(`cooldown({name:"Thân dưới 1"}).includes("st-quad") && cooldown(
 
 console.log("== Ghi chú chung");
 ok(await ev(`!tplDays(tplOf("ppl")).some(d => d.exercises.some(e => /mức cũ|với bạn|bàn phím/.test(e.note)))`), "giáo án PPL không còn ghi chú riêng");
-await put(`d.setupDone = true; const sq = d.days[2].exercises[0], dl = d.days[1].exercises[0];
-  sq.note = "Bài quan trọng nhất với bạn — squat đang là lift yếu nhất so với thân trên. Xuống tới khi đùi song song sàn.";
-  dl.note = "Khởi điểm 52.5kg ≈ 65% mức cũ 80kg — tôi tự thêm dòng này"`);
-ok(await ev(`S.days[2].exercises[0].note.startsWith("Đùi trước, bài chính")`), "dữ liệu cũ: ghi chú nguyên văn được thay");
-ok(await ev(`S.days[1].exercises[0].note.endsWith("tôi tự thêm dòng này")`), "ghi chú người dùng đã sửa thì giữ");
+// ghi chú cũ so bằng mã băm: thử bằng một cặp giả, code không còn giữ nguyên văn cũ
+ok(!(await ev(`document.documentElement.outerHTML`)).includes("mức cũ 80"), "trang không còn nguyên văn ghi chú cũ");
+ok(await ev(`(() => { NOTE_FIX[strHash("ghi chú cũ thử")] = "ghi chú mới";
+  const d = seed(); d.days[0].exercises[0].note = "ghi chú cũ thử"; d.days[0].exercises[1].note = "ghi chú cũ thử — đã sửa";
+  migrate(d); return d.days[0].exercises[0].note === "ghi chú mới" && d.days[0].exercises[1].note.endsWith("đã sửa"); })()`), "ghi chú cũ khớp mã băm → thay; đã sửa → giữ");
 
 console.log("== Nhật ký, tuần");
 await put(`d.setupDone = true; d.profile.startDate = "2026-09-02";
@@ -157,7 +157,7 @@ await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
 ok(await ev(`document.querySelector('.btn.jade[data-jump]')?.dataset.jump`) === "2", "Bài tiếp bỏ qua bài đã xong");
 
 console.log("== Tiến bộ (biểu đồ)");
-await put(`d.setupDone = true; Object.assign(d.profile, { startDate: "2026-09-01", goalWeight: 60, age: 29, height: 172, weight: 56 });
+await put(`d.setupDone = true; Object.assign(d.profile, { startDate: "2026-09-01", goalWeight: 60, age: 25, height: 170, weight: 60 });
   const x = d.days[0], b = x.exercises[0], pu = d.days[1].exercises.find(e => e.name === "Xà đeo tạ");
   [["2026-09-02","40","8"],["2026-09-09","42.5","8"],["2026-09-16","45","7"],["2026-09-23","45","9"]].forEach(([dt, kg, r]) =>
     d.log[dt + "|" + x.id + "|" + b.id] = [{kg, reps: r}, {kg: "30", reps: "10"}]);
@@ -260,14 +260,14 @@ await put(`d.setupDone = true; d.programId = "ul4"; d.progVersion = 6; d.days = 
 ok(await ev(`S.days[0].exercises.some(e => e.name === "Triceps Pushdown")`), "giáo án khác PPL: không đổi bài");
 
 console.log("== Ăn uống");
-await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 })`);
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 })`);
 ok(await ev(`document.querySelectorAll("nav .tab").length`) === 4, "thanh tab có 4 mục");
 await click("[data-tab=an]"); await sleep(150);
 ok(await ev(`tab === "an" && foodDate === today()`), "mở tab Ăn ở ngày hôm nay");
 ok(await ev(`document.querySelectorAll("[data-fav]").length`) === 6, "6 món quen mặc định");
 await shot("food-empty.png"); await noOverflow("tab Ăn");
 await click("[data-fav]"); await sleep(120);
-ok(await ev(`foodTotals(today()).kcal`) === 750 && await ev(`foodDay(today())[0].t.length`) === 5, "bấm món quen → ghi 750 kcal, có giờ");
+ok(await ev(`foodTotals(today()).kcal`) === 195 && await ev(`foodDay(today())[0].t.length`) === 5, "bấm món quen 'Cơm trắng · 1 chén' → ghi 195 kcal, có giờ");
 // tìm không dấu
 await ev(`$("#foodQ").focus()`); await type("#foodQ", "pho bo"); await sleep(100);
 ok(await ev(`[...document.querySelectorAll("#foodResults .foodrow")].map(b => b.textContent).join("|").includes("Phở bò")`), "gõ không dấu 'pho bo' ra Phở bò");
@@ -277,7 +277,7 @@ ok(await ev(`!!document.querySelector("[data-fmode]")`) === false, "món cả su
 await click('[data-fqset="1.5"]'); await sleep(80);
 ok(await ev(`$("#foodCalc").textContent`) === "675 kcal · 38 g đạm", "1,5 tô phở = 675 kcal");
 await click("[data-addsel]"); await sleep(120);
-ok(await ev(`foodDay(today()).at(-1).q`) === "1,5 tô" && await ev(`foodTotals(today()).kcal`) === 1425, "thêm 1,5 tô phở, tổng 1 425");
+ok(await ev(`foodDay(today()).at(-1).q`) === "1,5 tô" && await ev(`foodTotals(today()).kcal`) === 870, "thêm 1,5 tô phở, tổng 870");
 // theo gam
 await type("#foodQ", "uc ga chin"); await sleep(80);
 await click("#foodResults .foodrow"); await sleep(80);
@@ -331,7 +331,7 @@ ok(await ev(`foodDate === addDays(today(), -1) && document.querySelector("#view"
 await reload();
 ok(await ev(`foodDay(today()).length`) === before - 1 && await ev(`!!S.favs`), "tải lại vẫn còn");
 // nối với nhịp tăng cân: 4 ngày ăn ~2 300, cân không lên
-await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 });
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 });
   d.bw = [{date: addDays(today(), -10), kg: 56}, {date: today(), kg: 56}];
   d.food = {}; [1,2,3,4].forEach(i => d.food[addDays(today(), -i)] = [{id: "x" + i, name: "Cơm", kcal: 2300, p: 110}])`);
 await click("[data-tab=me]"); await sleep(150);
@@ -341,7 +341,7 @@ ok(/7 ngày qua ăn trung bình 2\.300 kcal \(4 ngày có ghi\) → nhắm kho�
 ok(await ev(`today() === (d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"))(new Date())`), "today() theo giờ máy");
 
 console.log("== Bữa nhiều món");
-await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 })`);
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 })`);
 await click("[data-tab=an]"); await sleep(120);
 const find = async (q, name) => { await type("#foodQ", q); await sleep(80);
   return ev(`(() => { const b = [...document.querySelectorAll("#foodResults .foodrow")].find(b => b.textContent.includes(${JSON.stringify(name)})); if (b) b.click(); return !!b; })()`); };
@@ -379,8 +379,30 @@ await type("#cName", "Canh chua nhà"); await type("#cKcal", "90"); await type("
 ok(await ev(`tray().length === 1 && tray()[0].name === "Canh chua nhà"`), "món tự nhập cũng vào bữa được");
 await shot("food-meal.png"); await noOverflow("tab Ăn có bữa gộp");
 
+console.log("== Mục tiêu");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 })`);
+ok(await ev(`goalOf(S.profile)`) === "tang" && await ev(`!/2 750|145 g|3 trứng \+ 2 lát/.test(document.documentElement.outerHTML)`), "người mới: tăng cơ +300, không còn thực đơn riêng");
+ok(await ev(`!favs().some(f => /Ensure|Sáng: 3 trứng/.test(f.name))`), "món quen mặc định là món phổ biến");
+await click("[data-tab=me]"); await sleep(100);
+await ev(`[...document.querySelectorAll("details.sec")].forEach(x => x.open = true)`);
+ok(await ev(`[...document.querySelectorAll("#view .lrow")].filter(r => /kcal ·/.test(r.textContent)).length`) === 4, "dinh dưỡng: chia gợi ý 4 bữa theo mục tiêu");
+await ev(`{ const g = $("#goalSel"); g.value = "giam"; g.dispatchEvent(new Event("change", {bubbles: true})) }`); await sleep(120);
+ok(await ev(`+S.profile.surplus`) === -400 && await ev(`goalOf(S.profile)`) === "giam", "chọn Giảm mỡ → chênh −400 kcal");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 70, surplus: -400 });
+  d.bw = [{date: addDays(today(), -14), kg: 71}, {date: today(), kg: 70}]`);
+await click("[data-tab=me]"); await sleep(100);
+let gpace = await ev(`document.querySelector("#view").textContent.replace(/\s+/g, " ")`);
+ok(gpace.includes("-0.5 kg/tuần") && gpace.includes("Đúng nhịp") && gpace.includes("−0,25 đến −0,75"), "giảm mỡ, giảm 0,5 kg/tuần → đúng nhịp");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 70, surplus: -400 });
+  d.bw = [{date: addDays(today(), -14), kg: 70}, {date: today(), kg: 70}]`);
+await click("[data-tab=me]"); await sleep(100);
+gpace = await ev(`document.querySelector("#view").textContent.replace(/\s+/g, " ")`);
+ok(gpace.includes("Chưa giảm"), "giảm mỡ mà cân đứng → khuyên bớt calo, không khuyên ăn thêm");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 70, surplus: 450 })`);
+ok(await ev(`+S.profile.surplus === 450 && goalOf(S.profile) === "tang"`), "dữ liệu cũ giữ nguyên mức chênh đã đặt");
+
 console.log("== Giao diện");
-await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 })`);
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 })`);
 ok(await ev(`document.documentElement.dataset.theme`) === "hientai", "mặc định: Đồng thau (giao diện cũ)");
 ok(await ev(`document.querySelectorAll("nav .tab svg.ico").length === 4 && !/[\u{1F300}-\u{1FAFF}]/u.test(document.querySelector("nav").textContent)`), "thanh tab dùng icon nét, không còn emoji");
 await click("[data-tab=me]"); await sleep(120);
