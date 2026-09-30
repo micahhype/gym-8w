@@ -130,6 +130,21 @@ JAVA_HOME=/đường/dẫn/jdk-21 npm run apk
 `npm run apk` chép bản web mới nhất vào `www/` rồi mới build, nên sửa
 `index.html` xong chỉ cần chạy lại lệnh này.
 
+**Cập nhật không cần cài lại APK.** App có plugin
+[capacitor-updater](https://github.com/Cap-go/capacitor-updater) chạy chế độ tự quản
+(không gửi gì về máy chủ Capgo). Sửa `index.html` xong:
+
+```
+cd android-app && npm run publish
+```
+
+Script đóng gói `www/` thành zip, đẩy lên repo public `tandnguyendev/forma-app`
+(GitHub Pages) kèm `update.json`. App kiểm tra lúc mở và mỗi 6 giờ, tải bản mới
+về rồi **chỉ áp khi tắt hẳn app và mở lại** (không áp lúc chuyển app, để khỏi mất
+đồng hồ nghỉ); dữ liệu giữ nguyên. Tab Tôi → Phiên bản có nút kiểm tra tay. Chỉ
+khi đổi phần gốc Android (plugin, quyền, icon) mới cần build và cài APK lại —
+sau đó chạy `npm run publish -- --same` để gói trên mạng khớp đúng bản trong APK.
+
 ## Chạy local
 
 ```
@@ -139,7 +154,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 182 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 191 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

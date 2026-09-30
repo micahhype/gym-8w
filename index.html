@@ -1661,6 +1661,45 @@ let installPrompt = null;
    Trên web các hàm dưới đây không làm gì. */
 const NATIVE = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
 const plug = n => (NATIVE && window.Capacitor.Plugins && Capacitor.Plugins[n]) || null;
+
+/* Cập nhật không cần cài lại APK: android-app/publish-web.mjs đẩy gói web lên
+   UPDATE_URL; app tải về rồi áp khi TẮT HẲN và mở lại (không áp lúc chuyển app,
+   để khỏi mất đồng hồ nghỉ). APP_BUILD do copy-web.mjs điền lúc đóng gói. */
+const APP_BUILD = "dev";
+const UPDATE_URL = "https://tandnguyendev.github.io/forma-app/update.json";
+// báo gói hiện tại chạy được ngay khi script chạy, không thì plugin quay về bản cũ
+if (plug("CapacitorUpdater")) plug("CapacitorUpdater").notifyAppReady().catch(() => {});
+let lastUpdateCheck = 0;
+async function liveUpdate(manual) {
+  const U = plug("CapacitorUpdater"); if (!U) return;
+  lastUpdateCheck = Date.now();
+  try {
+    const j = await (await fetch(UPDATE_URL + "?t=" + Date.now(), { cache: "no-store" })).json();
+    let pending = null; try { pending = localStorage.getItem("forma.next"); } catch (e) {}
+    if (!j.version || j.version === APP_BUILD) { if (manual) toast("Đang là bản mới nhất"); return; }
+    if (pending === j.version) { if (manual) toast("Đã tải bản mới — tắt hẳn app rồi mở lại để dùng"); return; }
+    const b = await U.download({ url: j.url, version: j.version });
+    await U.next({ id: b.id });
+    await U.setMultiDelay({ delayConditions: [{ kind: "kill" }] });
+    try { localStorage.setItem("forma.next", j.version); } catch (e) {}
+    toast("Đã tải bản mới — tắt hẳn app rồi mở lại để dùng");
+    if (tab === "me") render();
+  } catch (e) { if (manual) toast("Không kiểm tra được cập nhật — cần mạng"); }
+}
+// mở app: kiểm tra sau vài giây; quay lại app sau lâu (6 giờ) thì kiểm tra lại
+if (NATIVE) {
+  setTimeout(liveUpdate, 4000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && Date.now() - lastUpdateCheck > 6 * 3600e3) liveUpdate();
+  });
+}
+function updateCard() {
+  if (!NATIVE) return "";
+  let pending = null; try { pending = localStorage.getItem("forma.next"); } catch (e) {}
+  return `<div class="card"><div class="spread"><div><div class="num" style="font-size:18px">Phiên bản</div>
+      <div class="small dim">${esc(APP_BUILD)}${pending && pending !== APP_BUILD ? ` · bản ${esc(pending)} đã tải, tắt hẳn app rồi mở lại để dùng` : ""}</div></div>
+    <button class="ghost sm" data-update="1">Kiểm tra</button></div></div>`;
+}
 let notifReady = null;
 /** Xin quyền thông báo + tạo kênh "Đồng hồ nghỉ" (rung, kêu, hiện đè) một lần. */
 function notifSetup() {
@@ -2371,7 +2410,8 @@ function viewMe() {
     <div style="margin-top:16px" class="stack">${templatesSec()}${dataSec()}</div>
     <div style="margin-top:16px">${installCard()}</div>
     <div style="margin-top:12px">${themeCard()}</div>
-    <div style="margin-top:12px">${wakeCard()}</div>`;
+    <div style="margin-top:12px">${wakeCard()}</div>
+    ${NATIVE ? `<div style="margin-top:12px">${updateCard()}</div>` : ""}`;
   return viewMeFull(p, t, profileForm);
 }
 function profileFormHTML(p) {
@@ -2470,6 +2510,7 @@ function viewMeFull(p, t, profileForm) {
     ${installCard()}
     ${themeCard()}
     ${wakeCard()}
+    ${updateCard()}
     <details class="sec" open><summary>Cân nặng</summary><div class="body">
       <div class="g3" style="text-align:center;padding:16px 0">
         <div><div class="num" style="font-size:30px">${n1(latest)}</div><div class="small dim">kg</div></div>
@@ -2807,6 +2848,7 @@ document.addEventListener("click", e => {
     installPrompt.userChoice.finally(() => { installPrompt = null; render(); });
     return;
   }
+  if (el.dataset.update) { toast("Đang kiểm tra…"); liveUpdate(true); return; }
   if (el.dataset.themePick) {
     S.theme = el.dataset.themePick; save(true); applyTheme(); render();
     toast("Giao diện: " + THEMES.find(x => x[0] === S.theme)[1]); return;

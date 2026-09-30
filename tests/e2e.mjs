@@ -490,6 +490,40 @@ ok(await ev(`document.documentElement.dataset.theme`) === "dem", "máy chuyển 
 await send("Emulation.setEmulatedMedia", { features: [] });
 ok(await ev(`localStorage.getItem("gymbook.theme")`) === "auto", "lưu 'auto' chứ không lưu theme đã suy ra");
 
+console.log("== Tự cập nhật (giả lập app Android)");
+// giả Capacitor + plugin cập nhật + update.json trước khi trang chạy
+const mock = (await send("Page.addScriptToEvaluateOnNewDocument", { source: `
+  window.__calls = [];
+  window.__remote = JSON.parse(sessionStorage.getItem("remote") || '{"version":"20991231.0000-abc","url":"https://x/forma.zip"}');
+  const rec = n => (o) => { __calls.push([n, o]); return Promise.resolve(n === "download" ? { id: "b1", version: o.version } : {}); };
+  window.Capacitor = { isNativePlatform: () => true, Plugins: { CapacitorUpdater: {
+    notifyAppReady: rec("ready"), download: rec("download"), next: rec("next"), setMultiDelay: rec("delay") } } };
+  const f0 = window.fetch.bind(window);
+  window.fetch = (u, o) => String(u).startsWith("https://tandnguyendev.github.io/forma-app/update.json")
+    ? (sessionStorage.getItem("offline") ? Promise.reject(new Error("offline")) : Promise.resolve(new Response(JSON.stringify(__remote))))
+    : f0(u, o);` })).result.identifier;
+await ev(`localStorage.clear(); localStorage.setItem("soSat.v2", JSON.stringify(Object.assign(seed(), { setupDone: true })))`);
+await reload(); await sleep(4800);
+let calls = await ev(`JSON.stringify(__calls)`);
+ok(await ev(`NATIVE && __calls[0][0] === "ready"`), "mở app: báo gói chạy được ngay (notifyAppReady)");
+ok(calls.includes('["download",{"url":"https://x/forma.zip","version":"20991231.0000-abc"}]') && calls.includes('["next",{"id":"b1"}]'), "có bản mới: tải về và đặt làm bản kế tiếp");
+ok(calls.includes('["delay",{"delayConditions":[{"kind":"kill"}]}]'), "chỉ áp khi tắt hẳn app (không áp lúc chuyển app)");
+ok(await ev(`localStorage.getItem("forma.next")`) === "20991231.0000-abc", "nhớ bản đã tải");
+await click("[data-tab=me]"); await sleep(100);
+ok(await ev(`document.querySelector("#view").textContent.includes("bản 20991231.0000-abc đã tải, tắt hẳn app rồi mở lại để dùng")`), "tab Tôi: báo đã tải bản mới");
+await ev(`__calls = []`); await click("[data-update]"); await sleep(200);
+ok(await ev(`!__calls.some(c => c[0] === "download")`), "bấm Kiểm tra lần nữa: không tải lại bản đã tải");
+// cùng phiên bản đang chạy ("dev" khi chạy thẳng index.html) → không làm gì
+await ev(`sessionStorage.setItem("remote", JSON.stringify({ version: "dev", url: "https://x/y.zip" })); localStorage.removeItem("forma.next")`);
+await reload(); await sleep(4800);
+ok(await ev(`!__calls.some(c => c[0] === "download")`), "đang là bản mới nhất: không tải");
+// mất mạng: bấm Kiểm tra thì báo, không lỗi
+await ev(`sessionStorage.setItem("offline", "1")`); await click("[data-tab=me]"); await sleep(80); await click("[data-update]"); await sleep(200);
+ok(await ev(`$("#toast").textContent`) === "Không kiểm tra được cập nhật — cần mạng", "mất mạng: báo cần mạng");
+await send("Page.removeScriptToEvaluateOnNewDocument", { identifier: mock });
+await ev(`sessionStorage.clear()`); await reload();
+ok(await ev(`!NATIVE && !document.querySelector("[data-update]")`), "bản web thường: không có mục cập nhật");
+
 console.log("== Giữ màn hình sáng");
 await put(`d.setupDone = true`);
 const lock = () => ev(`new Promise(r => setTimeout(() => r(!!wakeLock && !wakeLock.released), 300))`);
