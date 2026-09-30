@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1014">
-<meta name="description" content="Sổ tập tạ — ghi từng set, đếm giờ nghỉ, theo dõi cân nặng. Dữ liệu nằm trên máy bạn.">
-<title>Gym Book</title>
+<meta name="description" content="Sổ tập luyện và vóc dáng — ghi set, bữa ăn, cân nặng, xem tiến bộ. Dữ liệu nằm trên máy bạn.">
+<title>Forma</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Gym Book">
+<meta name="apple-mobile-web-app-title" content="Forma">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1051,7 +1051,7 @@ function hiName(name) {
 function renderTop() {
   const el = $("#topbar");
   if (tab !== "train") {
-    el.innerHTML = `<div class="topline"><div class="session">${tab === "setup" ? "Gym <em>Book</em>"
+    el.innerHTML = `<div class="topline"><div class="session">${tab === "setup" ? '<span style="text-transform:none;letter-spacing:0">forma<em>.</em></span>'
       : tab === "an" ? "Ăn <em>uống</em>" : tab === "history" ? "Nhật <em>ký</em>" : "Hồ <em>sơ</em>"}</div></div>`;
     return;
   }
@@ -2446,15 +2446,15 @@ function viewSetup() {
   return `
     <div style="text-align:center;padding:28px 0 8px">
       <img src="./favicon.svg" alt="" width="88" height="88" style="border-radius:22px">
-      <h2 style="margin:18px 0 6px">Chào mừng tới Gym <span style="color:var(--brass)">Book</span></h2>
-      <p class="muted" style="margin:0 auto;max-width:320px">Ghi từng set, tự gợi ý tạ, đếm giờ nghỉ. Dữ liệu chỉ nằm trên máy bạn.</p>
+      <h2 style="margin:18px 0 6px;text-transform:none;letter-spacing:0">Chào mừng tới forma<span style="color:var(--brass)">.</span></h2>
+      <p class="muted" style="margin:0 auto;max-width:320px">Ghi buổi tập, bữa ăn, cân nặng — app tự gợi ý tạ và cho thấy bạn tiến bộ ra sao. Dữ liệu chỉ nằm trên máy bạn.</p>
     </div>
     <div class="stack" style="margin-top:24px">
       <button class="btn" data-onb="profile">Bắt đầu mới</button>
       <button class="ghost" id="importBtn">⬆ Nhập dữ liệu cũ (file JSON)</button>
       ${importInput()}
     </div>
-    <p class="small dim" style="margin-top:14px;text-align:center">Đã dùng Gym Book ở máy khác hoặc trên trình duyệt?
+    <p class="small dim" style="margin-top:14px;text-align:center">Đã dùng app ở máy khác hoặc trên trình duyệt?
       Mở bản đó → tab Tôi → Dữ liệu → Xuất file JSON, rồi nhập file ở đây.</p>`;
 }
 
@@ -2678,7 +2678,7 @@ document.addEventListener("click", e => {
 
   if (el.id === "exportBtn" && NATIVE) {
     // WebView không tải file xuống được: ghi vào bộ nhớ tạm rồi mở bảng Chia sẻ (Drive, Zalo, email…)
-    const FS = plug("Filesystem"), SH = plug("Share"), name = "gym-book-" + today() + ".json";
+    const FS = plug("Filesystem"), SH = plug("Share"), name = "forma-" + today() + ".json";
     if (!FS || !SH) { toast("Thiếu plugin xuất file"); return; }
     FS.writeFile({ path: name, data: JSON.stringify(S, null, 2), directory: "CACHE", encoding: "utf8" })
       .then(r => SH.share({ title: name, files: [r.uri] }))
@@ -2688,7 +2688,7 @@ document.addEventListener("click", e => {
   if (el.id === "exportBtn") {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: "application/json" }));
-    a.download = "gym-book-" + today() + ".json"; a.click();
+    a.download = "forma-" + today() + ".json"; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast("Đã xuất file"); return;
   }
   if (el.id === "installBtn") {

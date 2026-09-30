@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Icon nhỏ trên thanh thông báo: một quả tạ đơn, chỉ một màu (Android tự tô). -->
+<!-- Icon nhỏ trên thanh thông báo: logo forma. (đầu + thân chữ V), một màu để Android tự tô. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
     <path android:fillColor="#FFFFFFFF"
-        android:pathData="M1,10h2v4H1z M4,7h3v10H4z M8,11h8v2H8z M17,7h3v10h-3z M21,10h2v4h-2z"/>
+        android:pathData="M12,2.8a2,2 0 1,1 0,4a2,2 0 1,1 0,-4z M5.8,9h12.4l-3.5,10.5h-5.4z"/>
 </vector>

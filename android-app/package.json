@@ -1,5 +1,5 @@
 {
-  "name": "gym-book-android",
+  "name": "forma-android",
   "private": true,
   "description": "Bọc index.html thành app Android bằng Capacitor",
   "scripts": {

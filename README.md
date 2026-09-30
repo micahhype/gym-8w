@@ -1,7 +1,8 @@
-# Gym Book
+# Forma
 
-Sổ tập tạ chạy hoàn toàn trong trình duyệt. Một file `index.html`, không backend,
-không tài khoản. Mọi số liệu nằm trong `localStorage` của máy bạn.
+Sổ tập luyện và vóc dáng — ghi buổi tập, bữa ăn, cân nặng và xem tiến bộ. Chạy
+hoàn toàn trên máy: một file `index.html`, không backend, không tài khoản. Mọi số
+liệu nằm trong `localStorage` của máy bạn. Logo gốc (SVG) ở `brand/`.
 
 - **Màn hình chào** — lần đầu mở: *Bắt đầu mới* (điền hồ sơ, bỏ qua được, rồi
   chọn giáo án) hoặc *Nhập dữ liệu cũ* từ file JSON. Dữ liệu đã có từ trước thì
@@ -132,7 +133,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 156 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 157 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

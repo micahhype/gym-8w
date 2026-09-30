@@ -1,4 +1,4 @@
-// Test end-to-end Gym Book qua Chrome DevTools Protocol, khổ màn hình 400×860.
+// Test end-to-end Forma qua Chrome DevTools Protocol, khổ màn hình 400×860.
 // Chạy bằng tests/run.sh. Thêm --shots để lưu ảnh chụp vào tests/shots/ (không commit).
 import fs from "fs";
 const port = 9333, base = "http://localhost:8765/", SHOTS = process.argv.includes("--shots");
@@ -33,6 +33,7 @@ await send("Page.navigate", { url: base }); await sleep(1000);
 console.log("== Màn hình chào");
 await ev(`localStorage.clear()`); await reload();
 ok(await ev(`tab === "setup" && document.body.classList.contains("onb")`), "người mới: màn hình chào");
+ok(await ev(`document.title === "Forma" && /Chào mừng tới forma\./.test(document.querySelector("#view").textContent)`), "tên app: Forma");
 ok(await ev(`getComputedStyle(document.querySelector("nav")).display === "none"`), "ẩn thanh tab");
 ok(await ev(`!!document.querySelector('[data-onb=profile]') && !!document.querySelector('#importBtn')`), "có Bắt đầu mới + Nhập dữ liệu cũ");
 ok(await ev(`new Date(S.profile.startDate + "T00:00:00").getDay()`) === 1, "ngày bắt đầu mặc định là thứ Hai");

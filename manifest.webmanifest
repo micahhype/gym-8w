@@ -1,7 +1,7 @@
 {
-  "name": "Gym Book",
-  "short_name": "Gym Book",
-  "description": "Sổ tập tạ — ghi từng set, đếm giờ nghỉ, theo dõi cân nặng. Dữ liệu nằm trên máy bạn.",
+  "name": "Forma",
+  "short_name": "Forma",
+  "description": "Sổ tập luyện và vóc dáng — ghi set, bữa ăn, cân nặng, xem tiến bộ. Dữ liệu nằm trên máy bạn.",
   "lang": "vi",
   "start_url": "./",
   "scope": "./",
