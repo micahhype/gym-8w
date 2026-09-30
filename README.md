@@ -22,7 +22,7 @@ liệu nằm trong `localStorage` của máy bạn. Logo gốc (SVG) ở `brand/
   buổi trong tab Tôi → Chương trình. Calo đốt thêm ((MET − 1) × kg × giờ) được cộng
   vào mục tiêu ăn hôm đó, trừ khi mục tiêu là giảm mỡ. Nhật ký có biểu đồ phút
   cardio mỗi tuần so với mốc 150 phút.
-- **Ăn** — ghi bữa ăn, chỉ đếm calo và đạm so với mục tiêu ở tab Tôi. *Món quen*
+- **Ăn** — ghi bữa ăn, đếm calo, đạm, tinh bột và béo so với mục tiêu ở tab Tôi. *Món quen*
   bấm một lần là ghi (mặc định vài món phổ biến; lưu món của mình bằng ☆
   hoặc tự nhập). Tìm trong 173 món Việt và nguyên liệu nấu ở nhà (thịt chiên, kho,
   xào, rau theo gam), gõ không dấu hoặc tên gọi khác cũng ra (súp lơ xanh,
@@ -139,7 +139,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 174 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 182 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

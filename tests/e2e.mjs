@@ -277,6 +277,7 @@ await ev(`[...document.querySelectorAll("#foodResults .foodrow")].find(b => b.te
 ok(await ev(`!!document.querySelector("[data-fmode]")`) === false, "món cả suất (tô) không có chế độ gam");
 await click('[data-fqset="1.5"]'); await sleep(80);
 ok(await ev(`$("#foodCalc").textContent`) === "675 kcal · 38 g đạm", "1,5 tô phở = 675 kcal");
+ok(await ev(`$("#foodMac").textContent`) === "tinh bột 83 g · béo 20 g", "1,5 tô phở: tinh bột 83 g, béo 20 g");
 await click("[data-addsel]"); await sleep(120);
 ok(await ev(`foodDay(today()).at(-1).q`) === "1,5 tô" && await ev(`foodTotals(today()).kcal`) === 870, "thêm 1,5 tô phở, tổng 870");
 // theo gam
@@ -356,8 +357,9 @@ ok(await ev(`tray().length === 1 && foodQ === "" && !!$("#tray")`), "+ Vào bữ
 await find("trung chien", "Trứng gà chiên"); await sleep(60); await click("[data-totray]"); await sleep(100);
 await find("thit heo chien", "Thịt heo chiên"); await sleep(60); await type("#foodG", "200"); await click("[data-totray]"); await sleep(100);
 await find("bong cai xanh", "Bông cải xanh"); await sleep(60); await type("#foodG", "50"); await click("[data-totray]"); await sleep(100);
-ok(await ev(`JSON.stringify(sumItems(tray()), (k, v) => typeof v === "number" ? Math.round(v) : v)`) === '{"kcal":938,"p":65}', "khay 4 món: 938 kcal · 65 g");
+ok(await ev(`JSON.stringify(sumItems(tray()), (k, v) => typeof v === "number" ? Math.round(v) : v)`) === '{"kcal":938,"p":65,"c":65,"f":47}', "khay 4 món: 938 kcal · 65 g đạm · 65 g tinh bột · 47 g béo");
 ok(await ev(`$("#tray").textContent.replace(/\s+/g, " ").includes("938 kcal · 65 g đạm")`), "khay hiện tổng 938 kcal · 65 g");
+ok(await ev(`$("#tray").textContent.replace(/\s+/g, " ").includes("tinh bột 65 g · béo 47 g")`), "khay: tinh bột 65 g, béo 47 g");
 await shot("tray.png"); await noOverflow("khay bữa");
 await reload(); await click("[data-tab=an]"); await sleep(120);
 ok(await ev(`tray().length`) === 4, "tải lại khay vẫn còn");
@@ -367,6 +369,7 @@ await find("trung chien", "Trứng gà chiên"); await sleep(60); await click("[
 await type("#trayName", "Cơm trưa"); await ev(`$("#trayFav").checked = true`);
 await click("[data-traylog]"); await sleep(150);
 const e = await ev(`foodDay(today()).at(-1)`);
+ok(Math.round(e.c) === 65 && Math.round(e.f) === 47, "bữa gộp lưu cả tinh bột, béo");
 ok(e.name === "Cơm trưa" && e.kcal === 938 && Math.round(e.p) === 65 && e.items.length === 4 && e.q === "4 món", "ghi thành một dòng 'Cơm trưa' 938 kcal, 4 món");
 ok(await ev(`tray().length === 0 && !$("#tray")`), "ghi xong khay trống");
 ok(await ev(`[...document.querySelectorAll("#view details.note summary")].some(x => x.textContent === "4 món")`), "dòng đã ăn có '4 món' bấm xem chi tiết");
@@ -374,11 +377,21 @@ const fav = await ev(`favs().at(-1)`);
 ok(fav.name === "Cơm trưa" && fav.items.length === 4, "lưu 'Cơm trưa' thành món quen kèm chi tiết");
 await ev(`document.querySelector('[data-fav="' + favs().at(-1).id + '"]').click()`); await sleep(100);
 ok(await ev(`foodDay(today()).length === 2 && foodDay(today()).at(-1).items.length === 4 && foodTotals(today()).kcal === 1876`), "bấm món quen 'Cơm trưa' → ghi lại cả bữa");
+ok(await ev(`[...document.querySelectorAll("#view .spread .muted")].map(x => x.textContent).filter(t => /Tinh bột|Béo/.test(t)).length`) === 2, "tab Ăn có thanh Tinh bột và Béo");
+ok(await ev(`(() => { const t = foodTotals(today()); return Math.round(t.c) === 131 && Math.round(t.f) === 93 && t.noMacro === 0; })()`), "tổng ngày: 2 bữa × (65,3 g tinh bột, 46,7 g béo)");
 // tự nhập cũng vào bữa được
 await click('[data-custom="1"]'); await sleep(60);
 await type("#cName", "Canh chua nhà"); await type("#cKcal", "90"); await type("#cP", "6"); await click("[data-customtray]"); await sleep(100);
 ok(await ev(`tray().length === 1 && tray()[0].name === "Canh chua nhà"`), "món tự nhập cũng vào bữa được");
 await shot("food-meal.png"); await noOverflow("tab Ăn có bữa gộp");
+await click("[data-trayclear]"); await sleep(60);
+await click('[data-custom="1"]'); await sleep(60);
+await type("#cName", "Chè nhà"); await type("#cKcal", "250"); await type("#cP", "5"); await click("[data-addcustom]"); await sleep(100);
+ok(await ev(`foodDay(today()).at(-1).c === undefined && foodTotals(today()).noMacro === 1`), "tự nhập để trống tinh bột/béo: không ghi số 0 giả");
+ok(await ev(`document.querySelector("#view").textContent.includes("1 món ghi từ trước chưa có số tinh bột, béo")`), "báo số món thiếu tinh bột/béo");
+await click('[data-custom="1"]'); await sleep(60);
+await type("#cName", "Bánh flan"); await type("#cKcal", "120"); await type("#cP", "4"); await type("#cC", "18"); await type("#cF", "3.5"); await click("[data-addcustom]"); await sleep(100);
+ok(await ev(`foodDay(today()).at(-1).c === 18 && foodDay(today()).at(-1).f === 3.5`), "tự nhập có tinh bột, béo");
 
 console.log("== Cardio");
 ok(await ev(`tplDays(tplOf("ppl")).filter(d => d.cardio).map(d => d.name + ":" + d.cardio.min).join()`) === "Buổi Kéo:25", "PPL: gợi ý cardio 25 phút sau buổi Kéo");

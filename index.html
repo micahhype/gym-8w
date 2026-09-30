@@ -1782,7 +1782,8 @@ function installCard() {
 
 /* ---------------- ĂN ----------------
    Chỉ đếm calo và đạm — đủ cho mục tiêu tăng cơ, ghi nhanh hơn nhiều so với đếm đủ chất.
-   FOODS: [tên, nhóm, đơn vị, gam (hoặc ml) mỗi đơn vị, kcal mỗi đơn vị, đạm (g) mỗi đơn vị, tên gọi khác?].
+   FOODS: [tên, nhóm, đơn vị, gam (hoặc ml) mỗi đơn vị, kcal, đạm, tinh bột, béo (g, mỗi đơn vị), tên gọi khác?].
+   Tinh bột tính cả chất xơ nên rau lệch vài kcal so với 4·đạm + 4·tinh bột + 9·béo; bia lệch vì năng lượng cồn.
    Nguyên liệu theo Bảng thành phần thực phẩm Việt Nam (Viện Dinh dưỡng); món nấu sẵn là
    ước lượng cho một suất phổ biến ở quán — sai số ±20–30%, cái cân mới là trọng tài.
    gam = 0: không nhập theo gam được (món cả suất). Nhật ký lưu luôn số kcal/đạm lúc ghi,
@@ -1791,186 +1792,186 @@ const FOOD_GROUPS = [["com", "Cơm, tinh bột"], ["nuoc", "Món nước"], ["di
   ["sang", "Bánh, ăn sáng"], ["dam", "Thịt, cá, trứng, đậu"], ["rau", "Rau, canh"],
   ["trai", "Trái cây"], ["sua", "Sữa, đồ uống"], ["bs", "Bổ sung"], ["vat", "Ăn vặt"]];
 const FOODS = [
-  ["Cơm trắng", "com", "chén", 150, 195, 4],
-  ["Cơm gạo lứt", "com", "chén", 150, 165, 3.8],
-  ["Gạo tẻ (sống)", "com", "100 g", 100, 344, 7.9],
-  ["Bún tươi", "com", "100 g", 100, 110, 1.7],
-  ["Bánh phở", "com", "100 g", 100, 141, 3.2],
-  ["Mì gói", "com", "gói", 75, 350, 7, "mi tom"],
-  ["Nui, mì ống (luộc)", "com", "100 g", 100, 158, 5.8, "pasta spaghetti"],
-  ["Khoai lang luộc", "com", "củ", 150, 130, 2.4],
-  ["Khoai tây luộc", "com", "củ", 150, 115, 3],
-  ["Bắp luộc", "com", "bắp", 150, 145, 5],
-  ["Yến mạch", "com", "phần", 40, 150, 5.4],
-  ["Bánh mì không", "com", "ổ", 80, 210, 7],
-  ["Bánh mì sandwich", "com", "lát", 30, 80, 2.7],
-  ["Xôi trắng", "com", "gói", 200, 360, 7],
-  ["Phở bò", "nuoc", "tô", 0, 450, 25],
-  ["Phở gà", "nuoc", "tô", 0, 420, 25],
-  ["Bún bò Huế", "nuoc", "tô", 0, 550, 28],
-  ["Bún riêu", "nuoc", "tô", 0, 450, 20],
-  ["Bún cá", "nuoc", "tô", 0, 420, 22],
-  ["Bún chả", "nuoc", "suất", 0, 600, 25],
-  ["Bún thịt nướng", "nuoc", "tô", 0, 550, 22],
-  ["Bún đậu mắm tôm", "nuoc", "suất", 0, 650, 25],
-  ["Hủ tiếu Nam Vang", "nuoc", "tô", 0, 450, 22],
-  ["Mì Quảng", "nuoc", "tô", 0, 550, 25],
-  ["Cao lầu", "nuoc", "tô", 0, 500, 22],
-  ["Bánh canh cua", "nuoc", "tô", 0, 480, 20],
-  ["Miến gà", "nuoc", "tô", 0, 400, 22],
-  ["Mì tôm trứng", "nuoc", "tô", 0, 450, 13],
-  ["Cháo gà", "nuoc", "tô", 0, 300, 15],
-  ["Cháo lòng", "nuoc", "tô", 0, 400, 20],
-  ["Bò kho bánh mì", "nuoc", "suất", 0, 600, 28],
-  ["Cà ri gà bánh mì", "nuoc", "suất", 0, 650, 28],
-  ["Cơm tấm sườn", "dia", "đĩa", 0, 650, 28],
-  ["Cơm tấm sườn bì chả trứng", "dia", "đĩa", 0, 850, 38],
-  ["Cơm gà luộc", "dia", "đĩa", 0, 650, 32],
-  ["Cơm gà xối mỡ", "dia", "đĩa", 0, 750, 30],
-  ["Cơm chiên trứng", "dia", "đĩa", 0, 600, 15],
-  ["Cơm chiên Dương Châu", "dia", "đĩa", 0, 650, 18],
-  ["Cơm bò lúc lắc", "dia", "đĩa", 0, 700, 35],
-  ["Cơm văn phòng (1 mặn + rau)", "dia", "suất", 0, 650, 28],
-  ["Cơm sườn xào chua ngọt", "dia", "đĩa", 0, 700, 28],
-  ["Cơm cá kho", "dia", "suất", 0, 600, 28],
-  ["Mì xào bò", "dia", "đĩa", 0, 650, 25],
-  ["Hủ tiếu xào", "dia", "đĩa", 0, 650, 20],
-  ["Bánh xèo", "dia", "cái", 0, 300, 10],
-  ["Nem nướng (cuốn)", "dia", "suất", 0, 400, 20],
-  ["Gà nướng", "dia", "1/4 con", 0, 400, 40],
-  ["Vịt quay", "dia", "100 g", 100, 330, 18],
-  ["Bò bít tết", "dia", "miếng", 150, 350, 40],
-  ["Bánh mì chảo", "dia", "suất", 0, 700, 30],
-  ["Pizza", "dia", "miếng", 0, 280, 12],
-  ["Hamburger", "dia", "cái", 0, 500, 25],
-  ["Gà rán", "dia", "miếng", 0, 280, 18],
-  ["Khoai tây chiên", "dia", "phần vừa", 0, 320, 4],
-  ["Kimbap", "dia", "cuộn", 0, 450, 15],
-  ["Bánh mì thịt", "sang", "ổ", 0, 450, 17],
-  ["Bánh mì trứng (2 trứng)", "sang", "ổ", 0, 400, 17],
-  ["Bánh mì pate chả", "sang", "ổ", 0, 380, 13],
-  ["Bánh mì gà", "sang", "ổ", 0, 420, 20],
-  ["Xôi đậu xanh", "sang", "gói", 0, 400, 9],
-  ["Xôi gà", "sang", "hộp", 0, 520, 20],
-  ["Xôi mặn (xá xíu, lạp xưởng)", "sang", "hộp", 0, 550, 16],
-  ["Bánh cuốn", "sang", "đĩa", 0, 400, 12],
-  ["Bánh ướt chả lụa", "sang", "đĩa", 0, 400, 15],
-  ["Bánh bèo", "sang", "đĩa", 0, 300, 8],
-  ["Bánh bao nhân thịt", "sang", "cái", 150, 330, 11],
-  ["Bánh chưng", "sang", "miếng", 200, 450, 12],
-  ["Ức gà (chín)", "dam", "100 g", 100, 165, 31],
-  ["Ức gà (sống)", "dam", "100 g", 100, 120, 23],
-  ["Đùi gà bỏ da (chín)", "dam", "100 g", 100, 190, 26],
-  ["Thịt heo nạc (chín)", "dam", "100 g", 100, 190, 27],
-  ["Thịt heo nạc (sống)", "dam", "100 g", 100, 139, 19],
-  ["Thịt ba chỉ luộc", "dam", "100 g", 100, 400, 16],
-  ["Sườn nướng", "dam", "miếng", 120, 350, 22],
-  ["Thịt kho trứng", "dam", "phần", 0, 350, 20],
-  ["Thịt bò nạc (chín)", "dam", "100 g", 100, 220, 30],
-  ["Thịt bò nạc (sống)", "dam", "100 g", 100, 118, 21],
-  ["Cá hồi (chín)", "dam", "100 g", 100, 210, 22],
-  ["Cá basa (chín)", "dam", "100 g", 100, 170, 18],
-  ["Cá thu (chín)", "dam", "100 g", 100, 190, 22],
-  ["Cá kho tộ", "dam", "phần", 120, 250, 22],
-  ["Cá ngừ hộp (ngâm nước)", "dam", "hộp", 100, 130, 28],
-  ["Tôm luộc", "dam", "100 g", 100, 100, 22],
-  ["Mực xào", "dam", "100 g", 100, 150, 16],
-  ["Chả lụa", "dam", "100 g", 100, 140, 21],
-  ["Xúc xích", "dam", "cây", 40, 120, 5],
-  ["Trứng gà luộc", "dam", "quả", 50, 75, 6.5],
-  ["Trứng gà chiên, ốp la", "dam", "quả", 50, 100, 6.5, "trung tran trung op la"],
-  ["Trứng vịt", "dam", "quả", 70, 130, 9],
-  ["Trứng vịt lộn", "dam", "quả", 0, 180, 13],
-  ["Thịt heo chiên", "dam", "100 g", 100, 280, 26, "thit lon ran thit heo ran"],
-  ["Thịt heo kho (nạc)", "dam", "100 g", 100, 220, 24, "thit lon kho thit rim"],
-  ["Thịt kho tàu (ba chỉ)", "dam", "100 g", 100, 330, 15, "thit kho trung ba roi"],
-  ["Thịt heo xay (sống)", "dam", "100 g", 100, 260, 17, "thit bam thit lon xay"],
-  ["Sườn ram, rim", "dam", "100 g", 100, 320, 20, "suon chien suon rim"],
-  ["Gà chiên (có da)", "dam", "100 g", 100, 260, 24, "ga ran dui ga chien canh ga chien"],
-  ["Gà luộc (có da)", "dam", "100 g", 100, 215, 25],
-  ["Gà kho gừng", "dam", "100 g", 100, 200, 24, "ga rim ga kho"],
-  ["Thịt bò xào", "dam", "100 g", 100, 230, 26, "bo xao"],
-  ["Cá chiên", "dam", "100 g", 100, 220, 20, "ca ran ca ro phi chien ca basa chien"],
-  ["Tôm rim", "dam", "100 g", 100, 150, 20, "tom kho tom ram"],
-  ["Lạp xưởng", "dam", "cây", 40, 160, 7, "lap xuong"],
-  ["Đậu phụ", "dam", "bìa", 100, 95, 11, "dau hu tau hu"],
-  ["Đậu phụ chiên", "dam", "bìa", 100, 190, 12],
-  ["Đậu phụ sốt cà", "dam", "phần", 0, 150, 10],
-  ["Đậu phộng", "dam", "nắm", 30, 170, 7.5],
-  ["Bơ đậu phộng", "dam", "muỗng canh", 16, 95, 4],
-  ["Hạt điều", "dam", "nắm", 30, 165, 5],
-  ["Rau luộc", "rau", "đĩa", 150, 40, 3],
-  ["Rau xào", "rau", "đĩa", 150, 120, 3],
-  ["Canh rau", "rau", "bát", 0, 40, 2],
-  ["Canh chua cá", "rau", "bát", 0, 120, 10],
-  ["Canh bí đỏ thịt bằm", "rau", "bát", 0, 100, 6],
-  ["Dưa leo, cà chua", "rau", "100 g", 100, 18, 1],
-  ["Bông cải xanh", "rau", "100 g", 100, 35, 2.8, "sup lo xanh broccoli bong cai"],
-  ["Súp lơ trắng", "rau", "100 g", 100, 25, 1.9, "bong cai trang"],
-  ["Cải thìa, cải ngọt", "rau", "100 g", 100, 16, 1.7, "cai xanh cai be xanh"],
-  ["Rau muống", "rau", "100 g", 100, 25, 3.2],
-  ["Cà rốt", "rau", "100 g", 100, 38, 1.5],
-  ["Bắp cải", "rau", "100 g", 100, 29, 1.8, "cai bap"],
-  ["Su su", "rau", "100 g", 100, 18, 0.8],
-  ["Đậu que", "rau", "100 g", 100, 35, 2, "dau co ve dau ve"],
-  ["Cà chua", "rau", "100 g", 100, 20, 0.6],
-  ["Bí đỏ", "rau", "100 g", 100, 27, 0.3, "bi ngo"],
-  ["Mướp", "rau", "100 g", 100, 16, 0.9],
-  ["Khổ qua", "rau", "100 g", 100, 16, 0.9, "muop dang"],
-  ["Giá đỗ", "rau", "100 g", 100, 44, 5.5, "gia dau"],
-  ["Nấm", "rau", "100 g", 100, 30, 3.5, "nam rom nam kim cham nam dui ga"],
-  ["Xà lách", "rau", "100 g", 100, 15, 1.5, "rau song salad"],
-  ["Gỏi cuốn", "rau", "cuốn", 0, 70, 4.5],
-  ["Dầu ăn", "rau", "muỗng canh", 13, 117, 0, "mo"],
-  ["Mayonnaise", "rau", "muỗng canh", 15, 100, 0.2, "sot mayo"],
-  ["Đường", "rau", "muỗng cà phê", 5, 20, 0],
-  ["Chuối", "trai", "quả", 100, 90, 1.1],
-  ["Táo", "trai", "quả", 150, 80, 0.4],
-  ["Cam", "trai", "quả", 150, 60, 1.3],
-  ["Xoài", "trai", "quả", 200, 140, 1.6],
-  ["Đu đủ", "trai", "miếng", 200, 70, 1],
-  ["Dưa hấu", "trai", "miếng", 300, 90, 1.8],
-  ["Thanh long", "trai", "quả", 250, 150, 3],
-  ["Bơ (trái)", "trai", "nửa quả", 100, 160, 2],
-  ["Nho", "trai", "100 g", 100, 70, 0.7],
-  ["Ổi", "trai", "quả", 150, 100, 3.8],
-  ["Sữa tươi có đường", "sua", "hộp 180ml", 180, 140, 5.6],
-  ["Sữa tươi không đường", "sua", "hộp 180ml", 180, 115, 5.8],
-  ["Sữa tươi (ly)", "sua", "ly 250ml", 250, 160, 8],
-  ["Sữa đặc", "sua", "muỗng canh", 20, 65, 1.6],
-  ["Sữa chua", "sua", "hộp", 100, 100, 3.5],
-  ["Sữa chua Hy Lạp", "sua", "hộp", 100, 100, 9],
-  ["Sữa đậu nành", "sua", "ly 250ml", 250, 130, 7],
-  ["Phô mai miếng", "sua", "miếng", 15, 40, 1.8],
-  ["Cà phê sữa đá", "sua", "ly", 0, 150, 2],
-  ["Bạc xỉu", "sua", "ly", 0, 200, 3],
-  ["Cà phê đen có đường", "sua", "ly", 0, 50, 0.3],
-  ["Trà sữa trân châu", "sua", "ly M", 0, 450, 5],
-  ["Sinh tố bơ", "sua", "ly", 0, 350, 4],
-  ["Nước cam ép", "sua", "ly 250ml", 250, 110, 1.7],
-  ["Nước mía", "sua", "ly", 300, 180, 0],
-  ["Nước ngọt", "sua", "lon", 330, 140, 0],
-  ["Bia", "sua", "lon", 330, 145, 1.2],
-  ["Whey", "bs", "muỗng", 30, 120, 24],
-  ["Ensure", "bs", "ly", 0, 230, 9],
-  ["Thanh protein", "bs", "thanh", 0, 200, 20],
-  ["Bánh bông lan", "vat", "cái", 40, 150, 3],
-  ["Bánh quy", "vat", "3 cái", 30, 140, 2],
-  ["Snack", "vat", "gói", 50, 270, 3],
-  ["Socola", "vat", "thanh", 40, 210, 3],
-  ["Kem", "vat", "que", 0, 150, 3],
-  ["Chè đậu", "vat", "cốc", 0, 300, 7],
-  ["Chè thập cẩm", "vat", "cốc", 0, 350, 6],
-  ["Chả giò", "vat", "cuốn", 0, 100, 3.5],
-  ["Bánh tráng trộn", "vat", "phần", 0, 350, 8],
-  ["Bắp xào", "vat", "ly", 0, 300, 6],
+  ["Cơm trắng", "com", "chén", 150, 195, 4, 43, 0.4],
+  ["Cơm gạo lứt", "com", "chén", 150, 165, 3.8, 34, 1.3],
+  ["Gạo tẻ (sống)", "com", "100 g", 100, 344, 7.9, 76, 1],
+  ["Bún tươi", "com", "100 g", 100, 110, 1.7, 25.7, 0],
+  ["Bánh phở", "com", "100 g", 100, 141, 3.2, 32, 0],
+  ["Mì gói", "com", "gói", 75, 350, 7, 47, 15, "mi tom"],
+  ["Nui, mì ống (luộc)", "com", "100 g", 100, 158, 5.8, 31, 0.9, "pasta spaghetti"],
+  ["Khoai lang luộc", "com", "củ", 150, 130, 2.4, 30, 0.2],
+  ["Khoai tây luộc", "com", "củ", 150, 115, 3, 26, 0.2],
+  ["Bắp luộc", "com", "bắp", 150, 145, 5, 28, 1.5],
+  ["Yến mạch", "com", "phần", 40, 150, 5.4, 26, 2.8],
+  ["Bánh mì không", "com", "ổ", 80, 210, 7, 42, 1.5],
+  ["Bánh mì sandwich", "com", "lát", 30, 80, 2.7, 14.5, 1.2],
+  ["Xôi trắng", "com", "gói", 200, 360, 7, 78, 1.5],
+  ["Phở bò", "nuoc", "tô", 0, 450, 25, 55, 13],
+  ["Phở gà", "nuoc", "tô", 0, 420, 25, 55, 10],
+  ["Bún bò Huế", "nuoc", "tô", 0, 550, 28, 60, 20],
+  ["Bún riêu", "nuoc", "tô", 0, 450, 20, 58, 14],
+  ["Bún cá", "nuoc", "tô", 0, 420, 22, 58, 10],
+  ["Bún chả", "nuoc", "suất", 0, 600, 25, 70, 23],
+  ["Bún thịt nướng", "nuoc", "tô", 0, 550, 22, 65, 21],
+  ["Bún đậu mắm tôm", "nuoc", "suất", 0, 650, 25, 60, 34],
+  ["Hủ tiếu Nam Vang", "nuoc", "tô", 0, 450, 22, 58, 13],
+  ["Mì Quảng", "nuoc", "tô", 0, 550, 25, 65, 20],
+  ["Cao lầu", "nuoc", "tô", 0, 500, 22, 62, 17],
+  ["Bánh canh cua", "nuoc", "tô", 0, 480, 20, 62, 16],
+  ["Miến gà", "nuoc", "tô", 0, 400, 22, 55, 9],
+  ["Mì tôm trứng", "nuoc", "tô", 0, 450, 13, 50, 21],
+  ["Cháo gà", "nuoc", "tô", 0, 300, 15, 42, 7],
+  ["Cháo lòng", "nuoc", "tô", 0, 400, 20, 40, 17],
+  ["Bò kho bánh mì", "nuoc", "suất", 0, 600, 28, 55, 29],
+  ["Cà ri gà bánh mì", "nuoc", "suất", 0, 650, 28, 55, 34],
+  ["Cơm tấm sườn", "dia", "đĩa", 0, 650, 28, 85, 21],
+  ["Cơm tấm sườn bì chả trứng", "dia", "đĩa", 0, 850, 38, 90, 36],
+  ["Cơm gà luộc", "dia", "đĩa", 0, 650, 32, 80, 21],
+  ["Cơm gà xối mỡ", "dia", "đĩa", 0, 750, 30, 80, 33],
+  ["Cơm chiên trứng", "dia", "đĩa", 0, 600, 15, 80, 23],
+  ["Cơm chiên Dương Châu", "dia", "đĩa", 0, 650, 18, 85, 25],
+  ["Cơm bò lúc lắc", "dia", "đĩa", 0, 700, 35, 80, 25],
+  ["Cơm văn phòng (1 mặn + rau)", "dia", "suất", 0, 650, 28, 85, 20],
+  ["Cơm sườn xào chua ngọt", "dia", "đĩa", 0, 700, 28, 90, 24],
+  ["Cơm cá kho", "dia", "suất", 0, 600, 28, 80, 17],
+  ["Mì xào bò", "dia", "đĩa", 0, 650, 25, 70, 28],
+  ["Hủ tiếu xào", "dia", "đĩa", 0, 650, 20, 80, 26],
+  ["Bánh xèo", "dia", "cái", 0, 300, 10, 28, 16],
+  ["Nem nướng (cuốn)", "dia", "suất", 0, 400, 20, 45, 15],
+  ["Gà nướng", "dia", "1/4 con", 0, 400, 40, 2, 26],
+  ["Vịt quay", "dia", "100 g", 100, 330, 18, 1, 28],
+  ["Bò bít tết", "dia", "miếng", 150, 350, 40, 1, 21],
+  ["Bánh mì chảo", "dia", "suất", 0, 700, 30, 50, 42],
+  ["Pizza", "dia", "miếng", 0, 280, 12, 32, 11],
+  ["Hamburger", "dia", "cái", 0, 500, 25, 45, 24],
+  ["Gà rán", "dia", "miếng", 0, 280, 18, 10, 18],
+  ["Khoai tây chiên", "dia", "phần vừa", 0, 320, 4, 40, 16],
+  ["Kimbap", "dia", "cuộn", 0, 450, 15, 75, 10],
+  ["Bánh mì thịt", "sang", "ổ", 0, 450, 17, 50, 20],
+  ["Bánh mì trứng (2 trứng)", "sang", "ổ", 0, 400, 17, 44, 17],
+  ["Bánh mì pate chả", "sang", "ổ", 0, 380, 13, 45, 16],
+  ["Bánh mì gà", "sang", "ổ", 0, 420, 20, 48, 16],
+  ["Xôi đậu xanh", "sang", "gói", 0, 400, 9, 75, 7],
+  ["Xôi gà", "sang", "hộp", 0, 520, 20, 75, 15],
+  ["Xôi mặn (xá xíu, lạp xưởng)", "sang", "hộp", 0, 550, 16, 72, 22],
+  ["Bánh cuốn", "sang", "đĩa", 0, 400, 12, 60, 12],
+  ["Bánh ướt chả lụa", "sang", "đĩa", 0, 400, 15, 60, 11],
+  ["Bánh bèo", "sang", "đĩa", 0, 300, 8, 50, 7],
+  ["Bánh bao nhân thịt", "sang", "cái", 150, 330, 11, 48, 10],
+  ["Bánh chưng", "sang", "miếng", 200, 450, 12, 60, 18],
+  ["Ức gà (chín)", "dam", "100 g", 100, 165, 31, 0, 3.6],
+  ["Ức gà (sống)", "dam", "100 g", 100, 120, 23, 0, 2.6],
+  ["Đùi gà bỏ da (chín)", "dam", "100 g", 100, 190, 26, 0, 9.5],
+  ["Thịt heo nạc (chín)", "dam", "100 g", 100, 190, 27, 0, 9],
+  ["Thịt heo nạc (sống)", "dam", "100 g", 100, 139, 19, 0, 7],
+  ["Thịt ba chỉ luộc", "dam", "100 g", 100, 400, 16, 0, 37],
+  ["Sườn nướng", "dam", "miếng", 120, 350, 22, 6, 26],
+  ["Thịt kho trứng", "dam", "phần", 0, 350, 20, 8, 26],
+  ["Thịt bò nạc (chín)", "dam", "100 g", 100, 220, 30, 0, 11],
+  ["Thịt bò nạc (sống)", "dam", "100 g", 100, 118, 21, 0, 3.8],
+  ["Cá hồi (chín)", "dam", "100 g", 100, 210, 22, 0, 13],
+  ["Cá basa (chín)", "dam", "100 g", 100, 170, 18, 0, 10.5],
+  ["Cá thu (chín)", "dam", "100 g", 100, 190, 22, 0, 11],
+  ["Cá kho tộ", "dam", "phần", 120, 250, 22, 6, 15],
+  ["Cá ngừ hộp (ngâm nước)", "dam", "hộp", 100, 130, 28, 0, 1.5],
+  ["Tôm luộc", "dam", "100 g", 100, 100, 22, 0.2, 1],
+  ["Mực xào", "dam", "100 g", 100, 150, 16, 4, 7.5],
+  ["Chả lụa", "dam", "100 g", 100, 140, 21, 1, 6],
+  ["Xúc xích", "dam", "cây", 40, 120, 5, 3, 10],
+  ["Trứng gà luộc", "dam", "quả", 50, 75, 6.5, 0.5, 5],
+  ["Trứng gà chiên, ốp la", "dam", "quả", 50, 100, 6.5, 0.5, 8, "trung tran trung op la"],
+  ["Trứng vịt", "dam", "quả", 70, 130, 9, 1, 10],
+  ["Trứng vịt lộn", "dam", "quả", 0, 180, 13, 4, 12.5],
+  ["Thịt heo chiên", "dam", "100 g", 100, 280, 26, 2, 19, "thit lon ran thit heo ran"],
+  ["Thịt heo kho (nạc)", "dam", "100 g", 100, 220, 24, 5, 11, "thit lon kho thit rim"],
+  ["Thịt kho tàu (ba chỉ)", "dam", "100 g", 100, 330, 15, 5, 28, "thit kho trung ba roi"],
+  ["Thịt heo xay (sống)", "dam", "100 g", 100, 260, 17, 0, 21, "thit bam thit lon xay"],
+  ["Sườn ram, rim", "dam", "100 g", 100, 320, 20, 8, 23, "suon chien suon rim"],
+  ["Gà chiên (có da)", "dam", "100 g", 100, 260, 24, 5, 16, "ga ran dui ga chien canh ga chien"],
+  ["Gà luộc (có da)", "dam", "100 g", 100, 215, 25, 0, 12.5],
+  ["Gà kho gừng", "dam", "100 g", 100, 200, 24, 4, 10, "ga rim ga kho"],
+  ["Thịt bò xào", "dam", "100 g", 100, 230, 26, 4, 12, "bo xao"],
+  ["Cá chiên", "dam", "100 g", 100, 220, 20, 3, 14, "ca ran ca ro phi chien ca basa chien"],
+  ["Tôm rim", "dam", "100 g", 100, 150, 20, 5, 5, "tom kho tom ram"],
+  ["Lạp xưởng", "dam", "cây", 40, 160, 7, 5, 12.5, "lap xuong"],
+  ["Đậu phụ", "dam", "bìa", 100, 95, 11, 0.7, 5.4, "dau hu tau hu"],
+  ["Đậu phụ chiên", "dam", "bìa", 100, 190, 12, 3, 14],
+  ["Đậu phụ sốt cà", "dam", "phần", 0, 150, 10, 6, 10],
+  ["Đậu phộng", "dam", "nắm", 30, 170, 7.5, 5, 13.5],
+  ["Bơ đậu phộng", "dam", "muỗng canh", 16, 95, 4, 3, 7.5],
+  ["Hạt điều", "dam", "nắm", 30, 165, 5, 9, 12],
+  ["Rau luộc", "rau", "đĩa", 150, 40, 3, 6, 0.3],
+  ["Rau xào", "rau", "đĩa", 150, 120, 3, 7, 9],
+  ["Canh rau", "rau", "bát", 0, 40, 2, 5, 1],
+  ["Canh chua cá", "rau", "bát", 0, 120, 10, 8, 5],
+  ["Canh bí đỏ thịt bằm", "rau", "bát", 0, 100, 6, 8, 4.5],
+  ["Dưa leo, cà chua", "rau", "100 g", 100, 18, 1, 3.5, 0.1],
+  ["Bông cải xanh", "rau", "100 g", 100, 35, 2.8, 7, 0.4, "sup lo xanh broccoli bong cai"],
+  ["Súp lơ trắng", "rau", "100 g", 100, 25, 1.9, 5, 0.3, "bong cai trang"],
+  ["Cải thìa, cải ngọt", "rau", "100 g", 100, 16, 1.7, 2.2, 0.2, "cai xanh cai be xanh"],
+  ["Rau muống", "rau", "100 g", 100, 25, 3.2, 2.5, 0.2],
+  ["Cà rốt", "rau", "100 g", 100, 38, 1.5, 8, 0.2],
+  ["Bắp cải", "rau", "100 g", 100, 29, 1.8, 5.4, 0.1, "cai bap"],
+  ["Su su", "rau", "100 g", 100, 18, 0.8, 3.8, 0.1],
+  ["Đậu que", "rau", "100 g", 100, 35, 2, 7, 0.2, "dau co ve dau ve"],
+  ["Cà chua", "rau", "100 g", 100, 20, 0.6, 4, 0.2],
+  ["Bí đỏ", "rau", "100 g", 100, 27, 0.3, 6, 0.1, "bi ngo"],
+  ["Mướp", "rau", "100 g", 100, 16, 0.9, 3, 0.1],
+  ["Khổ qua", "rau", "100 g", 100, 16, 0.9, 3, 0.2, "muop dang"],
+  ["Giá đỗ", "rau", "100 g", 100, 44, 5.5, 5.3, 0.2, "gia dau"],
+  ["Nấm", "rau", "100 g", 100, 30, 3.5, 4, 0.3, "nam rom nam kim cham nam dui ga"],
+  ["Xà lách", "rau", "100 g", 100, 15, 1.5, 2.5, 0.2, "rau song salad"],
+  ["Gỏi cuốn", "rau", "cuốn", 0, 70, 4.5, 10, 1.5],
+  ["Dầu ăn", "rau", "muỗng canh", 13, 117, 0, 0, 13, "mo"],
+  ["Mayonnaise", "rau", "muỗng canh", 15, 100, 0.2, 0.5, 11, "sot mayo"],
+  ["Đường", "rau", "muỗng cà phê", 5, 20, 0, 5, 0],
+  ["Chuối", "trai", "quả", 100, 90, 1.1, 22, 0.3],
+  ["Táo", "trai", "quả", 150, 80, 0.4, 20, 0.2],
+  ["Cam", "trai", "quả", 150, 60, 1.3, 14, 0.2],
+  ["Xoài", "trai", "quả", 200, 140, 1.6, 34, 0.8],
+  ["Đu đủ", "trai", "miếng", 200, 70, 1, 17, 0.3],
+  ["Dưa hấu", "trai", "miếng", 300, 90, 1.8, 22, 0.5],
+  ["Thanh long", "trai", "quả", 250, 150, 3, 33, 1],
+  ["Bơ (trái)", "trai", "nửa quả", 100, 160, 2, 8.5, 15],
+  ["Nho", "trai", "100 g", 100, 70, 0.7, 17, 0.2],
+  ["Ổi", "trai", "quả", 150, 100, 3.8, 21, 1.4],
+  ["Sữa tươi có đường", "sua", "hộp 180ml", 180, 140, 5.6, 19, 4.8],
+  ["Sữa tươi không đường", "sua", "hộp 180ml", 180, 115, 5.8, 8.5, 6.5],
+  ["Sữa tươi (ly)", "sua", "ly 250ml", 250, 160, 8, 12, 9],
+  ["Sữa đặc", "sua", "muỗng canh", 20, 65, 1.6, 11, 1.7],
+  ["Sữa chua", "sua", "hộp", 100, 100, 3.5, 15, 3],
+  ["Sữa chua Hy Lạp", "sua", "hộp", 100, 100, 9, 4, 5],
+  ["Sữa đậu nành", "sua", "ly 250ml", 250, 130, 7, 15, 4.5],
+  ["Phô mai miếng", "sua", "miếng", 15, 40, 1.8, 1, 3.2],
+  ["Cà phê sữa đá", "sua", "ly", 0, 150, 2, 25, 4.5],
+  ["Bạc xỉu", "sua", "ly", 0, 200, 3, 32, 6.5],
+  ["Cà phê đen có đường", "sua", "ly", 0, 50, 0.3, 12, 0],
+  ["Trà sữa trân châu", "sua", "ly M", 0, 450, 5, 75, 14],
+  ["Sinh tố bơ", "sua", "ly", 0, 350, 4, 45, 17],
+  ["Nước cam ép", "sua", "ly 250ml", 250, 110, 1.7, 26, 0.5],
+  ["Nước mía", "sua", "ly", 300, 180, 0, 45, 0],
+  ["Nước ngọt", "sua", "lon", 330, 140, 0, 35, 0],
+  ["Bia", "sua", "lon", 330, 145, 1.2, 12, 0],
+  ["Whey", "bs", "muỗng", 30, 120, 24, 3, 1.5],
+  ["Ensure", "bs", "ly", 0, 230, 9, 31, 7.8],
+  ["Thanh protein", "bs", "thanh", 0, 200, 20, 18, 5.5],
+  ["Bánh bông lan", "vat", "cái", 40, 150, 3, 22, 5.5],
+  ["Bánh quy", "vat", "3 cái", 30, 140, 2, 20, 6],
+  ["Snack", "vat", "gói", 50, 270, 3, 30, 15.5],
+  ["Socola", "vat", "thanh", 40, 210, 3, 24, 12],
+  ["Kem", "vat", "que", 0, 150, 3, 18, 7.5],
+  ["Chè đậu", "vat", "cốc", 0, 300, 7, 60, 3.5],
+  ["Chè thập cẩm", "vat", "cốc", 0, 350, 6, 65, 7],
+  ["Chả giò", "vat", "cuốn", 0, 100, 3.5, 8, 6],
+  ["Bánh tráng trộn", "vat", "phần", 0, 350, 8, 50, 13],
+  ["Bắp xào", "vat", "ly", 0, 300, 6, 35, 15],
 ];
 /** Món quen mặc định: vài món phổ biến để bấm thử; người dùng tự lưu món của mình bằng ☆. */
 const FAV_SEED = [
-  ["Cơm trắng · 1 chén", 195, 4], ["Trứng gà luộc · 2 quả", 150, 13], ["Ức gà (chín) · 150 g", 248, 47],
-  ["Phở bò · 1 tô", 450, 25], ["Sữa tươi không đường · 1 hộp", 115, 6], ["Whey · 1 muỗng", 120, 24]];
+  ["Cơm trắng · 1 chén", 195, 4, 43, 0.4], ["Trứng gà luộc · 2 quả", 150, 13, 1, 10], ["Ức gà (chín) · 150 g", 248, 47, 0, 5.4],
+  ["Phở bò · 1 tô", 450, 25, 55, 13], ["Sữa tươi không đường · 1 hộp", 115, 6, 8.5, 6.5], ["Whey · 1 muỗng", 120, 24, 3, 1.5]];
 const unaccent = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
-const FOOD_IDX = FOODS.map(f => unaccent(f[0] + " " + f[2] + " " + (f[6] || "")));
+const FOOD_IDX = FOODS.map(f => unaccent(f[0] + " " + f[2] + " " + (f[8] || "")));
 const nowHM = () => { const x = new Date(); return String(x.getHours()).padStart(2, "0") + ":" + String(x.getMinutes()).padStart(2, "0"); };
 const fmtQ = q => String(n1(q)).replace(".", ",");
 /** "100 g" là đơn vị đo sẵn: hiện "100 g" chứ không "1 100 g", nhân thì "1,5 × 100 g". */
@@ -1979,12 +1980,13 @@ const qtyText = (q, u) => /^\d/.test(u) ? fmtQ(q) + " × " + u : fmtQ(q) + " " +
 let foodDate = today(), foodQ = "", foodGroup = "", foodSel = null, favEdit = false, showCustom = false;
 
 function favs() {
-  if (!S.favs) S.favs = FAV_SEED.map(([name, kcal, p]) => ({ id: uid(), name, kcal, p }));
+  if (!S.favs) S.favs = FAV_SEED.map(([name, kcal, p, c, f]) => ({ id: uid(), name, kcal, p, c, f }));
   return S.favs;
 }
 const foodDay = d => (S.food || {})[d] || [];
 function foodTotals(d) {
-  return foodDay(d).reduce((a, e) => ({ kcal: a.kcal + (+e.kcal || 0), p: a.p + (+e.p || 0) }), { kcal: 0, p: 0 });
+  return foodDay(d).reduce((a, e) => ({ kcal: a.kcal + (+e.kcal || 0), p: a.p + (+e.p || 0),
+    c: a.c + (+e.c || 0), f: a.f + (+e.f || 0), noMacro: a.noMacro + (e.c == null ? 1 : 0) }), { kcal: 0, p: 0, c: 0, f: 0, noMacro: 0 });
 }
 /** Trung bình 7 ngày trước ngày d (không tính d, chỉ tính ngày có ghi). */
 function foodAvg(d) {
@@ -2001,7 +2003,7 @@ function addFood(e) {
 /** Số lượng đang chọn → kcal/đạm. Theo gam thì tính theo tỉ lệ gam / gam mỗi đơn vị. */
 function selCalc() {
   const f = FOODS[foodSel.i], k = foodSel.gram ? (+foodSel.g || 0) / f[3] : foodSel.q;
-  return { kcal: Math.round(f[4] * k), p: n1(f[5] * k),
+  return { kcal: Math.round(f[4] * k), p: n1(f[5] * k), c: n1(f[6] * k), f: n1(f[7] * k),
     q: foodSel.gram ? Math.round(+foodSel.g || 0) + (/ml/.test(f[2]) ? " ml" : " g") : qtyText(foodSel.q, f[2]) };
 }
 function foodBar(label, val, goal, unit) {
@@ -2030,8 +2032,9 @@ function foodRow(i) {
           <button class="iconbtn" data-fq="-0.5" aria-label="Bớt nửa">−</button>
           ${[0.5, 1, 1.5, 2].map(q => `<button class="chip" data-fqset="${q}" aria-pressed="${foodSel.q === q}">${fmtQ(q)}</button>`).join("")}
           <button class="iconbtn" data-fq="0.5" aria-label="Thêm nửa">+</button></div>`}
-    <div class="spread" style="margin:14px 0 12px"><span class="muted small" id="foodQtxt">${esc(c.q)}</span>
+    <div class="spread" style="margin:14px 0 2px"><span class="muted small" id="foodQtxt">${esc(c.q)}</span>
       <span class="num" style="font-size:20px" id="foodCalc">${c.kcal} kcal · ${Math.round(c.p)} g đạm</span></div>
+    <div class="small dim" style="text-align:right;margin-bottom:12px" id="foodMac">tinh bột ${Math.round(c.c)} g · béo ${Math.round(c.f)} g</div>
     <div class="trio"><button class="ghost" data-favsel="1">☆ Món quen</button>
       <button class="ghost" data-totray="1" style="border-color:var(--brass);color:var(--brass)">+ Vào bữa</button>
       <button class="btn" data-addsel="1" style="min-height:48px">Thêm</button></div>
@@ -2058,6 +2061,8 @@ function viewFood() {
   <div class="card" style="margin-top:12px;padding-top:4px">
     ${foodBar("Calo", tot.kcal, t && t.kcal, "kcal")}
     ${foodBar("Đạm", tot.p, t && t.protein, "g")}
+    <div class="g2" style="gap:14px">${foodBar("Tinh bột", tot.c, t && t.carb, "g")}${foodBar("Béo", tot.f, t && t.fat, "g")}</div>
+    ${tot.noMacro ? `<p class="small dim" style="margin:8px 0 0">${tot.noMacro} món ghi từ trước chưa có số tinh bột, béo.</p>` : ""}
     ${t && extra ? `<p class="small muted" style="margin:10px 0 0">Mục tiêu calo hôm nay +${extra} kcal vì ${cardioMin(foodDate)} phút cardio.</p>` : ""}
     <p class="small ${left && left[0] <= 0 && left[1] <= 0 ? "" : "muted"}" style="margin:12px 0 0;${left && left[0] <= 0 && left[1] <= 0 ? "color:var(--jade)" : ""}">${!t
       ? `Điền tuổi, chiều cao, cân nặng ở tab Tôi để có mục tiêu mỗi ngày.`
@@ -2085,7 +2090,9 @@ function viewFood() {
       <label class="f"><span>Tên món</span><input id="cName" placeholder="VD: Cơm nhà bà ngoại"></label>
       <div class="g2" style="margin-top:10px">
         <label class="f"><span>Calo (kcal)</span><input id="cKcal" type="number" inputmode="numeric"></label>
-        <label class="f"><span>Đạm (g)</span><input id="cP" type="number" inputmode="decimal"></label></div>
+        <label class="f"><span>Đạm (g)</span><input id="cP" type="number" inputmode="decimal"></label>
+        <label class="f"><span>Tinh bột (g)</span><input id="cC" type="number" inputmode="decimal" placeholder="nếu biết"></label>
+        <label class="f"><span>Béo (g)</span><input id="cF" type="number" inputmode="decimal" placeholder="nếu biết"></label></div>
       <label class="row small muted" style="gap:9px;margin-top:12px;cursor:pointer">
         <input type="checkbox" id="cFav" style="width:20px;height:20px;min-height:20px;padding:0;flex:none;accent-color:var(--brass)">
         Lưu thành món quen</label>
@@ -2121,7 +2128,8 @@ document.addEventListener("focusout", e => { if (e.target.id === "foodQ") {
 /* Bữa nhiều món: gom từng món vào khay rồi ghi một dòng (chi tiết nằm trong items).
    Khay lưu trong S.tray nên chuyển app, tắt màn hình giữa chừng cũng không mất. */
 const tray = () => S.tray || (S.tray = []);
-const sumItems = items => items.reduce((a, x) => ({ kcal: a.kcal + (+x.kcal || 0), p: a.p + (+x.p || 0) }), { kcal: 0, p: 0 });
+const sumItems = items => items.reduce((a, x) => ({ kcal: a.kcal + (+x.kcal || 0), p: a.p + (+x.p || 0),
+  c: a.c + (+x.c || 0), f: a.f + (+x.f || 0) }), { kcal: 0, p: 0, c: 0, f: 0 });
 function mealName() {
   const h = new Date().getHours();
   return foodDate !== today() ? "Bữa ăn" : h < 10 ? "Bữa sáng" : h < 14 ? "Bữa trưa" : h < 17 ? "Bữa phụ" : "Bữa tối";
@@ -2141,13 +2149,20 @@ function trayCard() {
       <div style="min-width:0">${esc(x.name)}<span class="small dim" style="display:block">${esc(x.q || "")}</span></div>
       <div class="row" style="gap:8px"><span class="num muted" style="white-space:nowrap">${Math.round(x.kcal)} kcal · ${Math.round(x.p)} g</span>
         <button class="iconbtn" data-traydel="${i}" aria-label="Bỏ ${esc(x.name)} khỏi bữa">×</button></div></div>`).join("")}
-    <div class="spread" style="margin:12px 0"><b>Tổng</b>
+    <div class="spread" style="margin:12px 0 2px"><b>Tổng</b>
       <span class="num" style="font-size:20px">${Math.round(sum.kcal).toLocaleString("vi-VN")} kcal · ${Math.round(sum.p)} g đạm</span></div>
+    <div class="small dim" style="text-align:right;margin-bottom:12px">tinh bột ${Math.round(sum.c)} g · béo ${Math.round(sum.f)} g</div>
     <label class="f"><span>Tên bữa</span><input id="trayName" value="${esc(mealName())}"></label>
     <label class="row small muted" style="gap:9px;margin-top:12px;cursor:pointer">
       <input type="checkbox" id="trayFav" style="width:20px;height:20px;min-height:20px;padding:0;flex:none;accent-color:var(--brass)">
       Lưu thành món quen — lần sau ăn y vậy thì bấm một lần</label>
     <button class="btn" data-traylog="1" style="margin-top:12px">Ghi bữa này</button></div>`;
+}
+/** Tinh bột, béo ở form tự nhập: để trống thì không ghi (khác với ghi 0). */
+function customMacros() {
+  const o = {}, c = $("#cC").value.trim(), f = $("#cF").value.trim();
+  if (c !== "") o.c = n1(+c || 0); if (f !== "") o.f = n1(+f || 0);
+  return o;
 }
 function toTray(x) {
   tray().push(x); save(true); foodSel = null; foodQ = ""; foodGroup = ""; showCustom = false; render();
@@ -2162,6 +2177,7 @@ function refreshSel() {
   const c = selCalc(), a = $("#foodCalc"), b = $("#foodQtxt");
   if (a) a.textContent = `${c.kcal} kcal · ${Math.round(c.p)} g đạm`;
   if (b) b.textContent = c.q;
+  const m = $("#foodMac"); if (m) m.textContent = `tinh bột ${Math.round(c.c)} g · béo ${Math.round(c.f)} g`;
 }
 function foodClick(el) {
   if (el.dataset.fday) {
@@ -2171,7 +2187,7 @@ function foodClick(el) {
   }
   if (el.dataset.fav) {
     const f = favs().find(x => x.id === el.dataset.fav); if (!f) return true;
-    addFood({ name: f.name, kcal: f.kcal, p: f.p, q: f.q || "", ...(f.items ? { items: f.items } : {}) });
+    addFood({ name: f.name, kcal: f.kcal, p: f.p, c: f.c, f: f.f, q: f.q || "", ...(f.items ? { items: f.items } : {}) });
     render(); toast("Đã ghi " + f.name); return true;
   }
   if (el.dataset.favedit) { favEdit = !favEdit; render(); return true; }
@@ -2195,36 +2211,36 @@ function foodClick(el) {
     const c = selCalc(), name = FOODS[foodSel.i][0];
     if (!(c.kcal > 0 || c.p > 0)) { toast("Nhập số lượng đã"); return true; }
     if (el.dataset.favsel) {
-      favs().push({ id: uid(), name: name + " · " + c.q, kcal: c.kcal, p: c.p, q: c.q }); save(true);
+      favs().push({ id: uid(), name: name + " · " + c.q, kcal: c.kcal, p: c.p, c: c.c, f: c.f, q: c.q }); save(true);
       render(); toast("Đã lưu món quen"); return true;
     }
-    addFood({ name, kcal: c.kcal, p: c.p, q: c.q }); foodSel = null; render(); toast(`Đã ghi ${name} · ${c.kcal} kcal`); return true;
+    addFood({ name, kcal: c.kcal, p: c.p, c: c.c, f: c.f, q: c.q }); foodSel = null; render(); toast(`Đã ghi ${name} · ${c.kcal} kcal`); return true;
   }
   if (el.dataset.totray) {
     const c = selCalc();
     if (!(c.kcal > 0 || c.p > 0)) { toast("Nhập số lượng đã"); return true; }
-    toTray({ name: FOODS[foodSel.i][0], q: c.q, kcal: c.kcal, p: c.p }); return true;
+    toTray({ name: FOODS[foodSel.i][0], q: c.q, kcal: c.kcal, p: c.p, c: c.c, f: c.f }); return true;
   }
   if (el.dataset.customtray) {
     const name = $("#cName").value.trim(), kcal = Math.round(+$("#cKcal").value || 0), p = n1(+$("#cP").value || 0);
     if (!name || !(kcal > 0 || p > 0)) { toast("Nhập tên và calo hoặc đạm"); return true; }
-    toTray({ name, q: "", kcal, p }); return true;
+    toTray({ name, q: "", kcal, p, ...customMacros() }); return true;
   }
   if (el.dataset.traydel !== undefined) { tray().splice(+el.dataset.traydel, 1); save(true); render(); return true; }
   if (el.dataset.trayclear) { S.tray = []; save(true); render(); return true; }
   if (el.dataset.traylog) {
     const items = tray().slice(), sum = sumItems(items), name = $("#trayName").value.trim() || mealName();
-    const e = { name, kcal: Math.round(sum.kcal), p: n1(sum.p), q: items.length + " món", items };
+    const e = { name, kcal: Math.round(sum.kcal), p: n1(sum.p), c: n1(sum.c), f: n1(sum.f), q: items.length + " món", items };
     addFood(e);
-    if ($("#trayFav").checked) favs().push({ id: uid(), name, kcal: e.kcal, p: e.p, q: e.q, items });
+    if ($("#trayFav").checked) favs().push({ id: uid(), name, kcal: e.kcal, p: e.p, c: e.c, f: e.f, q: e.q, items });
     S.tray = []; save(true); render(); toast(`Đã ghi ${name} · ${e.kcal} kcal`); return true;
   }
   if (el.dataset.custom) { showCustom = el.dataset.custom === "1"; render(); if (showCustom) $("#cName").focus(); return true; }
   if (el.dataset.addcustom) {
     const name = $("#cName").value.trim(), kcal = Math.round(+$("#cKcal").value || 0), p = n1(+$("#cP").value || 0);
     if (!name || !(kcal > 0 || p > 0)) { toast("Nhập tên và calo hoặc đạm"); return true; }
-    addFood({ name, kcal, p, q: "" });
-    if ($("#cFav").checked) favs().push({ id: uid(), name, kcal, p });
+    addFood({ name, kcal, p, q: "", ...customMacros() });
+    if ($("#cFav").checked) favs().push({ id: uid(), name, kcal, p, ...customMacros() });
     showCustom = false; save(true); render(); toast("Đã ghi " + name); return true;
   }
   if (el.dataset.fdel) {
