@@ -541,7 +541,7 @@ const WARM = ["Back Squat", "Bench Press", "Deadlift", "Overhead Press"];
 const OPTIONAL = ["Triceps Pushdown", "Face Pull", "Hammer Curl", "Hanging Leg Raise",
   "Leg Press", "Leg Curl", "Calf Raise", "Duỗi tay sau qua đầu", "Leg Curl ngồi máy"];
 
-const PROG_VERSION = 7;
+const PROG_VERSION = 8;
 const mkEx = (name, sets, reps, start, step, rest, unit, note, opt) =>
   ({ id: uid(), name, sets, reps, start, step, rest, unit: unit || "kg",
      note: note || "", fig: FIGKEY[name] || "", alts: altsFor(name), warm: WARM.includes(name),
@@ -558,7 +558,7 @@ function pplDays() {
         ex("Lateral Raise", 4, "12–15", 6, 1, 60, "kg/tay", "Vai ngang, giúp nở vai. Nhẹ thôi, nâng tới ngang vai rồi hạ chậm."),
         ex("Duỗi tay sau qua đầu", 3, "10–12", 12, 2, 60, "kg", "Tay sau. Tay ở trên đầu thì tay sau bị kéo dài, to nhanh hơn pushdown. Cáp dây thừng hoặc một quả tạ tay, khuỷu chỉ lên trần, hạ sâu sau đầu."),
       ]},
-      { id: uid(), name: "Buổi Kéo", exercises: [
+      { id: uid(), name: "Buổi Kéo", cardio: { min: 25 }, exercises: [
         ex("Deadlift", 3, "5", 60, 5, 180, "kg", "Lưng dưới và đùi sau. Lưng thẳng tuyệt đối, đòn sát ống chân, đẩy sàn bằng chân chứ không giật bằng lưng."),
         ex("Xà đeo tạ", 4, "5–8", 5, 2.5, 150, "+kg", "Lưng xô. Balo đựng tạ hoặc đai. Đủ 8 rep ở set cuối 2 buổi liên tiếp thì tăng 2.5kg."),
         ex("Barbell Row", 4, "8–10", 35, 2.5, 120, "kg", "Lưng giữa. Người gập khoảng 45°, kéo tạ về phía rốn. Dùng luôn đòn vừa deadlift."),
@@ -620,12 +620,12 @@ const TPL = [
   { id: "ul4", name: "Trên / Dưới", per: 4, perText: "4 buổi/tuần", time: "60–70 phút",
     fit: "Cân bằng nhất giữa thời gian và kết quả. Mỗi nhóm cơ 2 lần/tuần, có ngày nghỉ xen giữa (vd T2, T3 tập · T4 nghỉ · T5, T6 tập).",
     days: [
-      ["Thân trên 1", [["Bench Press", 4, "6–8", 180], ["Barbell Row", 4, "6–8", 150], ["Overhead Press", 3, "6–8", 150],
+      ["Thân trên 1", 25, [["Bench Press", 4, "6–8", 180], ["Barbell Row", 4, "6–8", 150], ["Overhead Press", 3, "6–8", 150],
         ["Xà đeo tạ", 3, "5–8", 150], ["Lateral Raise", 4, "12–15", 60],
         ["Duỗi tay sau qua đầu", 2, "10–12", 60, 1], ["Dumbbell Curl", 2, "8–12", 60, 1]]],
       ["Thân dưới 1", [["Back Squat", 4, "6–8", 180], ["Romanian Deadlift", 3, "8–10", 150], ["Leg Press", 3, "10–12", 120],
         ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 4, "12–15", 60, 1], ["Hanging Leg Raise", 3, "10–15", 60, 1]]],
-      ["Thân trên 2", [["Incline Dumbbell Press", 3, "8–12", 120], ["Lat Pulldown", 3, "8–12", 120], ["Kéo cáp ngồi", 3, "10–12", 90],
+      ["Thân trên 2", 25, [["Incline Dumbbell Press", 3, "8–12", 120], ["Lat Pulldown", 3, "8–12", 120], ["Kéo cáp ngồi", 3, "10–12", 90],
         ["Lateral Raise", 4, "12–20", 60], ["Duỗi tay sau qua đầu", 3, "10–12", 60], ["Incline Dumbbell Curl", 3, "10–12", 60],
         ["Pec Deck", 3, "12–15", 60, 1], ["Face Pull", 3, "15–20", 60, 1]]],
       ["Thân dưới 2", [["Deadlift", 3, "5", 180], ["Bulgarian Split Squat", 3, "8–10/chân", 120], ["Leg Extension", 3, "12–15", 90],
@@ -639,9 +639,9 @@ const TPL = [
         ["Dumbbell Curl", 2, "8–12", 60, 1], ["Triceps Pushdown", 2, "10–12", 60, 1]]],
       ["Thân dưới", [["Back Squat", 3, "6–8", 180], ["Romanian Deadlift", 3, "8–10", 150], ["Leg Press", 3, "10–12", 120],
         ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 3, "12–15", 60, 1]]],
-      ["Buổi Đẩy", [["Incline Dumbbell Press", 4, "8–10", 120], ["Pec Deck", 3, "12–15", 60], ["Lateral Raise", 4, "12–20", 60],
+      ["Buổi Đẩy", 25, [["Incline Dumbbell Press", 4, "8–10", 120], ["Pec Deck", 3, "12–15", 60], ["Lateral Raise", 4, "12–20", 60],
         ["Duỗi tay sau qua đầu", 3, "10–12", 60], ["Hanging Leg Raise", 3, "10–15", 60, 1]]],
-      ["Buổi Kéo", [["Deadlift", 2, "5", 180], ["Lat Pulldown", 3, "8–12", 120], ["Row tạ tay một tay", 3, "8–10/tay", 90],
+      ["Buổi Kéo", 25, [["Deadlift", 2, "5", 180], ["Lat Pulldown", 3, "8–12", 120], ["Row tạ tay một tay", 3, "8–10/tay", 90],
         ["Face Pull", 3, "15–20", 60], ["Incline Dumbbell Curl", 3, "10–12", 60], ["Hammer Curl", 2, "10–12", 60, 1]]],
       ["Buổi Chân", [["Hack Squat máy", 3, "8–10", 150], ["Bulgarian Split Squat", 2, "8–10/chân", 120], ["Leg Extension", 3, "12–15", 90],
         ["Leg Curl ngồi máy", 3, "10–12", 90], ["Calf Raise", 4, "12–15", 60, 1], ["Gập bụng cáp", 3, "12–15", 60, 1]]],
@@ -652,20 +652,20 @@ const TPL = [
       ["Toàn thân A", [["Back Squat", 3, "6–8", 180], ["Bench Press", 3, "6–8", 180], ["Xà đeo tạ", 3, "5–8", 150],
         ["Romanian Deadlift", 3, "8–10", 120], ["Lateral Raise", 3, "12–15", 60], ["Duỗi tay sau qua đầu", 2, "10–12", 60, 1],
         ["Face Pull", 2, "15–20", 60, 1]]],
-      ["Toàn thân B", [["Leg Press", 3, "10–12", 120], ["Incline Dumbbell Press", 3, "8–10", 120], ["Barbell Row", 3, "8–10", 120],
+      ["Toàn thân B", 20, [["Leg Press", 3, "10–12", 120], ["Incline Dumbbell Press", 3, "8–10", 120], ["Barbell Row", 3, "8–10", 120],
         ["Leg Curl ngồi máy", 3, "10–12", 90], ["Lateral Raise", 3, "12–15", 60],
         ["Incline Dumbbell Curl", 2, "10–12", 60, 1], ["Calf Raise", 3, "12–15", 60, 1]]],
-      ["Toàn thân C", [["Deadlift", 2, "5", 180], ["Overhead Press", 3, "6–8", 150], ["Lat Pulldown", 3, "8–12", 120],
+      ["Toàn thân C", 20, [["Deadlift", 2, "5", 180], ["Overhead Press", 3, "6–8", 150], ["Lat Pulldown", 3, "8–12", 120],
         ["Bulgarian Split Squat", 3, "8–10/chân", 120], ["Leg Curl ngồi máy", 2, "10–12", 90],
         ["Pec Deck", 2, "12–15", 60, 1], ["Leg Extension", 2, "12–15", 60, 1]]],
     ] },
   { id: "fb2", name: "Tối thiểu", per: 2, perText: "2 buổi/tuần", time: "~60 phút",
     fit: "Tuần bận, đi công tác, mới ốm dậy. Đủ để giữ cơ và sức, chưa đủ để tăng nhanh — rảnh lại thì quay về giáo án chính.",
     days: [
-      ["Tối thiểu A", [["Back Squat", 3, "6–8", 180], ["Bench Press", 3, "6–8", 180], ["Xà đeo tạ", 3, "5–8", 150],
+      ["Tối thiểu A", 20, [["Back Squat", 3, "6–8", 180], ["Bench Press", 3, "6–8", 180], ["Xà đeo tạ", 3, "5–8", 150],
         ["Romanian Deadlift", 2, "8–10", 120], ["Lateral Raise", 3, "12–15", 60],
         ["Dumbbell Curl", 2, "8–12", 60, 1], ["Duỗi tay sau qua đầu", 2, "10–12", 60, 1]]],
-      ["Tối thiểu B", [["Leg Press", 3, "10–12", 120], ["Overhead Press", 3, "6–8", 150], ["Barbell Row", 3, "8–10", 120],
+      ["Tối thiểu B", 20, [["Leg Press", 3, "10–12", 120], ["Overhead Press", 3, "6–8", 150], ["Barbell Row", 3, "8–10", 120],
         ["Incline Dumbbell Press", 2, "8–10", 120], ["Leg Curl ngồi máy", 2, "10–12", 90],
         ["Lateral Raise", 3, "12–15", 60], ["Calf Raise", 3, "12–15", 60, 1]]],
     ] },
@@ -673,10 +673,15 @@ const TPL = [
 const tplOf = id => TPL.find(t => t.id === id) || TPL[0];
 function tplDays(t) {
   if (!t.days) return pplDays();
-  return t.days.map(([name, list]) => ({ id: uid(), name, exercises: list.map(([n, sets, reps, rest, opt]) => {
-    const [unit, start, step, note] = EXDB[n];
-    return mkEx(n, sets, reps, start, step, rest, unit, note, !!opt);
-  }) }));
+  // buổi: [tên, bài…] hoặc [tên, phút cardio gợi ý, bài…]
+  return t.days.map(day => {
+    const [name, cmin, list] = typeof day[1] === "number" ? day : [day[0], 0, day[1]];
+    return { id: uid(), name, ...(cmin ? { cardio: { min: cmin } } : {}),
+      exercises: list.map(([n, sets, reps, rest, opt]) => {
+        const [unit, start, step, note] = EXDB[n];
+        return mkEx(n, sets, reps, start, step, rest, unit, note, !!opt);
+      }) };
+  });
 }
 
 /* Set mỗi tuần cho từng nhóm cơ, cách đếm "phân số" của Pelland 2025: nhóm chính 1 set,
@@ -767,7 +772,7 @@ function refresh(d) {
   if (d.progVersion >= PROG_VERSION) return d;
   const daGhi = Object.keys(d.log || {}).some(k => (d.log[k] || []).length);
   if (!daGhi) d.days = seed(d.programId).days;
-  else { if (d.progVersion < 4) regroup(d); if (d.progVersion < 7) swapV7(d); repair(d); }
+  else { if (d.progVersion < 4) regroup(d); if (d.progVersion < 7) swapV7(d); if (d.progVersion < 8) cardioV8(d); repair(d); }
   d.progVersion = PROG_VERSION;
   return d;
 }
@@ -780,6 +785,11 @@ const SWAP_V7 = {
   "Leg Curl": ["Leg Curl ngồi máy", "lying-leg-curl", kg => kg],
   "Dumbbell Curl": ["Incline Dumbbell Curl", "db-curl", kg => Math.max(4, kg - 2)],
 };
+/** v8: gợi ý cardio sau một số buổi (theo tên buổi của giáo án đang dùng). */
+function cardioV8(d) {
+  const base = tplDays(tplOf(d.programId));
+  d.days.forEach(x => { const b = base.find(y => y.name === x.name); if (b && b.cardio && !x.cardio) x.cardio = { ...b.cardio }; });
+}
 function swapV7(d) {
   if (tplOf(d.programId).id !== "ppl") return;
   const base = new Map();
@@ -1218,7 +1228,7 @@ function viewTrain() {
           <div class="num" style="font-size:34px;color:var(--jade)">Xong bài chính</div>
           <div class="muted small" style="margin-bottom:12px">Còn sức và thời gian thì làm bài phụ, mệt thì về — không sao.</div>
           <div class="pair"><button class="ghost" data-jump="${optLeft}">Làm bài phụ</button>
-            <button class="ghost" data-goto="history">Kết thúc buổi</button></div>${cooldown(d)}</div>`
+            <button class="ghost" data-goto="history">Kết thúc buổi</button></div>${cardioBlock(d, true)}${cooldown(d)}</div>`
       : next
       ? `<button class="btn jade" data-jump="${nextU}">Bài tiếp · ${esc(next.name)}${next.opt ? " (phụ)" : ""}</button>`
       : pr.done >= pr.total
@@ -1226,7 +1236,7 @@ function viewTrain() {
             <div class="num" style="font-size:38px;color:var(--jade)">Xong buổi</div>
             <div class="muted small" style="margin-bottom:12px">Tổng khối lượng
               <b class="num" style="color:var(--chalk);font-size:19px">${Math.round(volume(curDate)).toLocaleString("vi-VN")}</b> kg</div>
-            <button class="ghost" data-goto="history">Xem nhật ký</button>${cooldown(d)}</div>`
+            <button class="ghost" data-goto="history">Xem nhật ký</button>${cardioBlock(d, true)}${cooldown(d)}</div>`
         : `<button class="btn" data-jump="${firstUnfinished()}">Quay lại bài chưa xong</button>`;
   } else {
     const sg = editIdx != null ? done[editIdx] : suggest(ex, idx);
@@ -1282,10 +1292,83 @@ function viewTrain() {
     ${(ex.fig || ex.note) ? `<details class="note"${p ? "" : " open"}>
       <summary>Cách tập${p ? "" : " · mở sẵn vì bạn chưa tập bài này"}</summary>
       ${figureHTML(ex.fig)}${ex.note ? `<p>${esc(ex.note)}</p>` : ""}</details>` : ""}
+    ${action.includes('class="note cardio"') ? "" : cardioBlock(d, false)}
     <div class="pair" style="margin-top:22px">
       <button class="ghost" data-jump="${prevI ?? -1}"${prevI == null ? ' disabled style="opacity:.35"' : ""}>‹ Bài trước</button>
       <button class="ghost" data-jump="${nextI ?? -1}"${nextI == null ? ' disabled style="opacity:.35"' : ""}>Bài sau ›</button>
     </div>`;
+}
+
+/* ---------------- CARDIO ----------------
+   Tách khỏi nhật ký tạ (S.log là kg × rep): S.cardio[ngày] = [{id, t, type, min}].
+   Buổi nào có day.cardio = {min} thì app gợi ý cardio sau buổi đó; ngày nào cũng ghi được.
+   MET theo Compendium of Physical Activities, mức vừa (vẫn nói chuyện được). */
+const CARDIO_TYPES = [["dapxe", "Đạp xe", 5.5], ["dibo", "Đi bộ dốc", 6], ["chay", "Chạy", 8.3],
+  ["elip", "Máy elip", 5], ["boi", "Bơi", 6], ["khac", "Khác", 5]];
+const cardioDay = d => (S.cardio || {})[d] || [];
+const cardioMin = d => cardioDay(d).reduce((a, c) => a + (+c.min || 0), 0);
+/** Calo đốt thêm so với ngồi yên: (MET − 1) × kg × giờ. */
+function cardioKcal(d) {
+  const kg = +S.profile.weight || 65;
+  return Math.round(cardioDay(d).reduce((a, c) => {
+    const met = (CARDIO_TYPES.find(x => x[0] === c.type) || CARDIO_TYPES[5])[2];
+    return a + (met - 1) * kg * (+c.min || 0) / 60;
+  }, 0));
+}
+/** Giảm mỡ thì không ăn bù calo cardio (đó là phần thâm hụt thêm); tăng cơ, giữ cân thì ăn bù. */
+const cardioEatBack = d => goalOf(S.profile) === "giam" ? 0 : cardioKcal(d);
+let cType = null, cardioOpen = false;
+function cardioBlock(d, open) {
+  const list = cardioDay(curDate), done = cardioMin(curDate), sug = d.cardio;
+  const type = cType || (S.cardioLast || "dapxe");
+  const min = sug ? +sug.min || 20 : 20;
+  return `<details class="note cardio"${open || cardioOpen ? " open" : ""}>
+    <summary>Cardio${sug ? ` · gợi ý ${sug.min} phút sau buổi này` : " · tuỳ chọn"}${done ? ` · đã ${done} phút ✓` : ""}</summary>
+    <div class="chips" style="margin:8px 0 12px">${CARDIO_TYPES.map(([k, lab]) =>
+      `<button class="chip" data-ctype="${k}" aria-pressed="${type === k}">${lab}</button>`).join("")}</div>
+    <div class="row" style="justify-content:center;gap:10px">
+      <button class="iconbtn" data-cmin="-5" aria-label="Bớt 5 phút">−</button>
+      <input id="cMin" type="number" inputmode="numeric" value="${min}" aria-label="Số phút" style="width:90px">
+      <span class="muted">phút</span>
+      <button class="iconbtn" data-cmin="5" aria-label="Thêm 5 phút">+</button></div>
+    <button class="btn" data-clog="1" style="margin-top:12px">Ghi cardio</button>
+    ${list.map(c => `<div class="lrow"><div>${esc((CARDIO_TYPES.find(x => x[0] === c.type) || CARDIO_TYPES[5])[1])} · ${c.min} phút
+        <span class="small dim" style="display:block">${esc(c.t || "")}</span></div>
+      <button class="iconbtn" data-cdel="${c.id}" aria-label="Xoá lần cardio này">×</button></div>`).join("")}
+    <p>Mức vẫn nói chuyện được thành câu. Làm sau buổi tạ hoặc ngày nghỉ, tránh ngay trước buổi chân.${
+      goalOf(S.profile) === "giam" ? "" : " Calo đốt thêm được cộng vào mục tiêu ăn hôm đó ở tab Ăn."}</p>
+  </details>`;
+}
+function cardioClick(el) {
+  if (el.dataset.ctype) { cType = el.dataset.ctype; cardioOpen = true; render(); return true; }
+  if (el.dataset.cmin) {
+    const i = $("#cMin"); i.value = Math.max(5, (Math.round(+i.value / 5) * 5 || 0) + +el.dataset.cmin); return true;
+  }
+  if (el.dataset.clog) {
+    const min = Math.round(+$("#cMin").value || 0);
+    if (!(min > 0)) { toast("Nhập số phút đã"); return true; }
+    const type = cType || S.cardioLast || "dapxe";
+    if (!S.cardio) S.cardio = {};
+    (S.cardio[curDate] = S.cardio[curDate] || []).push({ id: uid(), t: curDate === today() ? nowHM() : "", type, min });
+    S.cardioLast = type; cardioOpen = true; save(true); render();
+    toast(`Đã ghi ${min} phút ${(CARDIO_TYPES.find(x => x[0] === type) || CARDIO_TYPES[5])[1].toLowerCase()}`); return true;
+  }
+  if (el.dataset.cdel) {
+    S.cardio[curDate] = cardioDay(curDate).filter(c => c.id !== el.dataset.cdel);
+    if (!S.cardio[curDate].length) delete S.cardio[curDate];
+    save(true); render(); return true;
+  }
+  return false;
+}
+/** Phút cardio mỗi tuần giáo án, 8 tuần gần nhất, so với mốc 150 phút vận động vừa/tuần (WHO). */
+function cardioProgress() {
+  const wk = {};
+  for (const d in S.cardio || {}) { const w = weekNo(d); wk[w] = (wk[w] || 0) + cardioMin(d); }
+  const ws = Object.keys(wk).map(Number); if (!ws.length) return "";
+  const hi = Math.max(...ws, weekNo(today())), weeks = []; for (let w = Math.max(1, hi - 7); w <= hi; w++) weeks.push(w);
+  const pts = weeks.map(w => ({ x: w, y: wk[w] || 0, label: "T" + w, rows: [[(wk[w] || 0) + " phút", ""]] }));
+  return `${chartSVG("cardio", pts, { kind: "bar", unit: "phút", ref: 150, refLabel: "khuyến nghị 150" })}
+    ${dataTable(["Tuần", "Phút"], pts.map(p => [p.label.replace("T", "Tuần "), String(p.y)]))}`;
 }
 
 /* ---------------- NHẬT KÝ ---------------- */
@@ -1311,7 +1394,7 @@ function viewHistory() {
   return seg + (view === "prog" ? viewProgress() : viewSessions());
 }
 function viewSessions() {
-  const dates = sessionDates();
+  const dates = [...new Set(sessionDates().concat(Object.keys(S.cardio || {}).filter(d => cardioDay(d).length)))].sort().reverse();
   if (!dates.length) return `<div class="empty">Chưa ghi buổi nào.<br>Sang tab Tập và bấm xong set đầu tiên.</div>`;
   let wk = null;
   return `<div class="sub">${dates.length} buổi. Khối lượng = tạ × rep cộng dồn — con số này tăng đều nghĩa là bạn đang tiến bộ. Bấm vào một buổi để xem chi tiết.</div>
@@ -1322,15 +1405,17 @@ function viewSessions() {
     const d = allDays().find(x => x.id === top);
     const nSets = list.reduce((a, r) => a + r.sets.length, 0);
     const rows = list.map(r => `<div class="lrow"><div>${esc(r.name)}</div>
-        <div class="num muted">${r.sets.map(x => `${esc(x.kg)}×${esc(x.reps)}`).join("  ")}</div></div>`).join("");
+        <div class="num muted">${r.sets.map(x => `${esc(x.kg)}×${esc(x.reps)}`).join("  ")}</div></div>`).join("")
+      + cardioDay(date).map(c => `<div class="lrow"><div>Cardio · ${esc((CARDIO_TYPES.find(x => x[0] === c.type) || CARDIO_TYPES[5])[1])}</div>
+        <div class="num muted">${c.min} phút</div></div>`).join("");
     const w = weekNo(date), from = addDays(S.profile.startDate, (w - 1) * 7);
     const range = isNaN(new Date(from + "T00:00:00")) ? "" : ` · ${fmtDate(from)} – ${fmtDate(addDays(from, 6))}`;
     const head = w !== wk ? `<div class="tiny wkhead">Tuần ${w}${range} · ${dates.filter(x => weekNo(x) === w).length} buổi</div>` : "";
     wk = w;
     return `${head}<details class="card sess">
       <summary>
-        <div style="flex:1;min-width:0"><div class="num" style="font-size:19px">${fmtDate(date)} · ${esc(d ? d.name : "?")}</div>
-          <div class="small dim">${list.length} bài · ${nSets} set</div></div>
+        <div style="flex:1;min-width:0"><div class="num" style="font-size:19px">${fmtDate(date)} · ${esc(d ? d.name : list.length ? "?" : "Cardio")}</div>
+          <div class="small dim">${[list.length ? `${list.length} bài · ${nSets} set` : "", cardioMin(date) ? `${cardioMin(date)} phút cardio` : ""].filter(Boolean).join(" · ")}</div></div>
         <div style="text-align:right"><div class="num" style="font-size:19px;color:var(--brass)">${Math.round(volume(date)).toLocaleString("vi-VN")}</div>
           <div class="small dim">kg</div></div>
       </summary><div class="body">${rows}</div></details>`;
@@ -1551,11 +1636,12 @@ function kcalProgress() {
     ${dataTable(["Ngày", "Calo", "Đạm"], pts.map(p => [p.label, p.y.toLocaleString("vi-VN"), p.rows[1][0]]))}`;
 }
 function viewProgress() {
-  const sets = setsProgress(), kcal = kcalProgress();
+  const sets = setsProgress(), kcal = kcalProgress(), cardio = cardioProgress();
   return `<div class="stack">
     <div><div class="tiny dim" style="margin:0 2px 8px">Sức mạnh</div>${exProgress()}</div>
     <div><div class="tiny dim" style="margin:0 2px 8px">Cân nặng</div><div class="card">${bwProgress()}</div></div>
     ${sets ? `<div><div class="tiny dim" style="margin:0 2px 8px">Số set mỗi tuần</div><div class="card">${sets}</div></div>` : ""}
+    ${cardio ? `<div><div class="tiny dim" style="margin:0 2px 8px">Phút cardio mỗi tuần</div><div class="card">${cardio}</div></div>` : ""}
     ${kcal ? `<div><div class="tiny dim" style="margin:0 2px 8px">Calo 14 ngày</div><div class="card">${kcal}</div></div>` : ""}
     <p class="small dim" style="margin:0 2px">Chạm hoặc rê trên biểu đồ để xem số từng ngày.</p>
   </div>`;
@@ -1960,7 +2046,8 @@ function foodResults() {
   return hits.slice(0, 40).map(foodRow).join("");
 }
 function viewFood() {
-  const t = targets(), tot = foodTotals(foodDate), list = foodDay(foodDate), avg = foodAvg(foodDate);
+  const t0 = targets(), extra = cardioEatBack(foodDate), t = t0 && { ...t0, kcal: t0.kcal + extra };
+  const tot = foodTotals(foodDate), list = foodDay(foodDate), avg = foodAvg(foodDate);
   const isToday = foodDate === today();
   const left = t ? [t.kcal - tot.kcal, t.protein - tot.p] : null;
   return `
@@ -1971,6 +2058,7 @@ function viewFood() {
   <div class="card" style="margin-top:12px;padding-top:4px">
     ${foodBar("Calo", tot.kcal, t && t.kcal, "kcal")}
     ${foodBar("Đạm", tot.p, t && t.protein, "g")}
+    ${t && extra ? `<p class="small muted" style="margin:10px 0 0">Mục tiêu calo hôm nay +${extra} kcal vì ${cardioMin(foodDate)} phút cardio.</p>` : ""}
     <p class="small ${left && left[0] <= 0 && left[1] <= 0 ? "" : "muted"}" style="margin:12px 0 0;${left && left[0] <= 0 && left[1] <= 0 ? "color:var(--jade)" : ""}">${!t
       ? `Điền tuổi, chiều cao, cân nặng ở tab Tôi để có mục tiêu mỗi ngày.`
       : left[0] <= 0 && left[1] <= 0 ? "Đủ cả calo lẫn đạm hôm nay."
@@ -2353,6 +2441,11 @@ function viewMeFull(p, t, profileForm) {
           <textarea rows="2" placeholder="Ghi chú kỹ thuật…" data-ex="${d.id}|${e.id}|note" style="font-size:14px;margin-top:9px">${esc(e.note)}</textarea>
           ${altEditor(d, e)}
         </div>`).join("")}
+      <label class="row small muted" style="gap:9px;margin:4px 0 12px;cursor:pointer">
+        <input type="checkbox" data-dcardio="${d.id}"${d.cardio ? " checked" : ""}
+          style="width:20px;height:20px;min-height:20px;padding:0;flex:none;accent-color:var(--brass)">
+        Gợi ý cardio sau buổi này${d.cardio ? `: <input type="number" inputmode="numeric" data-dcmin="${d.id}" value="${esc(d.cardio.min)}"
+          style="width:70px;min-height:36px;padding:4px;font-size:16px" aria-label="Phút cardio"> phút` : ""}</label>
       <button class="ghost sm" data-addex="${d.id}">+ Thêm bài</button>
     </div>`).join("");
 
@@ -2536,6 +2629,7 @@ document.querySelectorAll(".tab").forEach(b =>
 document.addEventListener("click", e => {
   const el = e.target.closest("button"); if (!el) return;
   if (tab === "an" && foodClick(el)) return;
+  if (tab === "train" && cardioClick(el)) return;
 
   if (el.dataset.goto) { tab = el.dataset.goto; render(); window.scrollTo(0, 0); return; }
   if (el.id === "pickerBtn") { showPicker = !showPicker; render(); return; }
@@ -2742,6 +2836,14 @@ document.addEventListener("input", e => {
     const f = el.id.slice(2);
     S.profile[f] = NUMFIELDS.includes(f) ? (el.value === "" ? "" : +el.value) : el.value;
     save(); return;
+  }
+  if (el.dataset.dcardio) {
+    const d = S.days.find(x => x.id === el.dataset.dcardio);
+    if (d) { if (el.checked) d.cardio = { min: 25 }; else delete d.cardio; save(); render(); } return;
+  }
+  if (el.dataset.dcmin) {
+    const d = S.days.find(x => x.id === el.dataset.dcmin);
+    if (d && d.cardio) { d.cardio.min = Math.max(5, +el.value || 0); save(); } return;
   }
   if (el.dataset.dayname) {
     const d = S.days.find(x => x.id === el.dataset.dayname);

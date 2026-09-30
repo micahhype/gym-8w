@@ -16,6 +16,12 @@ liệu nằm trong `localStorage` của máy bạn. Logo gốc (SVG) ở `brand/
   Phòng đông, máy bận: bấm một bài thay thế ngay dưới tên bài (Bench → đẩy ngực
   tạ tay, Xà → Lat Pulldown…). Bài thay thế có lịch sử tạ riêng nên không làm
   lệch gợi ý của bài chính; buổi sau tự về lại bài chính.
+- **Cardio** — khối riêng ở màn Tập (không lẫn vào nhật ký kg × rep): chọn loại
+  (đạp xe, đi bộ dốc, chạy, elip, bơi…) và số phút. Mỗi giáo án gợi ý cardio sau
+  1–2 buổi (Đẩy / Kéo / Chân: sau buổi Kéo, 25 phút); bật tắt, đổi phút cho từng
+  buổi trong tab Tôi → Chương trình. Calo đốt thêm ((MET − 1) × kg × giờ) được cộng
+  vào mục tiêu ăn hôm đó, trừ khi mục tiêu là giảm mỡ. Nhật ký có biểu đồ phút
+  cardio mỗi tuần so với mốc 150 phút.
 - **Ăn** — ghi bữa ăn, chỉ đếm calo và đạm so với mục tiêu ở tab Tôi. *Món quen*
   bấm một lần là ghi (mặc định vài món phổ biến; lưu món của mình bằng ☆
   hoặc tự nhập). Tìm trong 173 món Việt và nguyên liệu nấu ở nhà (thịt chiên, kho,
@@ -133,7 +139,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 157 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 174 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

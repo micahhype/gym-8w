@@ -238,7 +238,7 @@ const v7 = await ev(`(() => { const ids = JSON.parse(localStorage.getItem("soSat
     figs: ids.map(id => by(id)[1].fig), notes: ids.map(id => by(id)[1].note),
     sw: Object.fromEntries(Object.entries(S.swap)), ids,
     sug: ids.map(id => { const [x, e] = by(id); curDay = x.id; return suggest(eff(e, curDate, x.id), 0).kg; }) }; })()`);
-ok(v7.v === 7, "lên progVersion 7");
+ok(v7.v === 8, "lên progVersion mới nhất (8)");
 ok(JSON.stringify(v7.names) === JSON.stringify(["Duỗi tay sau qua đầu", "Leg Curl ngồi máy", "Incline Dumbbell Curl"]), "đổi tên, giữ id: " + v7.names);
 ok(JSON.stringify(v7.figs) === JSON.stringify(["ohext", "seatedlegcurl", "inclinecurl"]) && !v7.notes.includes("cũ"), "ảnh và ghi chú của bài mới");
 ok(JSON.stringify(v7.starts) === JSON.stringify([15, 30, 8]), "khởi điểm ước từ bài cũ (20×0.7→15, 30, 10−2): " + v7.starts);
@@ -255,7 +255,7 @@ await ev(`(() => { const id = JSON.parse(localStorage.getItem("soSat.v2")).__ids
 await click('[data-alt="pushdown"]'); await sleep(150);
 ok(await ev(`$("#kgVal").value`) === "20", "dùng Pushdown làm bài thay: gợi ý 20kg như cũ");
 await reload();
-ok(await ev(`S.progVersion === 7 && Object.values(S.swap).filter(v => v === "pushdown").length >= 1`), "tải lại không chuyển đổi hai lần");
+ok(await ev(`S.progVersion === 8 && Object.values(S.swap).filter(v => v === "pushdown").length >= 1`), "tải lại không chuyển đổi hai lần");
 await put(`d.setupDone = true; d.programId = "ul4"; d.progVersion = 6; d.days = tplDays(tplOf("ulppl"));
   const e = d.days[0].exercises.find(e => e.name === "Triceps Pushdown"); d.log["2026-09-20|" + d.days[0].id + "|" + e.id] = [{kg:"20",reps:"12"}]`);
 ok(await ev(`S.days[0].exercises.some(e => e.name === "Triceps Pushdown")`), "giáo án khác PPL: không đổi bài");
@@ -379,6 +379,50 @@ await click('[data-custom="1"]'); await sleep(60);
 await type("#cName", "Canh chua nhà"); await type("#cKcal", "90"); await type("#cP", "6"); await click("[data-customtray]"); await sleep(100);
 ok(await ev(`tray().length === 1 && tray()[0].name === "Canh chua nhà"`), "món tự nhập cũng vào bữa được");
 await shot("food-meal.png"); await noOverflow("tab Ăn có bữa gộp");
+
+console.log("== Cardio");
+ok(await ev(`tplDays(tplOf("ppl")).filter(d => d.cardio).map(d => d.name + ":" + d.cardio.min).join()`) === "Buổi Kéo:25", "PPL: gợi ý cardio 25 phút sau buổi Kéo");
+ok(await ev(`TPL.every(t => { const n = tplDays(t).filter(d => d.cardio).length; return n >= 1 && n <= 2; })`), "giáo án nào cũng có 1–2 buổi gợi ý cardio");
+// dữ liệu cũ (v7, đã tập) được thêm gợi ý cardio theo tên buổi
+await put(`d.setupDone = true; d.progVersion = 7; d.days.forEach(x => delete x.cardio);
+  const x = d.days[0]; d.log["2026-09-20|" + x.id + "|" + x.exercises[0].id] = [{kg:"40",reps:"8"}]`);
+ok(await ev(`S.progVersion === 8 && S.days.find(x => x.name === "Buổi Kéo").cardio.min === 25 && !S.days[0].cardio`), "dữ liệu cũ: thêm cardio vào buổi Kéo, giữ nhật ký");
+// ghi cardio ở buổi Kéo
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 })`);
+await ev(`curDay = S.days[1].id; exIdx = 0; tab = "train"; render()`); await sleep(80);
+ok(await ev(`/gợi ý 25 phút/.test(document.querySelector("details.cardio summary").textContent) && !document.querySelector("details.cardio").open`), "buổi Kéo: khối cardio gợi ý 25 phút, gập sẵn khi đang tập");
+await ev(`document.querySelector("details.cardio").open = true`);
+ok(await ev(`$("#cMin").value`) === "25", "phút mặc định = phút gợi ý");
+await click('[data-ctype="dibo"]'); await sleep(80);
+ok(await ev(`document.querySelector("details.cardio").open && document.querySelector('[data-ctype="dibo"]').getAttribute("aria-pressed") === "true"`), "chọn Đi bộ dốc, khối vẫn mở");
+await click('[data-cmin="5"]'); await click("[data-clog]"); await sleep(100);
+ok(await ev(`JSON.stringify(cardioDay(today()).map(c => [c.type, c.min]))`) === '[["dibo",30]]', "ghi 30 phút đi bộ dốc");
+ok(await ev(`cardioKcal(today())`) === 150, "calo đốt thêm: (6−1) × 60 kg × 0,5 giờ = 150");
+ok(await ev(`document.querySelector("details.cardio summary").textContent.includes("đã 30 phút")`), "tiêu đề khối báo đã tập 30 phút");
+await ev(`document.querySelector("details.cardio").scrollIntoView()`); await shot("cardio.png");
+await noOverflow("khối cardio");
+// tab Ăn cộng calo cardio (mục tiêu tăng cơ)
+const k0 = await ev(`Math.round(targets().kcal)`);
+await click("[data-tab=an]"); await sleep(100);
+ok(await ev(`document.querySelector("#view").textContent.includes("+150 kcal vì 30 phút cardio")`), "tab Ăn: mục tiêu hôm nay +150 kcal vì cardio");
+ok(await ev(`document.querySelector("#view").textContent.replace(/\s+/g, " ").includes("/ " + (${k0} + 150).toLocaleString("vi-VN") + " kcal")`), "thanh calo dùng mục tiêu đã cộng");
+// giảm mỡ: không ăn bù
+await ev(`S.profile.surplus = -400; render()`); await sleep(60);
+ok(await ev(`cardioEatBack(today()) === 0 && !document.querySelector("#view").textContent.includes("vì 30 phút cardio")`), "giảm mỡ: không cộng calo cardio");
+await ev(`S.profile.surplus = 300; save(true)`);
+// nhật ký + biểu đồ
+await click("[data-tab=history]"); await sleep(80); await click("[data-hview=prog]"); await sleep(100);
+ok(await ev(`!!document.querySelector('.chart[data-chart=cardio] .cref')`), "biểu đồ phút cardio/tuần có mốc 150");
+await click("[data-hview=list]"); await sleep(100);
+ok(await ev(`document.querySelector("details.sess").textContent.replace(/\s+/g, " ").includes("30 phút cardio")`), "ngày chỉ tập cardio vẫn hiện trong Các buổi");
+// xoá
+await click("[data-tab=train]"); await sleep(60); await ev(`document.querySelector("details.cardio").open = true`); await click("[data-cdel]"); await sleep(80);
+ok(await ev(`cardioDay(today()).length`) === 0, "xoá lần cardio");
+// trình sửa chương trình: bật/tắt cardio cho buổi
+await click("[data-tab=me]"); await sleep(100);
+await ev(`{ const c = document.querySelector('[data-dcardio="' + S.days[0].id + '"]'); c.checked = true; c.dispatchEvent(new Event("input", {bubbles: true})) }`); await sleep(80);
+await ev(`{ const i = document.querySelector('[data-dcmin="' + S.days[0].id + '"]'); i.value = "15"; i.dispatchEvent(new Event("input", {bubbles: true})) }`);
+ok(await ev(`S.days[0].cardio && S.days[0].cardio.min === 15`), "Chương trình: bật cardio 15 phút cho buổi Đẩy");
 
 console.log("== Mục tiêu");
 await put(`d.setupDone = true; Object.assign(d.profile, { age: 25, height: 170, weight: 60 })`);
