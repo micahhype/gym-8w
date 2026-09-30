@@ -205,6 +205,8 @@ details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
   cursor:pointer;padding:12px 2px;text-align:left}
 .foodrow[aria-expanded=true]{color:var(--brass)}
 .foodsel{margin:10px 0 12px;background:var(--ground)}
+.restmini{text-align:center;color:var(--brass);font-size:15px;margin:4px 0 12px}
+.restmini b{font-size:20px}
 .trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .trio button{padding-left:6px;padding-right:6px;font-size:14px}
 #tray{border-color:var(--brass)}
@@ -1102,7 +1104,7 @@ function viewTrain() {
   let action = "";
   const resting = restEnd > Date.now();
 
-  if (resting) {
+  if (resting && editIdx == null) {
     action = `<div class="rest">
       <div class="lab">Nghỉ</div>
       <div class="clock" id="restNum">${mmss(Math.ceil((restEnd - Date.now()) / 1000))}</div>
@@ -1131,7 +1133,8 @@ function viewTrain() {
   } else {
     const sg = editIdx != null ? done[editIdx] : suggest(ex, idx);
     const wu = ex.warm && !ex.altId && !done.length && editIdx == null ? warmups(+sg.kg, ex.name) : [];
-    action = (wu.length ? `
+    action = (resting ? `<div class="restmini">Đang nghỉ · <b class="num" id="restNum">${mmss(Math.ceil((restEnd - Date.now()) / 1000))}</b></div>` : "")
+      + (wu.length ? `
       <div class="warm"><div class="lab">Khởi động · nghỉ ~1 phút · không ghi</div>
         <div class="ws">${wu.map(w => `${w.kg}×${w.reps}`).join(" &nbsp;·&nbsp; ")}</div></div>` : "") + `
       <div class="setlabel">${editIdx != null ? "Sửa set " + (editIdx + 1) : "Set " + (idx + 1) + " / " + total}</div>
@@ -2123,7 +2126,13 @@ function startRest(sec) {
   clearInterval(restTimer);
   restTimer = setInterval(() => {
     const left = Math.ceil((restEnd - Date.now()) / 1000);
-    if (left <= 0) { clearInterval(restTimer); restTimer = null; restEnd = 0; buzz(); restNotify(); render(); return; }
+    if (left <= 0) {
+      clearInterval(restTimer); restTimer = null; restEnd = 0; buzz(); restNotify();
+      // đang sửa set thì không vẽ lại (mất số đang gõ) — chỉ đổi dòng đếm ngược
+      if (editIdx != null) { const m = $(".restmini"); if (m) m.textContent = "Hết giờ nghỉ"; }
+      else render();
+      return;
+    }
     const el = $("#restNum"); if (el) el.textContent = mmss(left);
   }, 250);
 }
@@ -2207,8 +2216,9 @@ document.addEventListener("click", e => {
     save(true); render(); toast("Đã hoàn lại"); return;
   }
   if (el.dataset.edit !== undefined) {
+    // sửa set cũ không dừng đồng hồ nghỉ: vẫn đếm ở dòng nhỏ trên khung sửa
     editIdx = editIdx === +el.dataset.edit ? null : +el.dataset.edit;
-    stopRest(); return;
+    render(); return;
   }
 
   if (el.dataset.step) {

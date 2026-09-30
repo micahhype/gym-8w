@@ -156,6 +156,29 @@ await put(`d.setupDone = true; const x = d.days[0];
 await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
 ok(await ev(`document.querySelector('.btn.jade[data-jump]')?.dataset.jump`) === "2", "Bài tiếp bỏ qua bài đã xong");
 
+console.log("== Sửa set khi đang nghỉ");
+await put(`d.setupDone = true`);
+await ev(`curDay = S.days[0].id; exIdx = 0; tab = "train"; render()`);
+await ev(`$("#kgVal").value = "40"; $("#repVal").value = "8"`); await click("#logSet"); await sleep(150);
+ok(await ev(`restEnd > Date.now() && !!document.querySelector(".rest #restNum")`), "ghi set → đang nghỉ");
+const end0 = await ev(`restEnd`);
+await click('[data-edit="0"]'); await sleep(120);
+ok(await ev(`restEnd`) === end0 && await ev(`!!$("#kgVal") && !!document.querySelector(".restmini #restNum")`), "bấm sửa set: đồng hồ vẫn chạy, hiện ở dòng nhỏ");
+await sleep(1200);
+ok(await ev(`(t => t.includes(":") && t !== "3:00")(document.querySelector(".restmini #restNum").textContent)`), "dòng nhỏ vẫn đếm ngược");
+await ev(`$("#kgVal").value = "42.5"`); await click("#logSet"); await sleep(150);
+ok(await ev(`S.log[lkey(curDate, curDay, day().exercises[0].id)][0].kg`) === "42.5", "lưu sửa set");
+ok(await ev(`restEnd`) === end0 && await ev(`!!document.querySelector(".rest #restNum")`), "sửa xong: quay lại màn nghỉ, giờ không đổi");
+await click('[data-edit="0"]'); await sleep(80); await click("#cancelEdit"); await sleep(80);
+ok(await ev(`restEnd === ${end0} && !!document.querySelector(".rest #restNum")`), "huỷ sửa: vẫn đang nghỉ");
+// hết giờ nghỉ đúng lúc đang sửa: không mất số đang gõ
+await ev(`restEnd = Date.now() + 1200`); await click('[data-edit="0"]'); await sleep(80);
+await ev(`$("#kgVal").value = "45"`); await sleep(1800);
+ok(await ev(`$("#kgVal") && $("#kgVal").value`) === "45" && await ev(`document.querySelector(".restmini").textContent`) === "Hết giờ nghỉ", "hết giờ khi đang sửa: giữ số đang gõ, báo 'Hết giờ nghỉ'");
+await click("#logSet"); await sleep(120);
+ok(await ev(`S.log[lkey(curDate, curDay, day().exercises[0].id)][0].kg === "45" && restEnd === 0`), "lưu được sau khi hết giờ");
+await noOverflow("sửa set khi nghỉ");
+
 console.log("== Đổi 3 bài PPL (v7)");
 ok(await ev(`(() => { const n = tplDays(tplOf("ppl")).flatMap(d => d.exercises.map(e => e.name));
   return n.includes("Duỗi tay sau qua đầu") && n.includes("Leg Curl ngồi máy") && n.includes("Incline Dumbbell Curl")

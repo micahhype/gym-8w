@@ -124,7 +124,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 109 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 118 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 
