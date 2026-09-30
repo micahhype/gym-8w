@@ -33,6 +33,10 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   Tuần đếm từ ngày bắt đầu giáo án (mặc định thứ Hai của tuần đầu), tiêu đề
   tuần ghi rõ khoảng ngày. Ngày bắt đầu không phải thứ Hai thì tab Tôi có nút
   lùi về thứ Hai cho khớp lịch.
+- **Giao diện** — 5 theme trong tab Tôi: Đồng thau (mặc định), Sáng, Neon,
+  Giấy, Đêm, và *Tự động* (Sáng ↔ Đêm theo chế độ sáng/tối của máy). Theme chỉ
+  là bộ biến CSS theo `data-theme` trên `<html>`; lựa chọn lưu trong dữ liệu và
+  trong `localStorage` để áp trước khi vẽ, không nháy màu.
 - **Tôi** — cân nặng, BMI, mục tiêu calo/đạm (Mifflin–St Jeor), trình sửa chương
   trình, xuất/nhập JSON.
 
@@ -128,7 +132,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 134 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 149 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 

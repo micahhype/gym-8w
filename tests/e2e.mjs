@@ -379,6 +379,37 @@ await type("#cName", "Canh chua nhà"); await type("#cKcal", "90"); await type("
 ok(await ev(`tray().length === 1 && tray()[0].name === "Canh chua nhà"`), "món tự nhập cũng vào bữa được");
 await shot("food-meal.png"); await noOverflow("tab Ăn có bữa gộp");
 
+console.log("== Giao diện");
+await put(`d.setupDone = true; Object.assign(d.profile, { age: 29, height: 172, weight: 56 })`);
+ok(await ev(`document.documentElement.dataset.theme`) === "hientai", "mặc định: Đồng thau (giao diện cũ)");
+ok(await ev(`document.querySelectorAll("nav .tab svg.ico").length === 4 && !/[\u{1F300}-\u{1FAFF}]/u.test(document.querySelector("nav").textContent)`), "thanh tab dùng icon nét, không còn emoji");
+await click("[data-tab=me]"); await sleep(120);
+ok(await ev(`document.querySelectorAll("[data-theme-pick]").length`) === 6, "6 lựa chọn giao diện");
+const ground = () => ev(`getComputedStyle(document.documentElement).getPropertyValue("--ground").trim()`);
+await click('[data-theme-pick="sang"]'); await sleep(120);
+ok(await ev(`document.documentElement.dataset.theme`) === "sang" && await ground() === "#f5f4f0", "chọn Sáng: đổi màu nền ngay");
+ok(await ev(`localStorage.getItem("gymbook.theme")`) === "sang" && await ev(`S.theme`) === "sang", "lưu lựa chọn");
+ok(await ev(`document.querySelector('meta[name=theme-color]').content`) === "#f5f4f0", "màu thanh trình duyệt theo theme");
+await reload();
+ok(await ev(`document.documentElement.dataset.theme`) === "sang", "tải lại vẫn là Sáng");
+for (const t of ["hientai", "sang", "neon", "giay", "dem"]) {
+  await ev(`S.theme = "${t}"; applyTheme()`);
+  for (const tb of ["train", "an", "history", "me"]) {
+    await click(`[data-tab=${tb}]`); await sleep(120);
+    if (tb === "me") await ev(`document.querySelectorAll("details.sec").forEach(x => x.open = false)`);
+    await shot(`theme-${t}-${tb}.png`);
+  }
+  ok(await ev(`document.documentElement.scrollWidth <= 400`), "không tràn ngang: " + t);
+}
+// Tự động theo máy
+await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
+await ev(`S.theme = "auto"; applyTheme()`); await sleep(80);
+ok(await ev(`document.documentElement.dataset.theme`) === "sang", "Tự động + máy để sáng → Sáng");
+await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] }); await sleep(150);
+ok(await ev(`document.documentElement.dataset.theme`) === "dem", "máy chuyển tối → tự đổi sang Đêm");
+await send("Emulation.setEmulatedMedia", { features: [] });
+ok(await ev(`localStorage.getItem("gymbook.theme")`) === "auto", "lưu 'auto' chứ không lưu theme đã suy ra");
+
 console.log("== Giữ màn hình sáng");
 await put(`d.setupDone = true`);
 const lock = () => ev(`new Promise(r => setTimeout(() => r(!!wakeLock && !wakeLock.released), 300))`);

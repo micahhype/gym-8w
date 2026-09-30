@@ -16,15 +16,77 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+<!-- đủ font cho mọi theme; trình duyệt chỉ tải mặt chữ đang dùng -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script>
+/* Đặt theme trước khi vẽ để khỏi nháy màu. "auto" theo chế độ sáng/tối của máy. */
+(function () {
+  var t = "hientai";
+  try { t = localStorage.getItem("gymbook.theme") || "hientai"; } catch (e) {}
+  if (t === "auto") t = matchMedia("(prefers-color-scheme: light)").matches ? "sang" : "dem";
+  document.documentElement.dataset.theme = t;
+})();
+</script>
 <style>
-:root{
+:root,[data-theme="hientai"]{
   --ground:#0d1014; --surface:#171d22; --raised:#222a31; --line:#2e3841;
   --chalk:#eef0f3; --muted:#96a1ae; --dim:#68737f;
   --brass:#e0a233; --brass-ink:#17120a; --jade:#43c295; --rust:#cf5c43;
+  --good-bg:#1d3830; --good-line:#27503f; --good-ink:#08201a; --bad-bg:#3a251f; --bad-line:#4d2c25;
+  --press:#c78e29; --press-2:#2d363f; --viz:#c08520; --viz-on:#d69a36;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --caps:uppercase; --trk:1; --r-lg:14px; --r:12px; --r-sm:10px; --shadow:none;
+  color-scheme:dark;
 }
+/* Các theme khác: chỉ đổi biến. --caps/--trk: tiêu đề in hoa + giãn chữ (1) hay chữ thường (0). */
+[data-theme="sang"]{
+  --ground:#f5f4f0; --surface:#ffffff; --raised:#eeece6; --line:#e2dfd7;
+  --chalk:#17160f; --muted:#5f5c54; --dim:#77736a;
+  --brass:#d9531c; --brass-ink:#ffffff; --jade:#0e8a5f; --rust:#c2410c;
+  --good-bg:#e3f3ec; --good-line:#b7dfcd; --good-ink:#ffffff; --bad-bg:#fbe7df; --bad-line:#f0c2b0;
+  --press:#b8440f; --press-2:#e5e2da; --viz:#d9531c; --viz-on:#b8440f;
+  --display:"Lexend",system-ui,sans-serif; --body:"Lexend",system-ui,sans-serif;
+  --caps:none; --trk:0; --r-lg:22px; --r:16px; --r-sm:12px;
+  --shadow:0 1px 2px rgba(23,22,15,.06),0 6px 20px rgba(23,22,15,.05);
+  color-scheme:light;
+}
+[data-theme="neon"]{
+  --ground:#0a0a0b; --surface:#141416; --raised:#1f1f23; --line:#2a2a2f;
+  --chalk:#f4f4f5; --muted:#a1a1aa; --dim:#7b7b84;
+  --brass:#c8ff2e; --brass-ink:#0a0a0b; --jade:#4ade80; --rust:#f87171;
+  --good-bg:#13261a; --good-line:#1f4a2c; --good-ink:#0a0a0b; --bad-bg:#2a1414; --bad-line:#4a2020;
+  --press:#a8d91f; --press-2:#2a2a2f; --viz:#7ea31a; --viz-on:#a6d624;
+  --display:"Anton","Arial Narrow",sans-serif; --body:"Space Grotesk",system-ui,sans-serif;
+  --caps:uppercase; --trk:.4; --r-lg:6px; --r:5px; --r-sm:4px; --shadow:none;
+  color-scheme:dark;
+}
+[data-theme="giay"]{
+  --ground:#f1ebdf; --surface:#faf6ee; --raised:#e9e1d1; --line:#d9cfbc;
+  --chalk:#1c2620; --muted:#4f5a52; --dim:#6a7269;
+  --brass:#1f5e45; --brass-ink:#faf6ee; --jade:#2f7d4f; --rust:#a3401f;
+  --good-bg:#dcebdc; --good-line:#b4d1b8; --good-ink:#faf6ee; --bad-bg:#f3dccf; --bad-line:#dcb3a0;
+  --press:#174a36; --press-2:#e2d8c4; --viz:#1f5e45; --viz-on:#2b7a5b;
+  --display:"Playfair Display",Georgia,serif; --body:"Be Vietnam Pro",system-ui,sans-serif;
+  --caps:none; --trk:0; --r-lg:4px; --r:3px; --r-sm:3px; --shadow:none;
+  color-scheme:light;
+}
+[data-theme="dem"]{
+  --ground:#0c1322; --surface:#141f36; --raised:#1c2a47; --line:#26365a;
+  --chalk:#e9eef8; --muted:#9fb0cc; --dim:#7385a4;
+  --brass:#5aa9ff; --brass-ink:#06101f; --jade:#4fd1a5; --rust:#f07b62;
+  --good-bg:#12302e; --good-line:#1f5049; --good-ink:#06101f; --bad-bg:#3a1f22; --bad-line:#5a2f33;
+  --press:#3f8ee6; --press-2:#26365a; --viz:#4a93e6; --viz-on:#6fb3ff;
+  --display:"Lexend",system-ui,sans-serif; --body:"Be Vietnam Pro",system-ui,sans-serif;
+  --caps:none; --trk:0; --r-lg:18px; --r:14px; --r-sm:11px; --shadow:none;
+  color-scheme:dark;
+}
+/* Anton chỉ có một độ đậm: đừng để trình duyệt tự tô đậm thêm */
+[data-theme="neon"] body{font-synthesis:none}
+[data-theme="giay"] .session em{font-style:italic}
+/* Playfair mặc định dùng số kiểu cổ (cao thấp lệch nhau) — ép số thẳng hàng cho dễ đọc tạ/rep */
+[data-theme="giay"] body,[data-theme="giay"] input,[data-theme="giay"] svg text{font-variant-numeric:lining-nums tabular-nums}
+[data-theme="giay"] .num{font-variant-numeric:lining-nums tabular-nums}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--ground);color:var(--chalk);
@@ -37,24 +99,24 @@ body{margin:0;background:var(--ground);color:var(--chalk);
 .stack{display:flex;flex-direction:column;gap:12px}
 .spread{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .row{display:flex;align-items:center;gap:10px}
-h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
+h2{font-family:var(--display);text-transform:var(--caps);letter-spacing:calc(.06em * var(--trk));
   font-size:21px;font-weight:600;margin:28px 0 8px}
 h2:first-child{margin-top:8px}
 .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow)}
 
 /* ---------- top bar ---------- */
 .topbar{position:sticky;top:0;z-index:20;background:var(--ground);
   padding:calc(12px + env(safe-area-inset-top)) 0 10px}
 .topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-.session{font-family:var(--display);font-size:23px;font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.session{font-family:var(--display);font-size:23px;font-weight:600;letter-spacing:calc(.02em * var(--trk));text-transform:var(--caps)}
 .session em{font-style:normal;color:var(--brass)}
 .bar{height:5px;background:var(--raised);border-radius:99px;overflow:hidden}
 .bar>i{display:block;height:100%;background:var(--brass);border-radius:99px;transition:width .25s}
 .dots{display:flex;gap:7px;margin-top:11px;overflow-x:auto;padding-bottom:2px}
-.dot{flex:none;width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
+.dot{flex:none;width:38px;height:38px;border-radius:var(--r);border:1px solid var(--line);
   background:var(--surface);color:var(--dim);font-family:var(--display);font-size:17px;font-weight:600}
-.dot.done{background:#1d3830;border-color:#27503f;color:var(--jade)}
+.dot.done{background:var(--good-bg);border-color:var(--good-line);color:var(--jade)}
 .dot[aria-current=true]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
 .dot.opt{border-style:dashed}
 .dotsep{flex:none;width:1px;background:var(--line);margin:5px 2px}
@@ -63,33 +125,33 @@ h2:first-child{margin-top:8px}
 
 /* ---------- buttons ---------- */
 button{font-family:inherit;font-size:16px;cursor:pointer;color:inherit}
-.btn{background:var(--brass);color:var(--brass-ink);border:0;border-radius:13px;
+.btn{background:var(--brass);color:var(--brass-ink);border:0;border-radius:var(--r);
   padding:17px 20px;font-weight:600;font-size:17px;min-height:60px;width:100%;
-  font-family:var(--display);font-size:22px;letter-spacing:.04em;text-transform:uppercase}
-.btn:active{background:#c78e29}
-.btn.jade{background:var(--jade);color:#08201a}
-.ghost{background:transparent;border:1px solid var(--line);border-radius:12px;
+  font-family:var(--display);font-size:22px;letter-spacing:calc(.04em * var(--trk));text-transform:var(--caps)}
+.btn:active{background:var(--press)}
+.btn.jade{background:var(--jade);color:var(--good-ink)}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:var(--r);
   padding:14px 16px;min-height:52px;font-weight:500}
 .ghost:active{background:var(--raised)}
-.ghost.sm{min-height:42px;padding:8px 14px;font-size:14px;border-radius:10px}
-.ghost.danger{color:var(--rust);border-color:#4d2c25}
+.ghost.sm{min-height:42px;padding:8px 14px;font-size:14px;border-radius:var(--r-sm)}
+.ghost.danger{color:var(--rust);border-color:var(--bad-line)}
 .iconbtn{background:transparent;border:1px solid var(--line);color:var(--muted);
-  width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-size:20px;flex:none}
+  width:44px;height:44px;border-radius:var(--r);display:grid;place-items:center;font-size:20px;flex:none}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
 /* ---------- hình minh hoạ ---------- */
 .figpair{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 4px}
 .figf{margin:0}
-.figf img{width:100%;height:auto;display:block;border-radius:10px;
+.figf img{width:100%;height:auto;display:block;border-radius:var(--r-sm);
   border:1px solid var(--line);background:var(--surface)}
-.figf figcaption{font-family:var(--display);font-size:13px;letter-spacing:.07em;
-  text-transform:uppercase;color:var(--dim);text-align:center;margin-top:5px}
+.figf figcaption{font-family:var(--display);font-size:13px;letter-spacing:calc(.07em * var(--trk));
+  text-transform:var(--caps);color:var(--dim);text-align:center;margin-top:5px}
 .exhead{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}
 
 /* ---------- exercise ---------- */
 .exname{font-family:var(--display);font-size:34px;font-weight:700;line-height:1.08;
   letter-spacing:.01em;margin:2px 0 4px;text-wrap:balance}
-.exrx{font-family:var(--display);font-size:18px;letter-spacing:.07em;text-transform:uppercase;color:var(--brass)}
+.exrx{font-family:var(--display);font-size:18px;letter-spacing:calc(.07em * var(--trk));text-transform:var(--caps);color:var(--brass)}
 .exrx .of{color:var(--dim)}
 .alts{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:12px}
 .alts .lab{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-right:2px}
@@ -98,11 +160,11 @@ button{font-family:inherit;font-size:16px;cursor:pointer;color:inherit}
 .chip:active{background:var(--raised)}
 .chip[aria-pressed=true]{border-color:var(--brass);color:var(--brass)}
 .prev{font-size:14px;color:var(--muted);background:var(--surface);border-left:3px solid var(--brass);
-  border-radius:10px;padding:10px 13px;margin:14px 0}
+  border-radius:var(--r-sm);padding:10px 13px;margin:14px 0}
 .prev b{color:var(--chalk);font-family:var(--display);font-size:16px;font-variant-numeric:tabular-nums}
 .prev .rule{display:block;margin-top:5px;font-size:13px;color:var(--dim)}
 .prev .up{display:block;margin-top:6px;color:var(--jade);font-weight:500}
-.warm{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:11px 14px;margin-bottom:4px}
+.warm{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:11px 14px;margin-bottom:4px}
 .warm .lab{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
 .warm .ws{font-family:var(--display);font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
 .breath{margin-top:12px;padding:9px 12px;border-left:2px solid var(--brass);background:var(--surface);
@@ -113,7 +175,7 @@ details.note ul{margin:6px 0 0;padding-left:20px;font-size:14px;color:var(--mute
 details.note{margin-top:14px}
 details.note ul.cool{list-style:none;padding:0;display:grid;gap:10px}
 .cool li{display:grid;grid-template-columns:112px 1fr;gap:12px;align-items:center}
-.cool img,.cool .noimg{width:112px;height:75px;object-fit:cover;border-radius:8px;display:block}
+.cool img,.cool .noimg{width:112px;height:75px;object-fit:cover;border-radius:var(--r-sm);display:block}
 .cool .noimg{height:0}
 details.note .cool+p{margin-top:14px}
 details.note summary{color:var(--muted);font-size:14px;cursor:pointer;list-style:none;padding:6px 0}
@@ -124,7 +186,7 @@ details.note p{margin:4px 0 0;font-size:14px;color:var(--muted);line-height:1.5}
 
 /* ---------- done sets ---------- */
 .doneset{display:flex;align-items:stretch;background:var(--surface);border:1px solid var(--line);
-  border-radius:12px;margin-bottom:8px;overflow:hidden}
+  border-radius:var(--r);margin-bottom:8px;overflow:hidden}
 .doneset.editing{border-color:var(--brass)}
 .ds-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:transparent;
   border:0;padding:13px 6px 13px 15px;text-align:left;min-height:54px}
@@ -136,29 +198,29 @@ details.note p{margin:4px 0 0;font-size:14px;color:var(--muted);line-height:1.5}
 .ds-del:active{background:var(--raised);color:var(--rust)}
 
 /* ---------- stepper ---------- */
-.setlabel{font-family:var(--display);font-size:17px;letter-spacing:.08em;text-transform:uppercase;
+.setlabel{font-family:var(--display);font-size:17px;letter-spacing:calc(.08em * var(--trk));text-transform:var(--caps);
   color:var(--dim);text-align:center;margin:18px 0 10px}
 .steppers{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.stepper{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stepper{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px}
 .stepper .cap{text-align:center;color:var(--dim);font-size:12.5px;letter-spacing:.08em;
   text-transform:uppercase;margin-bottom:8px}
 .stepper .ctrl{display:grid;grid-template-columns:46px minmax(0,1fr) 46px;align-items:center;gap:4px}
-.stepper button{background:var(--raised);border:0;border-radius:11px;height:54px;
+.stepper button{background:var(--raised);border:0;border-radius:var(--r);height:54px;
   font-size:26px;font-family:var(--display);font-weight:600;color:var(--chalk)}
-.stepper button:active{background:#2d363f}
+.stepper button:active{background:var(--press-2)}
 .stepper input{width:100%;min-width:0;background:transparent;border:0;color:var(--chalk);text-align:center;
   font-family:var(--display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;
   padding:0 2px;min-height:54px;-moz-appearance:textfield}
 .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 /* ---------- rest timer ---------- */
-.rest{background:var(--surface);border:1px solid var(--brass);border-radius:14px;padding:18px;text-align:center}
-.rest .lab{font-family:var(--display);font-size:17px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
+.rest{background:var(--surface);border:1px solid var(--brass);border-radius:var(--r-lg);padding:18px;text-align:center}
+.rest .lab{font-family:var(--display);font-size:17px;letter-spacing:calc(.1em * var(--trk));text-transform:var(--caps);color:var(--brass)}
 .rest .clock{font-family:var(--display);font-size:56px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
 
 /* ---------- generic form ---------- */
 input,select,textarea{font-family:var(--body);font-size:16px;background:var(--ground);color:var(--chalk);
-  border:1px solid var(--line);border-radius:11px;padding:13px 13px;width:100%;min-height:52px}
+  border:1px solid var(--line);border-radius:var(--r);padding:13px 13px;width:100%;min-height:52px}
 input[type=number]{font-family:var(--display);font-size:21px;font-weight:600;text-align:center;
   font-variant-numeric:tabular-nums;padding:10px 6px}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
@@ -170,12 +232,12 @@ label.f>span{display:block;font-size:12.5px;letter-spacing:.07em;text-transform:
 .lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:14px 0;border-bottom:1px solid var(--line)}
 .lrow:last-child{border-bottom:0}
-.badge{font-family:var(--display);font-size:13px;letter-spacing:.06em;padding:3px 9px;
+.badge{font-family:var(--display);font-size:13px;letter-spacing:calc(.06em * var(--trk));padding:3px 9px;
   border-radius:6px;background:var(--raised);color:var(--muted)}
-.badge.up{background:#1d3830;color:var(--jade)} .badge.down{background:#3a251f;color:var(--rust)}
-details.sec{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.badge.up{background:var(--good-bg);color:var(--jade)} .badge.down{background:var(--bad-bg);color:var(--rust)}
+details.sec{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
 details.sec>summary{padding:17px 16px;font-family:var(--display);font-size:20px;font-weight:600;
-  text-transform:uppercase;letter-spacing:.05em;cursor:pointer;list-style:none;display:flex;
+  text-transform:var(--caps);letter-spacing:calc(.05em * var(--trk));cursor:pointer;list-style:none;display:flex;
   justify-content:space-between;align-items:center}
 details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary::after{content:"+";color:var(--brass);font-size:26px;line-height:1}
@@ -197,19 +259,18 @@ details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
 .chips.scroll .chip{flex:none;white-space:nowrap}
 .favs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .fav{position:relative;display:flex}
-.favbtn{width:100%;min-height:64px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+.favbtn{width:100%;min-height:64px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   color:var(--chalk);padding:10px 12px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:4px;font:inherit;font-size:14px;line-height:1.3}
 .favbtn:active{background:var(--raised)}
-.favdel{position:absolute;top:-8px;right:-8px;width:32px;height:32px;background:var(--ground);color:var(--rust);border-color:#4d2c25}
+.favdel{position:absolute;top:-8px;right:-8px;width:32px;height:32px;background:var(--ground);color:var(--rust);border-color:var(--bad-line)}
 .foodrow{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:inherit;font:inherit;
   cursor:pointer;padding:12px 2px;text-align:left}
 .foodrow[aria-expanded=true]{color:var(--brass)}
 .foodsel{margin:10px 0 12px;background:var(--ground)}
 /* ---------- tiến bộ ---------- */
-:root{--viz:#c08520}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);
-  border-radius:12px;padding:4px;margin:4px 0 16px}
-.seg button{background:transparent;border:0;color:var(--muted);border-radius:9px;min-height:40px;font:inherit;font-size:15px}
+  border-radius:var(--r);padding:4px;margin:4px 0 16px}
+.seg button{background:transparent;border:0;color:var(--muted);border-radius:var(--r-sm);min-height:40px;font:inherit;font-size:15px}
 .seg button[aria-selected=true]{background:var(--raised);color:var(--chalk)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 6px}
 .stat{min-width:0}
@@ -222,17 +283,29 @@ details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
 .cdot{fill:var(--viz);stroke:var(--surface);stroke-width:2}
 .cdot.on{r:6}
 .cbar{fill:var(--viz)}
-.cbar.on{fill:#d69a36}
+.cbar.on{fill:var(--viz-on)}
 .cref{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4}
 .cx{stroke:var(--muted);stroke-width:1}
 .chit{fill:transparent;outline:none}
 .chart:focus-within svg{outline:2px solid var(--line);outline-offset:4px;border-radius:6px}
 .ctip{position:absolute;top:-6px;transform:translateY(-100%);background:var(--raised);border:1px solid var(--line);
-  border-radius:10px;padding:7px 10px;font-size:14px;pointer-events:none;white-space:nowrap;z-index:5}
+  border-radius:var(--r-sm);padding:7px 10px;font-size:14px;pointer-events:none;white-space:nowrap;z-index:5}
 .ctip b{font-family:var(--display);font-size:17px}
 .dtab{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
 .dtab th{text-align:left;color:var(--dim);font-weight:500;padding:4px 0}
 .dtab td{padding:5px 0;border-top:1px solid var(--line);color:var(--muted)}
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.themebtn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--ground);color:var(--muted);font:inherit;font-size:14px;cursor:pointer;min-height:76px}
+.themebtn[aria-checked=true]{border-color:var(--brass);color:var(--chalk);box-shadow:0 0 0 1px var(--brass)}
+.sw{display:flex;border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.sw i{width:16px;height:22px;display:block}
+.sw[data-sw=hientai] i:nth-child(1){background:#0d1014} .sw[data-sw=hientai] i:nth-child(2){background:#171d22} .sw[data-sw=hientai] i:nth-child(3){background:#e0a233}
+.sw[data-sw=sang] i:nth-child(1){background:#f5f4f0} .sw[data-sw=sang] i:nth-child(2){background:#ffffff} .sw[data-sw=sang] i:nth-child(3){background:#d9531c}
+.sw[data-sw=neon] i:nth-child(1){background:#0a0a0b} .sw[data-sw=neon] i:nth-child(2){background:#1f1f23} .sw[data-sw=neon] i:nth-child(3){background:#c8ff2e}
+.sw[data-sw=giay] i:nth-child(1){background:#f1ebdf} .sw[data-sw=giay] i:nth-child(2){background:#faf6ee} .sw[data-sw=giay] i:nth-child(3){background:#1f5e45}
+.sw[data-sw=dem] i:nth-child(1){background:#0c1322} .sw[data-sw=dem] i:nth-child(2){background:#1c2a47} .sw[data-sw=dem] i:nth-child(3){background:#5aa9ff}
+.sw[data-sw=auto] i:nth-child(1){background:#f5f4f0} .sw[data-sw=auto] i:nth-child(2){background:#0c1322} .sw[data-sw=auto] i:nth-child(3){background:linear-gradient(90deg,#d9531c 50%,#5aa9ff 50%)}
 .restmini{text-align:center;color:var(--brass);font-size:15px;margin:4px 0 12px}
 .restmini b{font-size:20px}
 .trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -240,18 +313,18 @@ details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
 #tray{border-color:var(--brass)}
 
 /* ---------- nav ---------- */
-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(13,16,20,.97);
+nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--ground) 96%,transparent);
   backdrop-filter:blur(14px);border-top:1px solid var(--line);
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));
   display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-.tab{background:transparent;border:0;color:var(--dim);padding:8px 2px 6px;border-radius:11px;
+.tab{background:transparent;border:0;color:var(--dim);padding:8px 2px 6px;border-radius:var(--r);
   display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px}
-.tab .ico{font-size:21px;line-height:1}
-.tab .lb{font-family:var(--display);font-size:14px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.tab .ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab .lb{font-family:var(--display);font-size:14px;letter-spacing:calc(.08em * var(--trk));text-transform:var(--caps);font-weight:600}
 .tab[aria-current=page]{color:var(--brass);background:var(--surface)}
 .empty{text-align:center;color:var(--dim);padding:44px 16px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));
-  background:var(--jade);color:#08201a;padding:13px 22px;border-radius:99px;font-weight:600;
+  background:var(--jade);color:var(--good-ink);padding:13px 22px;border-radius:99px;font-weight:600;
   z-index:50;opacity:0;pointer-events:none;transition:opacity .18s;white-space:nowrap}
 .toast.show{opacity:1}
 body.onb nav,body.typing nav{display:none}
@@ -264,10 +337,10 @@ body.onb nav,body.typing nav{display:none}
   <main id="view"></main>
 </div>
 <nav>
-  <button class="tab" data-tab="train"><span class="ico">🏋</span><span class="lb">Tập</span></button>
-  <button class="tab" data-tab="an"><span class="ico">🍚</span><span class="lb">Ăn</span></button>
-  <button class="tab" data-tab="history"><span class="ico">📓</span><span class="lb">Nhật ký</span></button>
-  <button class="tab" data-tab="me"><span class="ico">⚖</span><span class="lb">Tôi</span></button>
+  <button class="tab" data-tab="train"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12"/></svg><span class="lb">Tập</span></button>
+  <button class="tab" data-tab="an"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/></svg><span class="lb">Ăn</span></button>
+  <button class="tab" data-tab="history"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg><span class="lb">Nhật ký</span></button>
+  <button class="tab" data-tab="me"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span class="lb">Tôi</span></button>
 </nav>
 <div class="toast" id="toast"></div>
 <script>
@@ -1562,6 +1635,37 @@ async function syncWake() {
 document.addEventListener("visibilitychange", syncWake);
 // Safari có lúc đòi thao tác của người dùng mới cho giữ màn hình
 document.addEventListener("pointerdown", () => { if (!wakeLock) syncWake(); });
+/* ---------------- giao diện (theme) ----------------
+   Theme chỉ là bộ biến CSS theo [data-theme] trên <html>. Lựa chọn lưu trong S.theme
+   (đi theo file xuất) và chép sang localStorage "gymbook.theme" để script đầu trang đọc
+   trước khi vẽ. "auto": theo chế độ sáng/tối của máy (Sáng ↔ Đêm). */
+const THEMES = [["auto", "Tự động", "Theo máy: Sáng ban ngày, Đêm khi máy để tối"],
+  ["hientai", "Đồng thau", "Nền than, vàng đồng, chữ hẹp in hoa"],
+  ["sang", "Sáng", "Trắng ngà, bo tròn, dễ đọc ngoài trời"],
+  ["neon", "Neon", "Đen tuyền, vàng chanh, chữ dày"],
+  ["giay", "Giấy", "Giấy kem, chữ có chân, xanh rêu"],
+  ["dem", "Đêm", "Xanh đêm, dịu mắt trong phòng tối"]];
+const themePref = () => S.theme || "hientai";
+const resolveTheme = t => t === "auto" ? (matchMedia("(prefers-color-scheme: light)").matches ? "sang" : "dem") : t;
+function applyTheme() {
+  const t = resolveTheme(themePref()), root = document.documentElement;
+  root.dataset.theme = t;
+  try { localStorage.setItem("gymbook.theme", themePref()); } catch (e) {}
+  const bg = getComputedStyle(root).getPropertyValue("--ground").trim();
+  const m = document.querySelector('meta[name="theme-color"]'); if (m && bg) m.content = bg;
+  // app Android: chữ/icon thanh trạng thái sáng trên nền tối, tối trên nền sáng
+  const SB = plug("SystemBars"), dark = getComputedStyle(root).colorScheme !== "light";
+  if (SB && SB.setStyle) SB.setStyle({ style: dark ? "DARK" : "LIGHT" }).catch(() => {});
+}
+matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (themePref() === "auto") applyTheme(); });
+function themeCard() {
+  const cur = themePref();
+  return `<div class="card"><div class="num" style="font-size:18px">Giao diện</div>
+    <div class="themes" role="radiogroup" aria-label="Giao diện">${THEMES.map(([k, name, hint]) =>
+      `<button class="themebtn" role="radio" aria-checked="${cur === k}" data-theme-pick="${k}" title="${esc(hint)}">
+        <span class="sw" data-sw="${k}"><i></i><i></i><i></i></span><span>${name}</span></button>`).join("")}</div>
+    <p class="small dim" style="margin:10px 0 0">${esc((THEMES.find(x => x[0] === cur) || THEMES[1])[2])}.</p></div>`;
+}
 function wakeCard() {
   return `<div class="card">
     <label class="spread" style="cursor:pointer">
@@ -1583,9 +1687,9 @@ function installCard() {
          <b>Thêm vào MH chính</b>. Mở từ icon sẽ chạy toàn màn hình, không còn thanh địa chỉ.</p>`
       : `<p class="small muted" style="margin:12px 0 0">Mở menu ⋮ của trình duyệt →
          <b>Thêm vào màn hình chính</b> (hoặc <b>Cài ứng dụng</b>).</p>`;
-  return `<div class="card" style="border-color:#8a6320">
+  return `<div class="card" style="border-color:var(--brass)">
     <div class="row" style="align-items:flex-start">
-      <img src="./favicon.svg" alt="" width="46" height="46" style="border-radius:12px;flex:none">
+      <img src="./favicon.svg" alt="" width="46" height="46" style="border-radius:var(--r);flex:none">
       <div>
         <div class="num" style="font-size:20px">Cài như một app</div>
         <div class="small muted">Chạy toàn màn hình, có icon riêng, và dùng được cả khi mất mạng.</div>
@@ -2129,7 +2233,7 @@ function altEditor(d, e) {
       <div style="border-left:2px solid var(--line);padding-left:10px;margin-bottom:12px">
         <div class="row" style="margin-bottom:8px">
           <input value="${esc(a.name)}" ${f(a, "name")} aria-label="Tên bài thay thế">
-          <button class="iconbtn" style="color:var(--rust);border-color:#4d2c25" data-delalt="${d.id}|${e.id}|${esc(a.id)}" aria-label="Xoá bài thay thế">×</button>
+          <button class="iconbtn" style="color:var(--rust);border-color:var(--bad-line)" data-delalt="${d.id}|${e.id}|${esc(a.id)}" aria-label="Xoá bài thay thế">×</button>
         </div>
         <div class="g2" style="margin-bottom:8px">
           <label class="f"><span>Rep</span><input value="${esc(a.reps)}" ${f(a, "reps")} style="font-family:var(--display);font-size:21px;text-align:center;padding:10px 4px"></label>
@@ -2153,6 +2257,7 @@ function viewMe() {
     <div class="card">${profileForm}</div>
     <div style="margin-top:16px" class="stack">${templatesSec()}${dataSec()}</div>
     <div style="margin-top:16px">${installCard()}</div>
+    <div style="margin-top:12px">${themeCard()}</div>
     <div style="margin-top:12px">${wakeCard()}</div>`;
   return viewMeFull(p, t, profileForm);
 }
@@ -2207,13 +2312,13 @@ function viewMeFull(p, t, profileForm) {
       <div class="spread" style="margin-bottom:8px">
         <input value="${esc(d.name)}" data-dayname="${d.id}" aria-label="Tên buổi"
           style="font-family:var(--display);font-size:21px;font-weight:600;border:0;background:transparent;padding:2px 0;min-height:auto">
-        <button class="iconbtn" style="color:var(--rust);border-color:#4d2c25" data-delday="${d.id}" aria-label="Xoá buổi">×</button>
+        <button class="iconbtn" style="color:var(--rust);border-color:var(--bad-line)" data-delday="${d.id}" aria-label="Xoá buổi">×</button>
       </div>
       ${d.exercises.map(e => `
-        <div style="background:var(--ground);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="background:var(--ground);border-radius:var(--r);padding:12px;margin-bottom:10px">
           <div class="row" style="margin-bottom:9px">
             <input value="${esc(e.name)}" data-ex="${d.id}|${e.id}|name" aria-label="Tên bài">
-            <button class="iconbtn" style="color:var(--rust);border-color:#4d2c25" data-delex="${d.id}|${e.id}" aria-label="Xoá bài">×</button>
+            <button class="iconbtn" style="color:var(--rust);border-color:var(--bad-line)" data-delex="${d.id}|${e.id}" aria-label="Xoá bài">×</button>
           </div>
           <label class="row small muted" style="gap:9px;margin-bottom:9px;cursor:pointer">
             <input type="checkbox" data-ex="${d.id}|${e.id}|opt"${e.opt ? " checked" : ""}
@@ -2243,6 +2348,7 @@ function viewMeFull(p, t, profileForm) {
   return `
   <div class="stack">
     ${installCard()}
+    ${themeCard()}
     ${wakeCard()}
     <details class="sec" open><summary>Cân nặng</summary><div class="body">
       <div class="g3" style="text-align:center;padding:16px 0">
@@ -2579,6 +2685,10 @@ document.addEventListener("click", e => {
     installPrompt.userChoice.finally(() => { installPrompt = null; render(); });
     return;
   }
+  if (el.dataset.themePick) {
+    S.theme = el.dataset.themePick; save(true); applyTheme(); render();
+    toast("Giao diện: " + THEMES.find(x => x[0] === S.theme)[1]); return;
+  }
   if (el.dataset.hview) { histView = S.histView = el.dataset.hview; save(true); render(); return; }
   if (el.dataset.pmetric) { progMetric = el.dataset.pmetric; render(); return; }
   if (el.dataset.onb) { onbStep = el.dataset.onb; render(); window.scrollTo(0, 0); return; }
@@ -2665,7 +2775,7 @@ document.addEventListener("change", e => {
     try {
       const d = JSON.parse(r.result);
       if (!d || !d.profile || !Array.isArray(d.days) || !d.days.length) throw new Error("thiếu trường bắt buộc");
-      S = migrate(d); S.setupDone = true; curDay = autoDay(); exIdx = firstUnfinished(); hadProfile = !!targets();
+      S = migrate(d); S.setupDone = true; applyTheme(); curDay = autoDay(); exIdx = firstUnfinished(); hadProfile = !!targets();
       if (tab === "setup") tab = "train";
       save(true); render(); toast("Đã nhập dữ liệu");
     } catch (err) { toast("File không đọc được: " + err.message); }
@@ -2685,6 +2795,7 @@ if (!NATIVE && "serviceWorker" in navigator) {
 }
 
 /* ---------------- khởi động ---------------- */
+applyTheme();
 curDay = autoDay();
 exIdx = firstUnfinished();
 render();
