@@ -205,6 +205,34 @@ details.sess>.body{padding:2px 16px 10px;border-top:1px solid var(--line)}
   cursor:pointer;padding:12px 2px;text-align:left}
 .foodrow[aria-expanded=true]{color:var(--brass)}
 .foodsel{margin:10px 0 12px;background:var(--ground)}
+/* ---------- tiến bộ ---------- */
+:root{--viz:#c08520}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:4px;margin:4px 0 16px}
+.seg button{background:transparent;border:0;color:var(--muted);border-radius:9px;min-height:40px;font:inherit;font-size:15px}
+.seg button[aria-selected=true]{background:var(--raised);color:var(--chalk)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 6px}
+.stat{min-width:0}
+.chart{position:relative;margin-top:8px;touch-action:pan-y}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.cg{stroke:var(--line);stroke-width:1}
+.ct{fill:var(--dim);font-size:11px;font-family:var(--body, inherit)}
+.cval{fill:var(--chalk);font-size:12px;font-weight:600}
+.cline{fill:none;stroke:var(--viz);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.cdot{fill:var(--viz);stroke:var(--surface);stroke-width:2}
+.cdot.on{r:6}
+.cbar{fill:var(--viz)}
+.cbar.on{fill:#d69a36}
+.cref{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4}
+.cx{stroke:var(--muted);stroke-width:1}
+.chit{fill:transparent;outline:none}
+.chart:focus-within svg{outline:2px solid var(--line);outline-offset:4px;border-radius:6px}
+.ctip{position:absolute;top:-6px;transform:translateY(-100%);background:var(--raised);border:1px solid var(--line);
+  border-radius:10px;padding:7px 10px;font-size:14px;pointer-events:none;white-space:nowrap;z-index:5}
+.ctip b{font-family:var(--display);font-size:17px}
+.dtab{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.dtab th{text-align:left;color:var(--dim);font-weight:500;padding:4px 0}
+.dtab td{padding:5px 0;border-top:1px solid var(--line);color:var(--muted)}
 .restmini{text-align:center;color:var(--brass);font-size:15px;margin:4px 0 12px}
 .restmini b{font-size:20px}
 .trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -1206,6 +1234,13 @@ function sessionRows(date) {
   return rows.sort((a, b) => a.order - b.order);
 }
 function viewHistory() {
+  const view = histView || S.histView || "prog";
+  const seg = `<div class="seg" role="tablist">
+    <button role="tab" data-hview="prog" aria-selected="${view === "prog"}">Tiến bộ</button>
+    <button role="tab" data-hview="list" aria-selected="${view === "list"}">Các buổi</button></div>`;
+  return seg + (view === "prog" ? viewProgress() : viewSessions());
+}
+function viewSessions() {
   const dates = sessionDates();
   if (!dates.length) return `<div class="empty">Chưa ghi buổi nào.<br>Sang tab Tập và bấm xong set đầu tiên.</div>`;
   let wk = null;
@@ -1230,6 +1265,230 @@ function viewHistory() {
           <div class="small dim">kg</div></div>
       </summary><div class="body">${rows}</div></details>`;
   }).join("") + `</div>`;
+}
+
+/* ---------------- TIẾN BỘ (biểu đồ) ----------------
+   SVG tự vẽ, không thư viện (chạy offline). Mỗi biểu đồ một chuỗi số nên không cần chú giải —
+   tiêu đề gọi tên. Màu dữ liệu --viz (#c08520: vàng đồng hạ độ sáng cho nền tối, đã qua
+   kiểm tra độ tương phản / mù màu). Đường mục tiêu là nét đứt xám — mốc tham chiếu, không
+   phải chuỗi thứ hai. Chạm/rê trên biểu đồ: vạch dọc bám điểm gần nhất + ô số liệu;
+   mọi số cũng có trong "Xem bảng số liệu". */
+let histView = null, progEx = null, progMetric = "e1rm";
+const CHARTS = {};
+/** 1RM ước tính theo Epley — chỉ tin với set ≤ 12 rep. */
+const e1rm = (kg, reps) => reps > 0 && reps <= 12 ? kg * (1 + reps / 30) : 0;
+/** Các bài đã tập (theo tên thật hôm đó, kể cả bài thay thế), nhiều buổi nhất trước. */
+function trainedNames() {
+  const n = {};
+  for (const k in S.log) {
+    if (!(S.log[k] || []).length) continue;
+    const [date, dayId, exId] = k.split("|");
+    const d = allDays().find(x => x.id === dayId) || allDays().find(x => x.exercises.some(e => e.id === exId));
+    const e = d && d.exercises.find(x => x.id === exId);
+    if (!e) continue;
+    const name = eff(e, date, d.id).name;
+    (n[name] = n[name] || { n: 0, unit: eff(e, date, d.id).unit, dates: new Set() }).dates.add(date);
+  }
+  return Object.entries(n).map(([name, v]) => ({ name, unit: v.unit, n: v.dates.size }))
+    .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
+}
+/** Mỗi ngày một điểm: tạ nặng nhất, 1RM ước tính tốt nhất, tổng tạ × rep, set nặng nhất. */
+function exSeries(name) {
+  const by = {};
+  for (const k in S.log) {
+    const sets = S.log[k] || []; if (!sets.length) continue;
+    const [date, dayId, exId] = k.split("|");
+    const d = allDays().find(x => x.id === dayId) || allDays().find(x => x.exercises.some(e => e.id === exId));
+    const e = d && d.exercises.find(x => x.id === exId);
+    if (!e || eff(e, date, d.id).name !== name) continue;
+    const r = by[date] = by[date] || { date, top: 0, e1rm: 0, vol: 0, best: null };
+    sets.forEach(s => {
+      const kg = +s.kg || 0, reps = +s.reps || 0;
+      if (kg > r.top || (kg === r.top && r.best && reps > +r.best.reps)) { r.top = kg; r.best = s; }
+      r.e1rm = Math.max(r.e1rm, e1rm(kg, reps)); r.vol += kg * reps;
+    });
+  }
+  return Object.values(by).sort((a, b) => a.date.localeCompare(b.date));
+}
+/** Bước chia trục tròn (1, 2, 5 × 10ⁿ) gần với span. */
+const niceStep = span => { const p = Math.pow(10, Math.floor(Math.log10(span || 1))), f = span / p;
+  return (f <= 1.5 ? 1 : f <= 3 ? 2 : f <= 7 ? 5 : 10) * p; };
+const fmtNum = v => (Math.round(v * 10) / 10).toLocaleString("vi-VN");
+/** Trục y: 3–5 vạch số tròn bao lấy dữ liệu (và mốc tham chiếu nếu có). */
+function yScale(vals, fromZero) {
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (fromZero) lo = 0;
+  if (hi === lo) { hi += 1; lo = fromZero ? 0 : lo - 1; }
+  const step = niceStep((hi - lo) / 3);
+  lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+  const ticks = []; for (let v = lo; v <= hi + step / 2; v += step) ticks.push(n1(v));
+  return { lo, hi, ticks };
+}
+const W = 360, H = 190, PL = 44, PR = 12, PT = 14, PB = 26;
+/** pts: [{x (ms), y, label, rows: [[giá trị, nhãn]]}] · kind: "line" | "bar". */
+function chartSVG(id, pts, { kind = "line", unit = "", ref = null, refLabel = "", fromZero = false } = {}) {
+  const ys = pts.map(p => p.y).concat(ref != null ? [ref] : []);
+  const sc = yScale(ys, fromZero || kind === "bar");
+  const x0 = pts[0].x, x1 = pts[pts.length - 1].x;
+  const bw = kind === "bar" ? Math.min(24, (W - PL - PR) / pts.length - 2) : 0;
+  const X = kind === "bar"
+    ? i => PL + (i + 0.5) * (W - PL - PR) / pts.length
+    : x => x1 === x0 ? (PL + W - PR) / 2 : PL + (x - x0) / (x1 - x0) * (W - PL - PR);
+  const Y = v => PT + (1 - (v - sc.lo) / (sc.hi - sc.lo)) * (H - PT - PB);
+  const px = pts.map((p, i) => kind === "bar" ? X(i) : X(p.x));
+  const grid = sc.ticks.map(t => `<line x1="${PL}" x2="${W - PR}" y1="${Y(t)}" y2="${Y(t)}" class="cg"/>
+    <text x="${PL - 6}" y="${Y(t) + 4}" text-anchor="end" class="ct">${fmtNum(t)}</text>`).join("");
+  const xl = [0, pts.length - 1].filter((v, i, a) => a.indexOf(v) === i).map((i, k) =>
+    `<text x="${px[i]}" y="${H - 8}" text-anchor="${pts.length === 1 ? "middle" : k ? "end" : "start"}" class="ct">${esc(pts[i].label)}</text>`).join("");
+  const refLine = ref != null ? `<line x1="${PL}" x2="${W - PR}" y1="${Y(ref)}" y2="${Y(ref)}" class="cref"/>
+    <text x="${W - PR}" y="${Y(ref) - 5}" text-anchor="end" class="ct">${esc(refLabel)}</text>` : "";
+  let marks;
+  if (kind === "bar") {
+    const base = Y(sc.lo);
+    marks = pts.map((p, i) => { const h = Math.max(0, base - Y(p.y)), r = Math.min(4, h, bw / 2);
+      // đầu cột bo 4px, chân cột vuông trên đường nền
+      return h ? `<path class="cbar" d="M${px[i] - bw / 2},${base} v${-(h - r)} q0,${-r} ${r},${-r} h${bw - 2 * r} q${r},0 ${r},${r} v${h - r} z"/>` : ""; }).join("");
+  } else {
+    const d = pts.map((p, i) => (i ? "L" : "M") + px[i].toFixed(1) + "," + Y(p.y).toFixed(1)).join(" ");
+    const last = pts.length - 1;
+    marks = `<path class="cline" d="${d}"/>` + (pts.length <= 40 ? pts.map((p, i) =>
+      `<circle class="cdot" cx="${px[i]}" cy="${Y(p.y)}" r="${i === last ? 5 : 3.5}"/>`).join("") : "")
+      + `<text x="${Math.min(px[last], W - PR)}" y="${Y(pts[last].y) - 10}" text-anchor="${pts.length > 1 ? "end" : "middle"}" class="cval">${fmtNum(pts[last].y)}${unit ? " " + esc(unit) : ""}</text>`;
+  }
+  CHARTS[id] = { px, pts, Y: pts.map(p => Y(p.y)), unit };
+  return `<div class="chart" data-chart="${id}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Biểu đồ, ${pts.length} điểm, mới nhất ${fmtNum(pts[pts.length - 1].y)} ${esc(unit)}">
+      ${grid}${refLine}${marks}${xl}
+      <line class="cx" x1="0" x2="0" y1="${PT}" y2="${H - PB}" visibility="hidden"/>
+      <rect class="chit" x="${PL - 8}" y="0" width="${W - PL - PR + 16}" height="${H}" tabindex="0"/>
+    </svg><div class="ctip" hidden></div></div>`;
+}
+/** Bảng số liệu: đường ra số không cần chạm/rê. */
+function dataTable(head, rows) {
+  return `<details class="note"><summary>Xem bảng số liệu</summary><table class="dtab">
+    <tr>${head.map(h => `<th>${esc(h)}</th>`).join("")}</tr>
+    ${rows.slice().reverse().map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></details>`;
+}
+function chartTip(wrap, clientX) {
+  const c = CHARTS[wrap.dataset.chart]; if (!c) return;
+  const svg = wrap.querySelector("svg"), box = svg.getBoundingClientRect();
+  const x = (clientX - box.left) / box.width * W;
+  let i = 0; c.px.forEach((v, k) => { if (Math.abs(v - x) < Math.abs(c.px[i] - x)) i = k; });
+  const p = c.pts[i], line = svg.querySelector(".cx"), tip = wrap.querySelector(".ctip");
+  line.setAttribute("x1", c.px[i]); line.setAttribute("x2", c.px[i]); line.setAttribute("visibility", "visible");
+  svg.querySelectorAll(".cdot.on, .cbar.on").forEach(n => n.classList.remove("on"));
+  const mk = svg.querySelectorAll(".cdot, .cbar")[i]; if (mk) mk.classList.add("on");
+  tip.replaceChildren();
+  const h = document.createElement("div"); h.className = "small dim"; h.textContent = p.label; tip.append(h);
+  p.rows.forEach(([v, lab]) => { const r = document.createElement("div");
+    const b = document.createElement("b"); b.textContent = v; r.append(b, document.createTextNode(lab ? " " + lab : "")); tip.append(r); });
+  tip.hidden = false;
+  const left = c.px[i] / W * box.width;
+  tip.style.left = Math.max(0, Math.min(box.width - tip.offsetWidth, left - tip.offsetWidth / 2)) + "px";
+}
+function chartOff(wrap) {
+  wrap.querySelector(".ctip").hidden = true;
+  wrap.querySelector(".cx").setAttribute("visibility", "hidden");
+  wrap.querySelectorAll(".on").forEach(n => n.classList.remove("on"));
+}
+document.addEventListener("pointermove", e => { const w = e.target.closest && e.target.closest(".chart"); if (w) chartTip(w, e.clientX); });
+document.addEventListener("pointerdown", e => {
+  const w = e.target.closest && e.target.closest(".chart");
+  document.querySelectorAll(".chart").forEach(x => { if (x !== w) chartOff(x); });
+  if (w) chartTip(w, e.clientX);
+});
+document.addEventListener("pointerleave", e => { if (e.target.classList && e.target.classList.contains("chart") && e.pointerType === "mouse") chartOff(e.target); }, true);
+// bàn phím: Tab vào biểu đồ, ← → đi từng điểm
+document.addEventListener("keydown", e => {
+  const w = e.target.closest && e.target.closest(".chart"); if (!w || !/Arrow(Left|Right)/.test(e.key)) return;
+  const c = CHARTS[w.dataset.chart], cur = +(w.dataset.i || c.pts.length - 1);
+  const i = Math.max(0, Math.min(c.pts.length - 1, cur + (e.key === "ArrowRight" ? 1 : -1))); w.dataset.i = i;
+  const box = w.querySelector("svg").getBoundingClientRect(); chartTip(w, box.left + c.px[i] / W * box.width); e.preventDefault();
+});
+document.addEventListener("focusin", e => { const w = e.target.closest && e.target.closest(".chart");
+  if (w) { const c = CHARTS[w.dataset.chart], i = c.pts.length - 1, box = w.querySelector("svg").getBoundingClientRect();
+    w.dataset.i = i; chartTip(w, box.left + c.px[i] / W * box.width); } });
+document.addEventListener("focusout", e => { const w = e.target.closest && e.target.closest(".chart"); if (w) chartOff(w); });
+
+const ms = d => new Date(d + "T00:00:00").getTime();
+function statTile(label, value, sub) {
+  return `<div class="stat"><div class="small muted">${label}</div><div class="num" style="font-size:24px">${value}</div>${sub ? `<div class="small dim">${sub}</div>` : ""}</div>`;
+}
+function exProgress() {
+  const names = trainedNames();
+  if (!names.length) return `<div class="card"><p class="muted small" style="margin:0">Chưa có buổi tập nào. Ghi vài buổi là biểu đồ sức mạnh hiện ở đây.</p></div>`;
+  if (!progEx || !names.some(n => n.name === progEx)) {
+    const main = S.days.flatMap(d => d.exercises).filter(e => !e.opt).map(e => e.name);
+    progEx = (names.find(n => main.includes(n.name) && n.n >= 2) || names[0]).name;
+  }
+  const cur = names.find(n => n.name === progEx), added = cur.unit === "+kg";
+  if (added && progMetric === "e1rm") progMetric = "top";   // xà đeo tạ: kg đeo thêm, 1RM không có nghĩa
+  const s = exSeries(progEx);
+  const val = r => progMetric === "e1rm" ? n1(r.e1rm) : progMetric === "vol" ? Math.round(r.vol) : r.top;
+  const unit = progMetric === "vol" ? "kg" : cur.unit.replace("/tay", "");
+  const pts = s.map(r => ({ x: ms(r.date), y: val(r), label: fmtDate(r.date),
+    rows: [[fmtNum(val(r)) + " " + unit, progMetric === "e1rm" ? "1RM ước tính" : progMetric === "vol" ? "tạ × rep" : "tạ nặng nhất"],
+      [r.best ? `${r.best.kg}×${r.best.reps}` : "", "set nặng nhất"]] }));
+  const first = pts[0].y, last = pts[pts.length - 1].y, best = Math.max(...pts.map(p => p.y)), diff = n1(last - first);
+  const metrics = [["e1rm", "1RM ước tính"], ["top", "Tạ nặng nhất"], ["vol", "Khối lượng"]].filter(([k]) => !(added && k === "e1rm"));
+  return `<div class="card">
+    <label class="f"><span>Bài tập</span><select id="progEx">${names.map(n =>
+      `<option value="${esc(n.name)}"${n.name === progEx ? " selected" : ""}>${esc(n.name)} · ${n.n} buổi</option>`).join("")}</select></label>
+    <div class="chips" style="margin-top:12px">${metrics.map(([k, lab]) =>
+      `<button class="chip" data-pmetric="${k}" aria-pressed="${progMetric === k}">${lab}</button>`).join("")}</div>
+    <div class="stats">${statTile("Gần nhất", fmtNum(last) + ` <span class="small dim">${esc(unit)}</span>`, fmtDate(s[s.length - 1].date))}
+      ${statTile("Thay đổi", pts.length > 1 ? (diff > 0 ? "+" : "") + fmtNum(diff) : "–", pts.length > 1 ? "từ " + fmtDate(s[0].date) : "cần 2 buổi")}
+      ${statTile("Cao nhất", fmtNum(best), "")}</div>
+    ${chartSVG("ex", pts, { unit })}
+    <p class="small dim" style="margin:8px 0 0">${progMetric === "e1rm"
+      ? "1RM ước tính (công thức Epley, chỉ dùng set ≤ 12 rep): so được sức mạnh giữa buổi làm 6 rep và buổi làm 10 rep."
+      : progMetric === "vol" ? "Tổng tạ × rep của bài trong buổi — tăng đều là đang tiến bộ dù tạ chưa lên."
+      : "Mức tạ nặng nhất trong buổi."}</p>
+    ${dataTable(["Ngày", progMetric === "vol" ? "Tạ × rep" : "Giá trị", "Set nặng nhất"], s.map(r => [fmtDate(r.date), fmtNum(val(r)), r.best ? `${r.best.kg}×${r.best.reps}` : ""]))}
+  </div>`;
+}
+function bwProgress() {
+  const bw = [...S.bw].sort((a, b) => a.date.localeCompare(b.date));
+  if (!bw.length) return `<p class="small dim" style="margin:0">Chưa có lần cân nào — ghi ở tab Tôi → Cân nặng.</p>`;
+  const goal = +S.profile.goalWeight || null;
+  const pts = bw.map(e => ({ x: ms(e.date), y: +e.kg, label: fmtDate(e.date), rows: [[fmtNum(e.kg) + " kg", ""]] }));
+  const diff = n1(bw[bw.length - 1].kg - bw[0].kg);
+  return `<div class="stats">${statTile("Hiện tại", fmtNum(bw[bw.length - 1].kg) + ' <span class="small dim">kg</span>', fmtDate(bw[bw.length - 1].date))}
+      ${statTile("Thay đổi", bw.length > 1 ? (diff > 0 ? "+" : "") + fmtNum(diff) : "–", "từ " + fmtDate(bw[0].date))}
+      ${statTile("Mục tiêu", goal ? fmtNum(goal) : "–", goal ? "còn " + fmtNum(Math.abs(n1(goal - bw[bw.length - 1].kg))) + " kg" : "đặt ở tab Tôi")}</div>
+    ${chartSVG("bw", pts, { unit: "kg", ref: goal, refLabel: goal ? "mục tiêu " + fmtNum(goal) : "" })}
+    ${dataTable(["Ngày", "Cân nặng"], bw.map(e => [fmtDate(e.date), fmtNum(e.kg) + " kg"]))}`;
+}
+/** Số set đã ghi mỗi tuần giáo án, 8 tuần gần nhất. */
+function setsProgress() {
+  const wk = {};
+  for (const k in S.log) { const n = (S.log[k] || []).length; if (n) { const w = weekNo(k.split("|")[0]); wk[w] = (wk[w] || 0) + n; } }
+  const ws = Object.keys(wk).map(Number); if (!ws.length) return "";
+  const hi = Math.max(...ws), weeks = []; for (let w = Math.max(1, hi - 7); w <= hi; w++) weeks.push(w);
+  const pts = weeks.map(w => ({ x: w, y: wk[w] || 0, label: "T" + w,
+    rows: [[(wk[w] || 0) + " set", ""], [fmtDate(addDays(S.profile.startDate, (w - 1) * 7)) + " – " + fmtDate(addDays(S.profile.startDate, (w - 1) * 7 + 6)), ""]] }));
+  return `${chartSVG("sets", pts, { kind: "bar", unit: "set" })}
+    ${dataTable(["Tuần", "Số set"], pts.map(p => [p.label.replace("T", "Tuần "), String(p.y)]))}`;
+}
+/** Calo 14 ngày gần nhất so với mục tiêu. */
+function kcalProgress() {
+  const days = []; for (let i = 13; i >= 0; i--) days.push(addDays(today(), -i));
+  if (!days.some(d => foodDay(d).length)) return "";
+  const t = targets();
+  const pts = days.map(d => { const tt = foodTotals(d);
+    return { x: ms(d), y: Math.round(tt.kcal), label: fmtDate(d), rows: [[Math.round(tt.kcal).toLocaleString("vi-VN") + " kcal", ""], [Math.round(tt.p) + " g", "đạm"]] }; });
+  return `${chartSVG("kcal", pts, { kind: "bar", unit: "kcal", ref: t ? Math.round(t.kcal) : null, refLabel: t ? "mục tiêu " + Math.round(t.kcal).toLocaleString("vi-VN") : "" })}
+    ${dataTable(["Ngày", "Calo", "Đạm"], pts.map(p => [p.label, p.y.toLocaleString("vi-VN"), p.rows[1][0]]))}`;
+}
+function viewProgress() {
+  const sets = setsProgress(), kcal = kcalProgress();
+  return `<div class="stack">
+    <div><div class="tiny dim" style="margin:0 2px 8px">Sức mạnh</div>${exProgress()}</div>
+    <div><div class="tiny dim" style="margin:0 2px 8px">Cân nặng</div><div class="card">${bwProgress()}</div></div>
+    ${sets ? `<div><div class="tiny dim" style="margin:0 2px 8px">Số set mỗi tuần</div><div class="card">${sets}</div></div>` : ""}
+    ${kcal ? `<div><div class="tiny dim" style="margin:0 2px 8px">Calo 14 ngày</div><div class="card">${kcal}</div></div>` : ""}
+    <p class="small dim" style="margin:0 2px">Chạm hoặc rê trên biểu đồ để xem số từng ngày.</p>
+  </div>`;
 }
 
 /* ---------------- cài lên màn hình chính ---------------- */
@@ -2320,6 +2579,8 @@ document.addEventListener("click", e => {
     installPrompt.userChoice.finally(() => { installPrompt = null; render(); });
     return;
   }
+  if (el.dataset.hview) { histView = S.histView = el.dataset.hview; save(true); render(); return; }
+  if (el.dataset.pmetric) { progMetric = el.dataset.pmetric; render(); return; }
   if (el.dataset.onb) { onbStep = el.dataset.onb; render(); window.scrollTo(0, 0); return; }
   if (el.dataset.pick) {
     useTemplate(el.dataset.pick); S.setupDone = true; save(true);
@@ -2395,6 +2656,7 @@ document.addEventListener("change", e => {
   }
 });
 
+document.addEventListener("change", e => { if (e.target.id === "progEx") { progEx = e.target.value; render(); } });
 document.addEventListener("change", e => {
   if (e.target.id !== "importFile") return;
   const f = e.target.files[0]; if (!f) return;

@@ -83,7 +83,7 @@ await shot("me.png"); await noOverflow("tab Tôi");
 await ev(`window.confirm = () => true`); await click("[data-usetpl=ul4]"); await sleep(250);
 ok(await ev(`S.programId === "ul4" && tab === "train" && S.oldDays.flatMap(d => d.exercises).length === 3`), "đổi giáo án, cất 3 bài có nhật ký");
 ok(await ev(`suggest(eff(day().exercises[0], curDate, curDay), 0).kg`) === "50", "Bench gợi ý theo lịch sử cũ");
-await click("[data-tab=history]"); await sleep(150);
+await click("[data-tab=history]"); await sleep(80); await click("[data-hview=list]"); await sleep(150);
 const hist = await ev(`document.querySelector('#view').textContent`);
 ok(!/Bài đã xoá/.test(hist) && /Buổi Đẩy/.test(hist) && /Bench Press/.test(hist), "nhật ký giữ tên buổi/bài cũ");
 await reload(); ok(await ev(`S.programId === "ul4" && S.oldDays.length === 2`), "tải lại giữ giáo án");
@@ -104,7 +104,7 @@ console.log("== Nhật ký, tuần");
 await put(`d.setupDone = true; d.profile.startDate = "2026-09-02";
   const add = (date, di, n) => { const x = d.days[di]; x.exercises.slice(0, n).forEach(e => d.log[date + "|" + x.id + "|" + e.id] = [{kg:"40",reps:"8"},{kg:"42.5",reps:"6"}]); };
   add("2026-09-15", 0, 5); add("2026-09-21", 0, 3); add("2026-09-22", 1, 4); add("2026-09-24", 2, 6); add("2026-09-28", 0, 5)`);
-await click("[data-tab=history]"); await sleep(200);
+await click("[data-tab=history]"); await sleep(80); await click("[data-hview=list]"); await sleep(200);
 ok(await ev(`[...document.querySelectorAll('details.sess')].length === 5 && [...document.querySelectorAll('details.sess')].every(x => !x.open)`), "5 buổi, thu gọn sẵn");
 let heads = await ev(`[...document.querySelectorAll('.wkhead')].map(x => x.textContent).join(" | ")`);
 ok(heads === "Tuần 4 · 23/09 – 29/09 · 2 buổi | Tuần 3 · 16/09 – 22/09 · 2 buổi | Tuần 2 · 09/09 – 15/09 · 1 buổi", "tiêu đề tuần có khoảng ngày: " + heads);
@@ -114,7 +114,7 @@ await shot("history.png"); await noOverflow("nhật ký");
 await click("[data-tab=me]"); await sleep(100);
 ok(await ev(`document.querySelector('[data-snapmon]')?.dataset.snapmon`) === "2026-08-31", "gợi ý lùi về thứ Hai 31/08");
 await click("[data-snapmon]"); await sleep(150);
-await click("[data-tab=history]"); await sleep(150);
+await click("[data-tab=history]"); await sleep(80); await click("[data-hview=list]"); await sleep(150);
 heads = await ev(`[...document.querySelectorAll('.wkhead')].map(x => x.textContent).join(" | ")`);
 ok(heads.startsWith("Tuần 5 · 28/09 – 04/10 · 1 buổi | Tuần 4 · 21/09 – 27/09 · 3 buổi"), "sau khi lùi: tuần thứ Hai – Chủ nhật");
 
@@ -155,6 +155,42 @@ await put(`d.setupDone = true; const x = d.days[0];
   [0,1].forEach(i => d.log["${today_}|" + x.id + "|" + x.exercises[i].id] = Array.from({length: x.exercises[i].sets}, () => ({kg:"20",reps:"8"})))`);
 await ev(`curDay = S.days[0].id; exIdx = 0; render()`);
 ok(await ev(`document.querySelector('.btn.jade[data-jump]')?.dataset.jump`) === "2", "Bài tiếp bỏ qua bài đã xong");
+
+console.log("== Tiến bộ (biểu đồ)");
+await put(`d.setupDone = true; Object.assign(d.profile, { startDate: "2026-09-01", goalWeight: 60, age: 29, height: 172, weight: 56 });
+  const x = d.days[0], b = x.exercises[0], pu = d.days[1].exercises.find(e => e.name === "Xà đeo tạ");
+  [["2026-09-02","40","8"],["2026-09-09","42.5","8"],["2026-09-16","45","7"],["2026-09-23","45","9"]].forEach(([dt, kg, r]) =>
+    d.log[dt + "|" + x.id + "|" + b.id] = [{kg, reps: r}, {kg: "30", reps: "10"}]);
+  d.log["2026-09-03|" + d.days[1].id + "|" + pu.id] = [{kg: "5", reps: "6"}];
+  d.log["2026-09-10|" + d.days[1].id + "|" + pu.id] = [{kg: "7.5", reps: "6"}];
+  d.bw = [{date: "2026-09-01", kg: 54}, {date: "2026-09-15", kg: 55.2}, {date: "2026-09-29", kg: 56}];
+  d.food = {}; d.food[today()] = [{id: "a", name: "Cơm", kcal: 2400, p: 120}]`);
+await click("[data-tab=history]"); await sleep(150);
+ok(await ev(`!!document.querySelector('[data-hview=prog][aria-selected=true]')`), "Nhật ký mở sẵn chế độ Tiến bộ");
+ok(await ev(`$("#progEx").value`) === "Bench Press", "chọn sẵn bài chính nhiều buổi nhất: Bench");
+ok(await ev(`document.querySelectorAll('.chart[data-chart=ex] .cdot').length`) === 4, "Bench: 4 điểm");
+ok(await ev(`[...document.querySelectorAll('.stat .num')].map(x => x.textContent.trim()).slice(0, 3).join("|")`) === "58,5 kg|+7,8|58,5", "1RM ước tính: gần nhất 58,5 (45×9) · +7,8 từ 50,7 (40×8) · cao nhất 58,5: " + await ev(`[...document.querySelectorAll('.stat .num')].map(x => x.textContent.trim()).slice(0, 3).join("|")`));
+await click('[data-pmetric="top"]'); await sleep(100);
+ok(await ev(`document.querySelector('.stat .num').textContent.trim()`) === "45 kg", "đổi sang Tạ nặng nhất: 45 kg");
+// chạm vào biểu đồ → vạch dọc + ô số
+const tip = await ev(`(() => { const w = document.querySelector('.chart[data-chart=ex]'), r = w.querySelector('svg').getBoundingClientRect();
+  w.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.left + r.width * 0.2, clientY: r.top + 50 }));
+  return [w.querySelector('.ctip').hidden, w.querySelector('.ctip').textContent, w.querySelector('.cx').getAttribute('visibility')]; })()`);
+ok(tip[0] === false && tip[1].includes("02/09") && tip[1].includes("40×8") && tip[2] === "visible", "chạm biểu đồ: hiện số ngày gần nhất (" + tip[1] + ")");
+await ev(`$("#progEx").value = "Xà đeo tạ"; $("#progEx").dispatchEvent(new Event("change", {bubbles: true}))`); await sleep(120);
+ok(await ev(`!document.querySelector('[data-pmetric=e1rm]') && progMetric === "top"`), "Xà đeo tạ (+kg): không có 1RM ước tính");
+ok(await ev(`document.querySelectorAll('.chart[data-chart=bw] .cdot').length === 3 && !!document.querySelector('.chart[data-chart=bw] .cref')`), "cân nặng: 3 điểm + đường mục tiêu");
+ok(await ev(`document.querySelectorAll('.chart[data-chart=sets] .cbar').length`) >= 4, "số set mỗi tuần: cột theo tuần");
+ok(await ev(`!!document.querySelector('.chart[data-chart=kcal] .cref')`), "calo 14 ngày có đường mục tiêu");
+ok(await ev(`document.querySelectorAll('#view details.note table.dtab').length`) === 4, "mỗi biểu đồ có bảng số liệu");
+ok(await ev(`[...document.querySelectorAll('.chart')].every(c => { const n = c.querySelectorAll('.cg').length; return n >= 2 && n <= 6; })`), "trục dọc 2–6 vạch, không dày đặc");
+await shot("progress.png"); await noOverflow("tiến bộ");
+await click("[data-hview=list]"); await sleep(100);
+ok(await ev(`document.querySelectorAll('details.sess').length`) === 6, "chuyển sang Các buổi");
+await reload(); await click("[data-tab=history]"); await sleep(120);
+ok(await ev(`!!document.querySelector('[data-hview=list][aria-selected=true]')`), "nhớ chế độ đã chọn");
+await put(`d.setupDone = true`); await click("[data-tab=history]"); await sleep(80); await click("[data-hview=prog]"); await sleep(100);
+ok(await ev(`document.querySelector('#view').textContent.includes("Chưa có buổi tập nào")`), "chưa có dữ liệu: lời nhắc thay vì biểu đồ trống");
 
 console.log("== Sửa set khi đang nghỉ");
 await put(`d.setupDone = true`);
@@ -209,7 +245,7 @@ ok(JSON.stringify(v7.starts) === JSON.stringify([15, 30, 8]), "khởi điểm ư
 ok(JSON.stringify(v7.sug.map(Number)) === JSON.stringify([15, 25, 8]), "gợi ý: khởi điểm mới, hoặc lịch sử thật của đúng bài mới: " + v7.sug);
 const swv = Object.values(v7.sw).sort().join(",");
 ok(swv === "db-curl,lying-leg-curl,pushdown", "set cũ gắn nhãn bài thay thế tên cũ, buổi dùng bài mới làm bài thay → thành bài chính: " + swv);
-await click("[data-tab=history]"); await sleep(150);
+await click("[data-tab=history]"); await sleep(80); await click("[data-hview=list]"); await sleep(150);
 const h7 = await ev(`document.querySelector('#view').textContent`);
 ok(/Triceps Pushdown/.test(h7) && /Leg Curl nằm máy/.test(h7) && /Dumbbell Curl/.test(h7) && /Leg Curl ngồi máy/.test(h7) && !/bài thay đã xoá|Bài đã xoá/.test(h7), "nhật ký cũ vẫn đúng tên bài đã tập");
 // máy bận: chọn lại Triceps Pushdown thì gợi ý theo tạ cũ

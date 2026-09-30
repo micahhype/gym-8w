@@ -24,7 +24,11 @@ không tài khoản. Mọi số liệu nằm trong `localStorage` của máy b�
   bấm *+ Vào bữa* cho từng món, app cộng sẵn rồi ghi một dòng (bấm "n món" để
   xem chi tiết), lưu được thành món quen. Xem lại ngày trước. Có từ 3 ngày ghi trong tuần thì phần *Nhịp
   tăng cân* ở tab Tôi so với mức ăn thật và gợi ý nên ăn bao nhiêu.
-- **Nhật ký** — các buổi đã ghi, nhóm theo tuần, mỗi buổi thu gọn một dòng
+- **Nhật ký → Tiến bộ** — biểu đồ sức mạnh từng bài (1RM ước tính theo Epley,
+  tạ nặng nhất, hoặc tổng tạ × rep), cân nặng so với mục tiêu, số set mỗi tuần,
+  calo 14 ngày so với mục tiêu. Chạm lên biểu đồ để xem số từng ngày; mỗi biểu
+  đồ có bảng số liệu. SVG tự vẽ, không thư viện, chạy offline.
+- **Nhật ký → Các buổi** — các buổi đã ghi, nhóm theo tuần, mỗi buổi thu gọn một dòng
   (tên buổi, số bài, số set, tổng khối lượng tạ × rep); bấm để xem chi tiết.
   Tuần đếm từ ngày bắt đầu giáo án (mặc định thứ Hai của tuần đầu), tiêu đề
   tuần ghi rõ khoảng ngày. Ngày bắt đầu không phải thứ Hai thì tab Tôi có nút
@@ -124,7 +128,7 @@ python3 -m http.server 8080
 ## Test
 
 ```
-tests/run.sh            # 118 bước qua Chrome headless ở khổ 400px
+tests/run.sh            # 134 bước qua Chrome headless ở khổ 400px
 tests/run.sh --shots    # kèm ảnh chụp vào tests/shots/
 ```
 
