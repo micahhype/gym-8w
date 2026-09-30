@@ -14,7 +14,9 @@ const verFile = new URL("www-version.txt", import.meta.url);
 const version = process.argv.includes("--same") && existsSync(verFile) ? readFileSync(verFile, "utf8").trim() : buildId();
 copyWeb(version);
 if (!existsSync(dist + "/.git")) sh(`gh repo clone ${REPO} ${dist}`);
-sh("git pull -q --rebase", dist);
+// repo mới tạo chưa có nhánh nào: bỏ qua pull, đẩy lần đầu lên main
+const hasMain = sh("git ls-remote --heads origin main", dist) !== "";
+if (hasMain) sh("git pull -q --rebase origin main", dist); else sh("git checkout -q -B main", dist);
 mkdirSync(dist + "/bundles", { recursive: true });
 const zip = `bundles/forma-${version.replace(/[^\w.-]/g, "_")}.zip`;
 sh(`zip -qr -X ${dist}/${zip} .`, new URL("www/", import.meta.url).pathname);
@@ -25,5 +27,5 @@ writeFileSync(dist + "/update.json", JSON.stringify({ version, url: SITE + zip, 
 if (!existsSync(dist + "/.nojekyll")) writeFileSync(dist + "/.nojekyll", "");
 sh("git add -A", dist);
 sh(`git commit -q -m "Bản ${version}"`, dist);
-sh("git push -q", dist);
+sh("git push -q -u origin main", dist);
 console.log(`đã đẩy bản ${version} → ${SITE}update.json (GitHub Pages cần ~1 phút)`);
